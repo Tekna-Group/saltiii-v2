@@ -14,7 +14,12 @@
 Auth::routes();
 Route::group(['middleware' => 'auth'], function () {
     
-Route::get('/', 'HomeController@index')->name('home');
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/', 'HomeController@index')->name('Dashboard');
+Route::get('/home', 'HomeController@index')->name('Dashboard');
+
+Route::get('/projects','ProjectController@index')->name('Projects');
+
+
+Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
 });
 
