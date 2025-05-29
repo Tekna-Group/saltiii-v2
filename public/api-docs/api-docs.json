@@ -1,0 +1,683 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Saltiii API",
+        "description": "Task and Project Management API",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost/saltiii-v2/public"
+        }
+    ],
+    "paths": {
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User login to get JWT token",
+                "operationId": "222b2625838e3c57e017987f73598fda",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "access_token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "bearer"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": 3600
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/projects": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Get all projects",
+                "operationId": "fbc21feeb3df8a2cb519efb6480ae7d9",
+                "responses": {
+                    "200": {
+                        "description": "List of projects"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Create a new project",
+                "operationId": "a9d5bd5914cf75eaebafcf8b9e320dcf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Website Redesign"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "A project to redesign the company website"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Project created successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{id}": {
+            "get": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "View a specific project",
+                "operationId": "865085b82af27d647cf1f2a772aa7927",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project details"
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Update a specific project",
+                "operationId": "fe600b7ffce78456bce67c51b9eca51d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the project to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "New Project Name"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Updated project description"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Project updated successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Soft delete a specific project",
+                "operationId": "d81ac2b0b51fa7143c69f1a5f4c27eb0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the project to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project soft deleted successfully"
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{id}/complete": {
+            "patch": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Mark a project as complete",
+                "operationId": "34018c2b31ccb34c5ff20fa04679822d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the project to mark complete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Project marked as complete"
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{id}/assign-users": {
+            "post": {
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Assign multiple users to a project",
+                "operationId": "80cc59ce71f5ef91bb9eb40569703076",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_ids"
+                                ],
+                                "properties": {
+                                    "user_ids": {
+                                        "description": "Array of user IDs to assign",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Users successfully assigned to project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Users assigned successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tasks": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get all tasks",
+                "operationId": "be68905d866e856db6c738172b8d929a",
+                "responses": {
+                    "200": {
+                        "description": "List of all"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Create a new task",
+                "operationId": "ebbaabc58e3db61374a57c53544959b2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id",
+                                    "title",
+                                    "description"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Fix login bug"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Resolve the 500 error on login form"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Task created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "project_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Fix login bug"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "example": "Resolve the 500 error on login form"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/projects/{project_id}/tasks": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get all tasks for a specific project",
+                "operationId": "189113671654cb1eb7ee83bc62378ac3",
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "description": "ID of the project",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of tasks for the project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "project_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "title": {
+                                                "type": "string",
+                                                "example": "Sample Task"
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "example": "Task details here"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Project not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tasks/{id}/upload-attachment": {
+            "post": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Upload an attachment to a task",
+                "operationId": "dc795de2e78fc249cb7c359ed75b59e0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "File uploaded successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tasks/{id}": {
+            "get": {
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "View a specific task with related users, comments, and attachments",
+                "operationId": "32c40e2d1129b80c1dcabd538df63a33",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the task",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Task Title"
+                                        },
+                                        "description": {
+                                            "type": "string",
+                                            "example": "Task description here"
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "comments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "attachments": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    }
+}

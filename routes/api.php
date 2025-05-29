@@ -24,6 +24,7 @@ Route::post('projects/{id}/assign-users', 'Api\ProjectController@assignUsers');
 Route::post('projects/{id}/assign-team', 'Api\ProjectController@assignTeam');
 
 Route::apiResource('tasks', 'Api\TaskController');
+Route::get('projects/{project_id}/tasks', 'Api\TaskController@getTasksByProject');
 Route::patch('tasks/{id}/complete', 'Api\TaskController@complete');
 Route::patch('tasks/{id}/deadline', 'Api\TaskController@setDeadline');
 Route::post('tasks/{id}/assign-users', 'Api\TaskController@assignUsers');
