@@ -91,9 +91,31 @@ public function store(Request $request)
 
     return response()->json(['message' => 'Project created successfully', 'project' => $project], 201);
 }
-
+/**
+ * @OA\Get(
+ *     path="/api/projects/{id}",
+ *     tags={"Projects"},
+ *     summary="View a specific project",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         description="ID of the project",
+ *         required=true,
+ *         @OA\Schema(type="integer")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Project details"
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Project not found"
+ *     )
+ * )
+ */
     public function show($id) {
-        return Project::with(['users', 'team'])->findOrFail($id);
+        return Project::with(['users'])->findOrFail($id);
     }
 
     public function update(Request $request, $id) {
