@@ -14,6 +14,6 @@ class ProjectController extends Controller
         // $projects = \App\Models\Project::all();
 
         // Return the view with the projects data
-        return view('projects.index');
+        // return view('projects.index');
     }
 }

@@ -40,7 +40,7 @@ $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
     App\Exceptions\Handler::class
 );
-
+$app->register(\Mpociot\ApiDoc\ApiDocGeneratorServiceProvider::class);
 /*
 |--------------------------------------------------------------------------
 | Return The Application
@@ -51,5 +51,5 @@ $app->singleton(
 | from the actual running of the application and sending responses.
 |
 */
-
+// $app->configure('apidoc');
 return $app;

@@ -23,3 +23,7 @@ Route::get('/projects','ProjectController@index')->name('Projects');
 Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
 });
 
+Route::get('/api/documentation', function () {
+    return view('l5-swagger::index');
+});
+

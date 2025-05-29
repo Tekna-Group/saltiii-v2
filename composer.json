@@ -9,10 +9,14 @@
     "license": "MIT",
     "require": {
         "php": "^7.1.3",
+        "darkaonline/l5-swagger": "5.7.*",
         "fideloper/proxy": "^4.0",
         "laravel/framework": "5.7.*",
+        "laravel/passport": "^7.5",
         "laravel/tinker": "^1.0",
-        "realrashid/sweet-alert": "^7.3"
+        "mpociot/laravel-apidoc-generator": "^3.17",
+        "realrashid/sweet-alert": "^7.3",
+        "zircote/swagger-php": "3.*"
     },
     "require-dev": {
         "beyondcode/laravel-dump-server": "^1.0",

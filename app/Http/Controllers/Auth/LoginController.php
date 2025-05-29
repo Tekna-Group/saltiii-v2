@@ -1,5 +1,18 @@
 <?php
-
+/**
+ * @OA\Info(
+ *     title="My API",
+ *     version="1.0.0",
+ *     description="This is the API documentation for my Laravel 5.7 app.",
+ *     @OA\Contact(
+ *         email="info@saltiii.com"
+ *     ),
+ *     @OA\License(
+ *         name="MIT",
+ *         url="https://opensource.org/licenses/MIT"
+ *     )
+ * )
+ */
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
