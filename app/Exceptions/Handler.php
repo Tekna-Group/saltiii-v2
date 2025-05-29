@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Exceptions;
-
+use Illuminate\Auth\AuthenticationException;
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
@@ -48,4 +48,12 @@ class Handler extends ExceptionHandler
     {
         return parent::render($request, $exception);
     }
+    protected function unauthenticated($request, AuthenticationException $exception)
+{
+    if ($request->expectsJson() || $request->is('api/*')) {
+        return response()->json(['error' => 'Unauthenticated. Token required.'], 401);
+    }
+
+    return redirect()->guest(route('login'));
+}
 }

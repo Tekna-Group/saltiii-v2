@@ -4,6 +4,9 @@
  *     title="Saltiii API",
  *     version="1.0.0",
  *     description="Task and Project Management API"
+ * ),
+ * @OA\Server(
+ *     url=L5_SWAGGER_CONST_HOST
  * )
  */
 namespace App\Http\Controllers\Api;
@@ -18,21 +21,31 @@ use App\Comment;
 use App\Attachment;
 use App\Activity;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
 {
     /**
-     * @OA\Get(
-     *     path="/api/projects",
-     *     tags={"Projects"},
-     *     summary="Get all projects",
-     *     @OA\Response(
-     *         response=200,
-     *         description="List of projects",
-     *       
-     *     )
-     * )
-     */
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
+ */
+
+/**
+ * @OA\Get(
+ *     path="/api/projects",
+ *     tags={"Projects"},
+ *     summary="Get all projects",
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Response(
+ *         response=200,
+ *         description="List of projects"
+ *     )
+ * )
+ */
   public function index() {
     // dd('renz');
         return Project::with(['users', 'team'])->get();
@@ -42,6 +55,7 @@ class ProjectController extends Controller
  *     path="/api/projects",
  *     tags={"Projects"},
  *     summary="Create a new project",
+ *      security={{"bearerAuth":{}}},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
@@ -56,10 +70,27 @@ class ProjectController extends Controller
  *     )
  * )
  */
-    public function store(Request $request) {
-        $project = Project::create($request->only('name', 'description'));
-        return response()->json($project);
+public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'errors' => $validator->errors(),
+        ], 422);
     }
+    $project = new Project;
+    $project->name = $request->name;
+    $project->description = $request->description;
+    $project->user_id = auth()->user()->id;
+    $project->save();
+    // $project = Project::create($validator->validated());
+
+    return response()->json(['message' => 'Project created successfully', 'project' => $project], 201);
+}
 
     public function show($id) {
         return Project::with(['users', 'team'])->findOrFail($id);
