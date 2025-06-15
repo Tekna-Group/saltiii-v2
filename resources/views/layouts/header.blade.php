@@ -25,7 +25,7 @@
  
     {{-- <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css"> --}}
     @yield('css')
-  
+    @include('sweetalert::alert')
 </head>
 <body>
     <div id = "loader" style="display:none;" class="loader">
