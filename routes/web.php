@@ -17,11 +17,16 @@ Route::group(['middleware' => 'auth'], function () {
 Route::get('/', 'HomeController@index')->name('Dashboard');
 Route::get('/home', 'HomeController@index')->name('Dashboard');
 Route::post('new-project', 'ProjectController@store')->name('New Project');
+Route::get('/view-project/{id}','ProjectController@view')->name('View Project');
+Route::post('project-member/{id}','ProjectController@teamMember')->name('View Project');
+Route::post('project-board/{id}','ProjectController@boardProject')->name('View Project');
 
 Route::get('/projects','ProjectController@index')->name('Projects');
 
 
 Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
+
+
 });
 
 Route::get('/api/documentation', function () {

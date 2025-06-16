@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Project;
 use App\User;
 use App\ProjectUser;
+use App\ProjectBoard;
 use Illuminate\Http\Request;
 
 use RealRashid\SweetAlert\Facades\Alert;
@@ -61,5 +62,48 @@ class ProjectController extends Controller
         Alert::success('Successfully Save')->persistent('Dismiss');
         return back();
         
+    }
+
+    public function view(Request $request,$id)
+    {
+
+        $project = Project::with('users','boards')->findOrfail($id);
+        // Return the view with the projects data
+    
+        $users = User::get();
+        return view('projects.view',
+            array(
+                'project' => $project,
+                'users' => $users,
+            )
+        );
+    }
+
+    public function teamMember(Request $request,$id)
+    {
+
+        ProjectUser::where('project_id',$id)->delete();
+
+          foreach($request->input('team_member') as $memberId) {
+            $projectUser = new ProjectUser();
+            $projectUser->project_id = $id;
+            $projectUser->user_id = $memberId;
+            $projectUser->save();
+        }
+
+            // Redirect back with success message
+        Alert::success('Successfully Updated')->persistent('Dismiss');
+        return back();
+    }
+
+    public function boardProject(Request $request,$id)
+    {
+        $project = new ProjectBoard;
+        $project->project_id = $id;
+        $project->board = $request->boardName;
+        $project->save();
+
+         Alert::success('Successfully Encoded')->persistent('Dismiss');
+        return back();
     }
 }

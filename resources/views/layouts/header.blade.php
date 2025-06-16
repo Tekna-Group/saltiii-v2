@@ -25,7 +25,7 @@
  
     {{-- <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css"> --}}
     @yield('css')
-    @include('sweetalert::alert')
+
 </head>
 <body>
     <div id = "loader" style="display:none;" class="loader">
@@ -173,6 +173,13 @@
                             </a>
                         </li>
 
+                        <li class="menu-title"><span data-key="t-menu">Admin</span></li>
+                          <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/users')}}">
+                                <i class=" ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
+                            </a>
+                        </li>
+
 
                     </ul>
                 </div>
@@ -238,7 +245,7 @@
 
     <!-- Theme Settings -->
  
-
+        @include('sweetalert::alert')
     <!-- JAVASCRIPT -->
     <script src="{{asset('inside_css/assets/libs/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
     <script src="{{asset('inside_css/assets/libs/simplebar/simplebar.min.js')}}"></script>
@@ -248,16 +255,11 @@
     <script src="{{asset('inside_css/assets/js/plugins.js')}}"></script>
 
     <!-- apexcharts -->
-    <script src="{{asset('inside_css/assets/libs/apexcharts/apexcharts.min.js')}}"></script>
 
-    <!-- Vector map-->
-
-    <!-- Dashboard init -->
-    <script src="{{asset('inside_css/assets/js/pages/dashboard-projects.init.js')}}"></script>
-
+   @yield('js')
     <!-- App js -->
     <script src="{{asset('inside_css/assets/js/app.js')}}"></script>
-    @yield('js')
+ 
     <script>
         function logout() {
         event.preventDefault();

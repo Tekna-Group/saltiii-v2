@@ -18,9 +18,14 @@ class Project extends Model
     ];
     public function users()
     {
-        return $this->belongsToMany(User::class, 'project_user'); // if many-to-many
+        return $this->belongsToMany(User::class, 'project_users'); // if many-to-many
     }
-
-
-
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
+    public function boards()
+    {
+        return $this->hasMany(ProjectBoard::class);
+    }
 }
