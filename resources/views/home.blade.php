@@ -292,3 +292,11 @@
                 </div>
    
 @endsection
+@section('js')
+<script src="{{asset('inside_css/assets/libs/apexcharts/apexcharts.min.js')}}"></script>
+
+    <!-- Vector map-->
+
+    <!-- Dashboard init -->
+    <script src="{{asset('inside_css/assets/js/pages/dashboard-projects.init.js')}}"></script>
+@endsection
