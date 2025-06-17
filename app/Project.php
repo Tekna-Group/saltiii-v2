@@ -24,7 +24,7 @@ class Project extends Model
     {
         return $this->hasMany(Task::class);
     }
-    public function boards()
+    public function statuses()
     {
         return $this->hasMany(ProjectBoard::class);
     }

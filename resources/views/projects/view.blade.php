@@ -1,6 +1,50 @@
 @extends('layouts.header')
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .kanban-board {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      /* padding: 20px; */
+    }
+    .kanban-column {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      flex: 1;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    .kanban-header {
+      padding: 15px;
+      font-weight: bold;
+      border-bottom: 1px solid #dee2e6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .kanban-items {
+      flex-grow: 1;
+      padding: 15px;
+      min-height: 400px;
+    }
+    .kanban-card {
+      background: #e9ecef;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      cursor: grab;
+    }
+    .kanban-card.dragging {
+      opacity: 0.5;
+    }
+  </style>
 @endsection
 @section('content')
  <div class="row">
@@ -14,7 +58,7 @@
                                 <div class="col-md-auto">
                                     <div class="avatar-md">
                                         <div class="avatar-title bg-white rounded-circle">
-                                            <img src="{{asset($project->icon)}}" alt="" class="avatar-xs">
+                                            <img src="{{asset($project->icon)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="avatar-xs">
                                         </div>
                                     </div>
                                 </div>
@@ -116,175 +160,47 @@
                     </div>
                     <!--end card-body-->
                 </div>
-                   <div class="tasks-board mb-3 " id="kanbanboard">
-                    @foreach($project->boards as $board)
-                        <div class="tasks-list bg-light p-2" style='background-color:gray !important;border-radius: 5px;'>
-                            <div class="d-flex mb-3">
-                                <div class="flex-grow-1">
-                                    <h6 class="fs-14 text-uppercase fw-semibold mb-0 ml-2 " style='color:white;'>{{$board->board}} <small class="badge bg-success align-bottom ms-1 totaltask-badge">2</small></h6>
-                                </div>
-                                
-                            </div>
-                            <div data-simplebar class="tasks-wrapper px-3 mx-n3">
-                                <div id="unassigned-task" class="tasks">
-                                    <div class="card tasks-box">
-                                        <div class="card-body">
-                                            <div class="d-flex mb-2">
- 												<h6 class="fs-15 mb-0 flex-grow-1 text-truncate task-title"><a href="apps-tasks-details.html" class="d-block">Profile Page Structure</a></h6>
-                                                <div class="dropdown">
-                                                    <a href="javascript:void(0);" class="text-muted" id="dropdownMenuLink1" data-bs-toggle="dropdown" aria-expanded="false"><i class="ri-more-fill"></i></a>
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink1">
-                                                        <li><a class="dropdown-item" href="apps-tasks-details.html"><i class="ri-eye-fill align-bottom me-2 text-muted"></i> View</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="ri-edit-2-line align-bottom me-2 text-muted"></i> Edit</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" href="#deleteRecordModal"><i class="ri-delete-bin-5-line align-bottom me-2 text-muted"></i> Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <p class="text-muted">Profile Page means a web page accessible to the public or to guests.</p>
-                                            <div class="mb-3">
-                                                <div class="d-flex mb-1">
-                                                    <div class="flex-grow-1">
-                                                        <h6 class="text-muted mb-0"><span class="text-secondary">15%</span> of 100%</h6>
-                                                    </div>
-                                                    <div class="flex-shrink-0">
-                                                        <span class="text-muted">03 Jan, 2022</span>
-                                                    </div>
-                                                </div>
-                                                <div class="progress rounded-3 progress-sm">
-                                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 15%" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </div>
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-grow-1">
-                                                    <span class="badge bg-primary-subtle text-primary">Admin</span>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <div class="avatar-group">
-                                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Alexis">
-                                                            <img src="assets/images/users/avatar-6.jpg" alt="" class="rounded-circle avatar-xxs">
-                                                        </a>
-                                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Nancy">
-                                                            <img src="assets/images/users/avatar-5.jpg" alt="" class="rounded-circle avatar-xxs">
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="card-footer border-top-dashed">
-                                            <div class="d-flex">
-                                                <div class="flex-grow-1">
-                                                    <h6 class="text-muted mb-0">#VL2436</h6>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <ul class="link-inline mb-0">
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-eye-line align-bottom"></i> 04</a>
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> 19</a>
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> 02</a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--end card-body-->
-                                    </div>
-                                    <!--end card-->
-                                    <div class="card tasks-box">
-                                        <div class="card-body">
-                                            <div class="d-flex mb-2">
-                                                <div class="flex-grow-1">
-                                               <h6 class="fs-15 mb-0 text-truncate task-title"><a href="apps-tasks-details.html" class="d-block">Velzon - Admin Layout Design</a></h6>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <a href="javascript:void(0);" class="text-muted" id="dropdownMenuLink12" data-bs-toggle="dropdown" aria-expanded="false"><i class="ri-more-fill"></i></a>
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink12">
-                                                        <li><a class="dropdown-item" href="apps-tasks-details.html"><i class="ri-eye-fill align-bottom me-2 text-muted"></i> View</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="ri-edit-2-line align-bottom me-2 text-muted"></i> Edit</a></li>
-                                                        <li><a class="dropdown-item" data-bs-toggle="modal" href="#deleteRecordModal"><i class="ri-delete-bin-5-line align-bottom me-2 text-muted"></i> Delete</a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                            <p class="text-muted">The dashboard is the front page of the Administration UI.</p>
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-grow-1">
-                                                    <span class="badge bg-primary-subtle text-primary">Layout</span>
-                                                    <span class="badge bg-primary-subtle text-primary">Admin</span>
-                                                    <span class="badge bg-primary-subtle text-primary">Dashboard</span>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <div class="avatar-group">
-                                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Michael">
-                                                            <img src="assets/images/users/avatar-7.jpg" alt="" class="rounded-circle avatar-xxs">
-                                                        </a>
-                                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Alexis">
-                                                            <img src="assets/images/users/avatar-6.jpg" alt="" class="rounded-circle avatar-xxs">
-                                                        </a>
-                                                        <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Anna">
-                                                            <img src="assets/images/users/avatar-1.jpg" alt="" class="rounded-circle avatar-xxs">
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--end card-body-->
-                                        <div class="card-footer border-top-dashed">
-                                            <div class="d-flex">
-                                                <div class="flex-grow-1">
-                                                    <span class="text-muted"><i class="ri-time-line align-bottom"></i> 07 Jan, 2022</span>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <ul class="link-inline mb-0">
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-eye-line align-bottom"></i> 14</a>
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> 32</a>
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> 05</a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!--end card-->
-                                </div>
-                                <!--end tasks-->
-                            </div>
-                            <div class="my-3">
-                                <button class="btn btn-soft-info w-100" data-bs-toggle="modal" data-bs-target="#creatertaskModal">Add More</button>
-                            </div>
-                        </div>
-                    @endforeach
-                        <!--end tasks-list-->
+                    <div class="kanban-board" id="kanbanBoard">
+                      <!-- Columns will be inserted dynamically -->
+                      
                     </div>
-            </div>
+                  <!-- Modals -->
+                 
+                  <div class="modal fade" id="statusModal" tabindex="-1">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title">Status</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method='POST' action='{{url('project/edit-board')}}' onsubmit="show();"   enctype="multipart/form-data">
+                            @csrf
+                        <div class="modal-body">
+                          <input type="hidden" name='statusId' id="statusId">
+                          <div class="mb-3">
+                            <label class="form-label">Status Name</label>
+                            <input type="text" name='statusName' class="form-control" id="statusName">
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                          <button type='submit' class="btn btn-primary" onclick="saveStatus()">Save</button>
+                        </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+             </div>
         </div>
     </div>
 </div>
+
 @include('projects.new-board')
 @include('projects.add_member')
 @include('projects.add_task')
 @endsection
 @section('js')
-<script src="{{asset('inside_css/assets/js/pages/project-list.init.js')}}"></script>
 
-<!-- Select2 JS -->
-
- <!-- dragula init js -->
-
-<script src="{{asset('inside_css/assets/libs/dragula/dragula.min.js')}}"></script>
-
-<!-- dom autoscroll -->
-<script src="{{asset('inside_css/assets/libs/dom-autoscroller/dom-autoscroller.min.js')}}"></script>
-
-<!--taks-kanban-->
-<script src="{{asset('inside_css/assets/js/pages/tasks-kanban.init.js')}}"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
@@ -294,6 +210,11 @@
     $('#addmemberModal').on('shown.bs.modal', function () {
         $('.select2').select2({
             dropdownParent: $('#addmemberModal')
+        });
+    });
+    $('#creatertaskModal').on('shown.bs.modal', function () {
+        $('.select2').select2({
+            dropdownParent: $('#creatertaskModal')
         });
     });
 
@@ -310,4 +231,174 @@
             return initials;
         }
 </script>
+
+<script>
+  
+    let boardData = @json($boardData);
+    console.log(boardData);
+    
+    function renderBoard() {
+      const board = document.getElementById('kanbanBoard');
+      board.innerHTML = '';
+      boardData.forEach(column => {
+        const columnDiv = document.createElement('div');
+        columnDiv.className = 'kanban-column';
+        columnDiv.dataset.id = column.id;
+        columnDiv.innerHTML = `
+          <div class="kanban-header">
+            <span>${column.name} <button class="btn btn-sm btn-outline-primary" onclick="addTask('${column.id}')">+</button></span>
+            
+            <div>
+                
+              <button class="btn btn-sm btn-outline-secondary" onclick="editStatus('${column.id}')">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteStatus('${column.id}')">Delete</button>
+            </div>
+          </div>
+          <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">
+            ${column.tasks.map(task => `
+              <div class=" card tasks-box" draggable="true" ondragstart="drag(event, '${task.id}')">
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+                        <div class="flex-grow-1">
+                            <h6 class="fs-15 mb-0 text-truncate task-title"><a href='view-task/${task.id}' class="d-block">${task.name}</a></h6>
+                        </div>
+                    </div>
+                    <p class="text-muted">${task.description}</p>
+                                            
+                </div>
+                <div class="card-footer border-top-dashed">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted"><i class="ri-time-line align-bottom"></i> ${task.due_date ? task.due_date : 'No Due Date'}</span>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <ul class="link-inline mb-0">
+                                <li class="list-inline-item">
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> 0</a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> 0</a>
+                                </li>
+                                <li class="list-inline-item">
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> 0</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+               
+              </div>`).join('')}
+          </div>
+          <div class="p-2">
+            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')">+ Add Task</button>
+          </div>
+        `;
+        board.appendChild(columnDiv);
+      });
+    }
+    
+    function addStatus() {
+      document.getElementById('statusId').value = '';
+      document.getElementById('statusName').value = '';
+      new bootstrap.Modal(document.getElementById('statusModal')).show();
+    }
+    
+    function saveStatus() {
+      const id = document.getElementById('statusId').value;
+    //   alert(id);
+      const name = document.getElementById('statusName').value;
+      if (!name) return alert('Please enter status name');
+    
+      const existing = boardData.find(c => c.id == id);
+      if (existing) {
+        existing.name = name;
+      } else {
+        boardData.push({ id, name, tasks: [] });
+      }
+      bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+      renderBoard();
+    }
+    
+    function editStatus(id) {
+        console.log(boardData);
+      const column = boardData.find(c => c.id == id);
+     
+      document.getElementById('statusId').value = column.id;
+      document.getElementById('statusName').value = column.name;
+      new bootstrap.Modal(document.getElementById('statusModal')).show();
+    }
+    
+    function deleteStatus(id) {
+      if (confirm('Are you sure?')) {
+        boardData = boardData.filter(c => c.id != id);
+        renderBoard();
+      }
+    }
+    
+    function addTask(columnId) {
+      document.getElementById('taskColumn').value = columnId;
+      new bootstrap.Modal(document.getElementById('creatertaskModal')).show();
+    }
+    
+    function editTask(columnId, taskId) {
+      const column = boardData.find(c => c.id == columnId);
+      const task = column.tasks.find(t => t.id == taskId);
+      document.getElementById('taskColumn').value = columnId;
+      document.getElementById('taskId').value = taskId;
+      document.getElementById('taskName').value = task.name;
+      new bootstrap.Modal(document.getElementById('taskModal')).show();
+    }
+    
+    function saveTask() {
+      const columnId = document.getElementById('taskColumn').value;
+      const taskId = document.getElementById('taskId').value;
+      const taskName = document.getElementById('taskName').value;
+    
+      if (!taskName) return alert('Please enter task name');
+    
+      const column = boardData.find(c => c.id == columnId);
+      const taskIndex = column.tasks.findIndex(t => t.id == taskId);
+      if (taskIndex > -1) {
+        column.tasks[taskIndex].name = taskName;
+      } else {
+        column.tasks.push({ id: taskId, name: taskName });
+      }
+      bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+      renderBoard();
+    }
+    
+    function deleteTask(columnId, taskId) {
+      const column = boardData.find(c => c.id === columnId);
+      column.tasks = column.tasks.filter(t => t.id !== taskId);
+      renderBoard();
+    }
+    
+    let draggedTaskId = '';
+    
+    function drag(ev, taskId) {
+      draggedTaskId = taskId;
+    }
+    
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+    
+    function drop(ev, columnId) {
+      if (!draggedTaskId) return;
+      boardData.forEach(col => {
+        const taskIndex = col.tasks.findIndex(t => t.id === draggedTaskId);
+        if (taskIndex > -1) {
+          const task = col.tasks.splice(taskIndex, 1)[0];
+          const newColumn = boardData.find(c => c.id === columnId);
+          newColumn.tasks.push(task);
+        }
+      });
+      draggedTaskId = '';
+      renderBoard();
+    }
+    
+    renderBoard();
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 @endsection

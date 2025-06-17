@@ -9,7 +9,7 @@ class Task extends Model
     //
     public function users()
     {
-        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id');
+        return $this->belongsToMany(User::class, 'task_users', 'task_id', 'user_id');
     }
 
     // Task belongs to one Project
@@ -21,12 +21,12 @@ class Task extends Model
     // One-to-many relation: Task has many comments
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(TaskComment::class);
     }
 
     // One-to-many relation: Task has many attachments
     public function attachments()
     {
-        return $this->hasMany(Attachment::class);
+        return $this->hasMany(TaskAttachment::class);
     }
 }
