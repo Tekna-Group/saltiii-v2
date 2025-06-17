@@ -168,8 +168,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/api-keys')}}">
-                                <i class=" ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API Keys</span>
+                            <a class="nav-link menu-link" href="{{url('/api/documentation')}}" target='_blank'>
+                                <i class=" ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
                             </a>
                         </li>
 

@@ -36,7 +36,10 @@ Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
 
 Route::get('timekeeping','TimekeepingController@index')->name('Timekeeping');
+Route::get('payslips','PayrollController@index')->name('Payslip');
 
+
+Route::get('users','UserController@index')->name('users');
 });
 
 Route::get('/api/documentation', function () {
