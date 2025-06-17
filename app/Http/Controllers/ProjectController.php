@@ -67,7 +67,28 @@ class ProjectController extends Controller
     public function view(Request $request,$id)
     {
 
-        $project = Project::with('users','boards')->findOrfail($id);
+        $project = Project::with('users','statuses','tasks')->findOrFail($id);
+
+        $boardData = [];
+        
+        foreach ($project->statuses as $status) {
+            $tasks = $project->tasks->where('project_board_id', $status->id)->map(function($task) {
+                return [
+                    'id' => $task->id,
+                    'name' => $task->title,
+                    'description' => $task->description,
+                    'due_date' => $task->due_date ? $task->due_date : null,
+                    'priority' => $task->priority,
+                    'assignees' => $task->users->pluck('name')->toArray(), // Assuming 'name' is the field in User model
+                ];
+            })->values();
+        
+            $boardData[] = [
+                'id' => $status->id, // e.g. "To Do" -> "todo"
+                'name' => $status->board,
+                'tasks' => $tasks
+            ];
+        }
         // Return the view with the projects data
     
         $users = User::get();
@@ -75,6 +96,7 @@ class ProjectController extends Controller
             array(
                 'project' => $project,
                 'users' => $users,
+                'boardData' => $boardData,
             )
         );
     }
@@ -104,6 +126,27 @@ class ProjectController extends Controller
         $project->save();
 
          Alert::success('Successfully Encoded')->persistent('Dismiss');
+        return back();
+    }
+
+    public function editBoard(Request $request)
+    {
+        $id = $request->input('statusId');
+        $name = $request->input('statusName');
+
+        if (!$id || !$name) {
+            return back()->withErrors(['error' => 'Status ID and name are required']);
+        }
+
+        $status = ProjectBoard::find($id);
+        if (!$status) {
+            return back()->withErrors(['error' => 'Status not found']);
+        }
+
+        $status->board = $name;
+        $status->save();
+
+        Alert::success('Successfully Updated')->persistent('Dismiss');
         return back();
     }
 }
