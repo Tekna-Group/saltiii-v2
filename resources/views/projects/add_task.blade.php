@@ -142,23 +142,24 @@
                         <!--end col-->
                         <div class="col-lg-4">
                             <label for="due-date" class="form-label">Due Date</label>
-                            <input type="text" class="form-control" id="due-date" data-provider="flatpickr" placeholder="Select date">
+                            <input type="date" class="form-control" id="due-date" data-provider="flatpickr" name='dueDate' placeholder="Select date" required>
                         </div>
                         <!--end col-->
                         <div class="col-lg-4">
-                            <label for="categories" class="form-label">Tags</label>
-                            <input type="text" class="form-control" id="categories" placeholder="Enter tag">
+                            <label for="priority-field" class="form-label">Priority</label>
+                            <select class="form-control" id="priority-field" name='priority' required>
+                                <option value="">Priority</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
                         </div>
                         <!--end col-->
-                        <div class="col-lg-4">
-                            <label for="tasks-progress" class="form-label">Tasks Progress</label>
-                            <input type="text" class="form-control" maxlength="3" id="tasks-progress" placeholder="Enter progress">
-                        </div>
                         <!--end col-->
                         <div class="mt-4">
                             <div class="hstack gap-2 justify-content-end">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-success">Add Task</button>
+                                <button type="submit" class="btn btn-success">Add Task</button>
                             </div>
                         </div>
                         <!--end col-->

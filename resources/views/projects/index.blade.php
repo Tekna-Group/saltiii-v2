@@ -22,58 +22,59 @@
 </div><!-- end row -->  
 <div class="row">
     @foreach($projects as $project)
-     <div class="col-xxl-3 col-sm-6 project-card">
-                            <div class="card card-height-100">
-                                <div class="card-body">
-                                    <div class="d-flex flex-column h-100">
-                                        <div class="d-flex">
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted mb-4">Last Update: {{date('M d, Y H:i a',strtotime($project->updated_at))  }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex mb-2">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-sm">
-                                                    <span class="avatar-title bg-warning-subtle rounded p-2">
-                                                        <img src="{{asset($project->icon)}}" alt="" class="img-fluid p-1">
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <h5 class="mb-1 fs-15"><a href="{{url('/view-project/'.$project->id)}}" class="text-body">{{$project->name}}</a></h5>
-                                                <p class="text-muted text-truncate-two-lines mb-3">{{$project->description}}</p>
-                                            </div>
-                                        </div>
-                                        <div class="mt-auto">
-                                            <div class="d-flex mb-2">
-                                                <div class="flex-grow-1">
-                                                    <div>Tasks</div>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <div><i class="ri-list-check align-bottom me-1 text-muted"></i> {{$project->tasks->where('completed',1)->count()}}/{{$project->tasks->count()}}</div>
-                                                </div>
-                                            </div>
-                                            <div class="progress progress-sm animated-progress">
-                                                <div class="progress-bar bg-success" role="progressbar" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100" style="width: 0/0%;"></div><!-- /.progress-bar -->
-                                            </div><!-- /.progress -->
-                                        </div>
-                                    </div>
+        <div class="col-xxl-3 col-sm-6 project-card">
+            <div class="card card-height-100">
+                <div class="card-body">
+                    <div class="d-flex flex-column h-100">
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <p class="text-muted mb-4">Last Update: {{date('M d, Y H:i a',strtotime($project->updated_at))  }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex mb-2">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="avatar-sm">
+                                    <span class="avatar-title bg-warning-subtle rounded p-2">
+                                        <img src="{{asset($project->icon)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="img-fluid p-1">
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 fs-15"><a href="{{url('/view-project/'.$project->id)}}" class="text-body">{{$project->name}}</a></h5>
+                                <p class="text-muted text-truncate-two-lines mb-3">{{$project->description}}</p>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="d-flex mb-2">
+                                <div class="flex-grow-1">
+                                    <div>Tasks</div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div><i class="ri-list-check align-bottom me-1 text-muted"></i> {{$project->tasks->where('completed',1)->count()}}/{{$project->tasks->count()}}</div>
+                                </div>
+                            </div>
+                            <div class="progress progress-sm animated-progress">
+                                <div class="progress-bar bg-success" role="progressbar" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100" style="width: 0/0%;"></div><!-- /.progress-bar -->
+                            </div><!-- /.progress -->
+                        </div>
+                    </div>
 
-                                </div>
-                                <!-- end card body -->
-                                <div class="card-footer bg-transparent border-top-dashed py-2">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="text-muted">
-                                                <i class="ri-calendar-event-fill me-1 align-bottom"></i> {{date('d M, Y',strtotime($project->created_at))}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- end card footer -->
+                </div>
+                <!-- end card body -->
+                <div class="card-footer bg-transparent border-top-dashed py-2">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-muted">
+                                <i class="ri-calendar-event-fill me-1 align-bottom"></i> {{date('d M, Y',strtotime($project->created_at))}}
                             </div>
                             <!-- end card -->
                         </div>
+                    </div>
+                </div>
+                <!-- end card footer -->
+            </div>
+            <!-- end card -->
+        </div>
     @endforeach
     <!-- end col -->
 
