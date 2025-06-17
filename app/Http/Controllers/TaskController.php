@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 use App\Task;
 use App\TaskUser;
 use App\Project;
+use App\TaskComment;
+use App\ProjectBoard;
+use App\TaskActivity;
+use App\TaskAttachment;
 use App\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -54,7 +58,69 @@ class TaskController extends Controller
     {
         // Fetch the task by ID
         $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
+        $boards = ProjectBoard::where('project_id',$task->project_id)->get();
         // Return the view with the task data
-        return view('tasks.view', ['task' => $task]);
+        return view('tasks.view', ['task' => $task,
+        'boards' => $boards
+        ]);
+    }
+    public function comment(Request $request,$id)
+    {
+        $task = Task::findOrfail($id);
+        $TaskComment = new TaskComment();
+        $TaskComment->comment = $request->comment;
+        $TaskComment->task_id = $id;
+        $TaskComment->project_id = $task->project_id;
+        $TaskComment->user_id = auth()->user()->id;
+        $TaskComment->save();
+
+        Alert::success('Successfully Posted')->persistent('Dismiss');
+        return back();
+    }
+
+    public function attachment(Request $request,$id)
+    
+    {
+        $task = Task::findOrfail($id);
+        $TaskActivity = new TaskAttachment();
+        $TaskActivity->project_id = $task->project_id;
+        $TaskActivity->task_id = $task->id;
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $sizeInBytes = $file->getSize();
+
+             // Optional: Convert to KB or MB        // kilobytes
+            $sizeInMB = round($sizeInBytes / 1048576, 2);
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/tasks'), $filename);
+            $TaskActivity->file_type = $file->getClientOriginalExtension();
+            $TaskActivity->file = 'uploads/tasks/' . $filename;
+            $TaskActivity->name = $file->getClientOriginalName();
+           
+            $TaskActivity->file_size =  $sizeInMB;      // megabytes
+        
+        }
+        $TaskActivity->user_id = auth()->user()->id;
+        $TaskActivity->save();
+
+        Alert::success('Successfully Uploaded')->persistent('Dismiss');
+        return back();
+    }
+    public function activity (Request $request,$id)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($id);
+        $TaskActivity = new TaskActivity();
+        $TaskActivity->activity = $request->task;
+        $TaskActivity->task_id = $id;
+        $TaskActivity->project_id = $task->project_id;
+        $TaskActivity->user_id = auth()->user()->id;
+        $TaskActivity->created_by = auth()->user()->id;
+        $TaskActivity->hours = $request->hours;
+        $TaskActivity->date = $request->date;
+        $TaskActivity->save();
+
+        Alert::success('Successfully Encoded')->persistent('Dismiss');
+        return back();
     }
 }

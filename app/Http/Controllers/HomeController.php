@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Project;
+use App\Task;
+use App\TaskActivity;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -23,6 +25,17 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $projects = Project::get();
+        $tasks = Task::get();
+        $activities = TaskActivity::get();
+        // dd($task_due);
+        return view('home',
+            array(
+                'projects' => $projects,
+                'tasks' => $tasks,
+                'activities' => $activities,
+
+            )
+        );
     }
 }

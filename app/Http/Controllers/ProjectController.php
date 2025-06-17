@@ -67,7 +67,7 @@ class ProjectController extends Controller
     public function view(Request $request,$id)
     {
 
-        $project = Project::with('users','statuses','tasks')->findOrFail($id);
+        $project = Project::with('users','statuses','tasks','tasks.comments','tasks.attachments')->findOrFail($id);
 
         $boardData = [];
         
@@ -79,6 +79,9 @@ class ProjectController extends Controller
                     'description' => $task->description,
                     'due_date' => $task->due_date ? $task->due_date : null,
                     'priority' => $task->priority,
+                    'comments' => $task->comments->count(),
+                    'attachments' => $task->attachments->count(),
+                    'hours' => $task->activities->sum('hours'),
                     'assignees' => $task->users->pluck('name')->toArray(), // Assuming 'name' is the field in User model
                 ];
             })->values();
