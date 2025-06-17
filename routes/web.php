@@ -31,6 +31,7 @@ Route::post('new-task/{project_id}', 'TaskController@store')->name('New Task');
 Route::get('/view-task/{id}', 'TaskController@view')->name('View Task');
 Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment');
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    
+
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
 
 });

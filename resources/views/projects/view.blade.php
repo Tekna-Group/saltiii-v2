@@ -276,10 +276,10 @@
                                     <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> 0</a>
                                 </li>
                                 <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> 0</a>
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> ${task.comments}</a>
                                 </li>
                                 <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> 0</a>
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> ${task.attachments}</a>
                                 </li>
                             </ul>
                         </div>
