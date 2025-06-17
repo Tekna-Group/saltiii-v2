@@ -39,6 +39,7 @@
         </div>
     </div>
 </div>
+@if($date_from)
 <div class="row">
     <div class="col-xl-12">
         <div class="card card-height-100">
@@ -79,6 +80,7 @@
         </div><!-- end card -->
     </div><!-- end col -->
 </div>
+@endif
 @endsection
 @section('js')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
