@@ -12,6 +12,11 @@ class Task extends Model
         return $this->belongsToMany(User::class, 'task_users', 'task_id', 'user_id');
     }
 
+    public function board()
+    {
+         return $this->belongsTo(ProjectBoard::class,'project_board_id','id');
+    }
+
     // Task belongs to one Project
     public function project()
     {

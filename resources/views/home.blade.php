@@ -18,10 +18,10 @@
                                             <div class="flex-grow-1 overflow-hidden ms-3">
                                                 <p class="text-uppercase fw-medium text-muted text-truncate mb-3">Active Projects</p>
                                                 <div class="d-flex align-items-center mb-3">
-                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="825">0</span></h4>
+                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{$projects->where('completed',0)->count()}}">0</span></h4>
                                                     {{-- <span class="badge bg-danger-subtle text-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>5.02 %</span> --}}
                                                 </div>
-                                                <p class="text-muted text-truncate mb-0">Projects this month</p>
+                                                <p class="text-muted text-truncate mb-0">Projects</p>
                                             </div>
                                         </div>
                                     </div><!-- end card body -->
@@ -40,7 +40,7 @@
                                             <div class="flex-grow-1 ms-3">
                                                 <p class="text-uppercase fw-medium text-muted mb-3">Due Tasks</p>
                                                 <div class="d-flex align-items-center mb-3">
-                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="7522">0</span></h4>
+                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{($tasks->where('due_date','<',date('Y-m-d')))->count()}}">0</span></h4>
                                                     {{-- <span class="badge bg-success-subtle text-success fs-12"><i class="ri-arrow-up-s-line fs-13 align-middle me-1"></i>3.58 %</span> --}}
                                                 </div>
                                                 <p class="text-muted mb-0">Need action</p>
@@ -62,7 +62,7 @@
                                             <div class="flex-grow-1 overflow-hidden ms-3">
                                                 <p class="text-uppercase fw-medium text-muted text-truncate mb-3">On-going Tasks</p>
                                                 <div class="d-flex align-items-center mb-3">
-                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="115">0</span></h4>
+                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{($tasks)->count()}}">0</span></h4>
                                                     {{-- <span class="badge bg-danger-subtle text-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>10.35 %</span> --}}
                                                 </div>
                                                 <p class="text-muted text-truncate mb-0">Tasks this week</p>
@@ -83,10 +83,10 @@
                                             <div class="flex-grow-1 overflow-hidden ms-3">
                                                 <p class="text-uppercase fw-medium text-muted text-truncate mb-3">Total Hours</p>
                                                 <div class="d-flex align-items-center mb-3">
-                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="168">0</span>h <span class="counter-value" data-target="40">0</span>m</h4>
+                                                    <h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{$activities->sum('hours')}}">0</span>h</h4>
                                                     {{-- <span class="badge bg-danger-subtle text-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>10.35 %</span> --}}
                                                 </div>
-                                                <p class="text-muted text-truncate mb-0">Work this week</p>
+                                                <p class="text-muted text-truncate mb-0">Hours</p>
                                             </div>
                                         </div>
                                     </div><!-- end card body -->

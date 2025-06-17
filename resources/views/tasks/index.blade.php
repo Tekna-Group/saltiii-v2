@@ -95,52 +95,8 @@
             <div class="card-header border-0">
                 <div class="d-flex align-items-center">
                     <h5 class="card-title mb-0 flex-grow-1">All Tasks</h5>
-                    <div class="flex-shrink-0">
-                       <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-danger add-btn" data-bs-toggle="modal" data-bs-target="#showModal"><i class="ri-add-line align-bottom me-1"></i> Create Task</button>
-                            <button class="btn btn-soft-danger" id="remove-actions" onClick="deleteMultiple()"><i class="ri-delete-bin-2-line"></i></button>
-                       </div>
-                    </div>
+                  
                 </div>
-            </div>
-            <div class="card-body border border-dashed border-end-0 border-start-0">
-                <form>
-                    <div class="row g-3">
-                        <div class="col-xxl-5 col-sm-12">
-                            <div class="search-box">
-                                <input type="text" class="form-control search bg-light border-light" placeholder="Search for tasks or something...">
-                                <i class="ri-search-line search-icon"></i>
-                            </div>
-                        </div>
-                        <!--end col-->
-
-                        <div class="col-xxl-3 col-sm-4">
-                            <input type="text" class="form-control bg-light border-light" id="demo-datepicker" data-provider="flatpickr" data-date-format="d M, Y" data-range-date="true" placeholder="Select date range">
-                        </div>
-                        <!--end col-->
-
-                        <div class="col-xxl-3 col-sm-4">
-                            <div class="input-light">
-                                <select class="form-control" data-choices data-choices-search-false name="choices-single-default" id="idStatus">
-                                    <option value="">Status</option>
-                                    <option value="all" selected>All</option>
-                                    <option value="New">New</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Inprogress">Inprogress</option>
-                                    <option value="Completed">Completed</option>
-                                </select>
-                            </div>
-                        </div>
-                        <!--end col-->
-                        <div class="col-xxl-1 col-sm-4">
-                            <button type="button" class="btn btn-primary w-100" onclick="SearchData();"> <i class="ri-equalizer-fill me-1 align-bottom"></i>
-                                Filters
-                            </button>
-                        </div>
-                        <!--end col-->
-                    </div>
-                    <!--end row-->
-                </form>
             </div>
             <!--end card-body-->
             <div class="card-body">
@@ -162,37 +118,25 @@
                             @foreach($tasks as $task)
                             <tr>
                                 
-                                <td class="id"><a href="apps-tasks-details.html" class="fw-medium link-primary">#{{$task->id}}</a></td>
-                                <td class="project_name"><a href="apps-projects-overview.html" class="fw-medium link-primary">Velzon - v1.0.0</a></td>
+                                <td class="id"><a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary">#{{$task->id}}</a></td>
+                                <td class="project_name"><a href="{{url('view-project/'.$task->project_id)}}" target='_blank' class="fw-medium link-primary">{{$task->project->name}}</a></td>
                                 <td>
                                     <div class="d-flex">
-                                        <div class="flex-grow-1 tasks_name">Profile Page Satructure</div>
-                                        <div class="flex-shrink-0 ms-4">
-                                            <ul class="list-inline tasks-list-menu mb-0">
-                                                <li class="list-inline-item"><a href="apps-tasks-details.html"><i class="ri-eye-fill align-bottom me-2 text-muted"></i></a></li>
-                                                <li class="list-inline-item"><a class="edit-item-btn" href="#showModal" data-bs-toggle="modal"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i></a></li>
-                                                <li class="list-inline-item">
-                                                    <a class="remove-item-btn" data-bs-toggle="modal" href="#deleteOrder">
-                                                        <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                        <a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary"><div class="flex-grow-1 tasks_name">{{$task->title}}</div><a>
                                     </div>
                                 </td>
                                 <td class="assignedto">
                                     <div class="avatar-group">
-                                        <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Frank">
-                                            <img src="assets/images/users/avatar-3.jpg" alt="" class="rounded-circle avatar-xxs" />
+                                        @foreach($task->users as $member)
+                                        <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
+                                            <img src="{{$member->avatar}}" onerror="this.src='{{url('images/Favicon.png')}}';"  alt="" class="rounded-circle avatar-xxs" />
                                         </a>
-                                        <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="Anna">
-                                            <img src="assets/images/users/avatar-1.jpg" alt="" class="rounded-circle avatar-xxs" />
-                                        </a>
+                                        @endforeach
                                     </div>
                                 </td>
-                                <td class="due_date">25 Jan, 2022</td>
-                                <td class="status"><span class="badge bg-secondary-subtle text-secondary text-uppercase">Inprogress</span></td>
-                                <td class="priority"><span class="badge bg-danger text-uppercase">High</span></td>
+                                <td class="due_date">{{date('d M, Y',strtotime($task->due_date))}}</td>
+                                <td class="status"><span class="badge bg-secondary-subtle text-secondary text-uppercase">{{$task->board->board}}</span></td>
+                                <td class="priority"><span class="badge bg-danger text-uppercase">{{$task->priority}}</span></td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -223,87 +167,6 @@
         <!--end card-->
     </div>
     <!--end col-->
-</div>
-<div class="modal fade zoomIn" id="showModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0">
-            <div class="modal-header p-3 bg-info-subtle">
-                <h5 class="modal-title" id="exampleModalLabel">Create Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-modal"></button>
-            </div>
-            <form method='POST' action='{{url('new-task')}}' onsubmit="show();"   enctype="multipart/form-data">
-                @csrf
-                <div class="modal-body">
-                    <input type="hidden" id="tasksId" />
-                    <div class="row g-3">
-                        <div class="col-lg-12">
-                            <label for="projectName-field" class="form-label">Project</label>
-                            <select class="form-control select2" id="ticket-status" name='project'>
-                                <option value="">Select Project</option>
-                                @foreach($projects as $project)
-                                <option value="{{$project->id}}">{{$project->name}}</option>
-                                @endforeach
-                            </select>
-                          
-                        </div>
-                        <!--end col-->
-                        <div class="col-lg-12">
-                            <div>
-                                <label for="tasksTitle-field" class="form-label">Task</label>
-                                <input type="text" id="tasksTitle-field" class="form-control" placeholder="Task" name='task' required />
-                            </div>
-                        </div>
-                        <!--end col-->
-                        <!--end col-->
-                        <div class="col-lg-12">
-                            <label class="form-label">Assigned To</label>
-                            <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member' required>
-                                {{-- <option value="">Select Team Member</option> --}}
-                                @foreach($users as $user)
-                                    <option value="{{$user->id}}" >{{$user->name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <!--end col-->
-                        <div class="col-lg-6">
-                            <label for="duedate-field" class="form-label">Due Date</label>
-                            <input type="date" id="duedate-field" class="form-control" data-provider="flatpickr" name='due_date' placeholder="Due date" required />
-                        </div>
-                        <!--end col-->
-                        <div class="col-lg-6">
-                            <label for="ticket-status" class="form-label">Status</label>
-                            <select class="form-control" name='status' id="ticket-status">
-                                <option value="">Status</option>
-                                <option value="New">New</option>
-                                <option value="Inprogress">Inprogress</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Completed">Completed</option>
-                            </select>
-                        </div>
-                        <!--end col-->
-                        <div class="col-lg-12">
-                            <label for="priority-field" class="form-label">Priority</label>
-                            <select class="form-control" id="priority-field" name='priority'>
-                                <option value="">Priority</option>
-                                <option value="High">High</option>
-                                <option value="Medium">Medium</option>
-                                <option value="Low">Low</option>
-                            </select>
-                        </div>
-                        <!--end col-->
-                    </div>
-                    <!--end row-->
-                </div>
-                <div class="modal-footer">
-                    <div class="hstack gap-2 justify-content-end">
-                        <button type="button" class="btn btn-light" id="close-modal" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success" id="add-btn">Add Task</button>
-                        <!-- <button type="button" class="btn btn-success" id="edit-btn">Update Task</button> -->
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
 @endsection
 @section('js')

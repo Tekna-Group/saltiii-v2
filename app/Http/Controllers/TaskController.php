@@ -106,4 +106,21 @@ class TaskController extends Controller
         Alert::success('Successfully Uploaded')->persistent('Dismiss');
         return back();
     }
+    public function activity (Request $request,$id)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($id);
+        $TaskActivity = new TaskActivity();
+        $TaskActivity->activity = $request->task;
+        $TaskActivity->task_id = $id;
+        $TaskActivity->project_id = $task->project_id;
+        $TaskActivity->user_id = auth()->user()->id;
+        $TaskActivity->created_by = auth()->user()->id;
+        $TaskActivity->hours = $request->hours;
+        $TaskActivity->date = $request->date;
+        $TaskActivity->save();
+
+        Alert::success('Successfully Encoded')->persistent('Dismiss');
+        return back();
+    }
 }

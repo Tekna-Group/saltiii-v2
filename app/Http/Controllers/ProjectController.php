@@ -81,6 +81,7 @@ class ProjectController extends Controller
                     'priority' => $task->priority,
                     'comments' => $task->comments->count(),
                     'attachments' => $task->attachments->count(),
+                    'hours' => $task->activities->sum('hours'),
                     'assignees' => $task->users->pluck('name')->toArray(), // Assuming 'name' is the field in User model
                 ];
             })->values();

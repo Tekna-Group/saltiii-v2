@@ -273,7 +273,7 @@
                         <div class="flex-shrink-0">
                             <ul class="link-inline mb-0">
                                 <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> 0</a>
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> ${task.hours}</a>
                                 </li>
                                 <li class="list-inline-item">
                                     <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> ${task.comments}</a>
