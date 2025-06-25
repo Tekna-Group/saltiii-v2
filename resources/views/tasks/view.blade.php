@@ -248,9 +248,9 @@
                                                 </div>
                                             </div>
                                         </th>
-                                        <td>{{date('d M, Y',strtotime($activity->date))}}02 Jan, 2022</td>
-                                        <td>3 hrs 12 min</td>
-                                        <td>Apps Pages</td>
+                                        <td>{{date('d M, Y',strtotime($activity->date))}}</td>
+                                        <td>{{$activity->hours}} hrs</td>
+                                        <td>{{$activity->activity}}</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
