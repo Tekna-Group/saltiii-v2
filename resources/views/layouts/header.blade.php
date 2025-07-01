@@ -167,12 +167,14 @@
                                 <i class=" ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
                             </a>
                         </li>
+                        @if(auth()->user()->role == "Timekeeper")
                         <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
                           <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
                                 <i class=" ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
                             </a>
                         </li>
+                        @endif
                         @if(auth()->user()->role == "Admin")
                         <li class="menu-title"><span data-key="t-menu">Admin</span></li>
                           <li class="nav-item">
