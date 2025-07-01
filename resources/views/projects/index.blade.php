@@ -115,7 +115,7 @@
             </div>
             <div class="mb-3">
               <label>Project Icon</label>
-              <input type="file" class="form-control" name='icon' id="projectImage" accept="image/*" required>
+              <input type="file" class="form-control" name='icon' id="projectImage" accept="image/*" >
             </div>
           </div>
           <div class="modal-footer">
