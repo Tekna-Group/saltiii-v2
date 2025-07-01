@@ -158,8 +158,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
-                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
+                            <a class="nav-link menu-link" href="{{url('/my-timekeeping')}}">
+                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">My Timekeeping</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -167,18 +167,25 @@
                                 <i class=" ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/api/documentation')}}" target='_blank'>
-                                <i class=" ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
+                        <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
+                          <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
+                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
                             </a>
                         </li>
-
+                        @if(auth()->user()->role == "Admin")
                         <li class="menu-title"><span data-key="t-menu">Admin</span></li>
                           <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/users')}}">
                                 <i class=" ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
                             </a>
                         </li>
+                           <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/api/documentation')}}" target='_blank'>
+                                <i class=" ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
+                            </a>
+                        </li>
+                        @endif
 
 
                     </ul>

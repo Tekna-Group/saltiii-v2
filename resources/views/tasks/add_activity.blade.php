@@ -19,7 +19,7 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="sub-tasks" class="form-label">Date </label>
-                                <input type="date" class="form-control" max='{{date('Y-m-d')}}' value='{{date('Y-m-d')}}' id="date" placeholder="1.0" name="date" required>
+                                <input type="date" class="form-control" max='{{date('Y-m-d')}}' value='{{date('Y-m-d')}}' min='{{ date('Y-m-d', strtotime('-1 day')) }}' id="date" placeholder="1.0" name="date" required>
                             </div>
                         </div>
                         <!--end row-->
