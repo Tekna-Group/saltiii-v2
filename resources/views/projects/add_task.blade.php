@@ -19,7 +19,7 @@
                         <!--end col-->
                         <div class="col-lg-12">
                             <label for="task-description" class="form-label">Task Description</label>
-                            <textarea class="form-control" id="task-description" rows="3" name="description" placeholder="Task description" required></textarea>
+                            <textarea class="form-control" id="task-description" rows="3" name="description" placeholder="Task description" ></textarea>
                         </div>
                         <!--end col-->
                         <!--end col-->

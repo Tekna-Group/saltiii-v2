@@ -108,9 +108,9 @@
             <div class="mb-3">
               <label>Status</label>
               <select class="form-select" id="projectStatus" name="status" required>
-                <option>Pending</option>
-                <option>In Progress</option>
-                <option>Completed</option>
+                 <option value='To be started'>To be started</option>
+                <option value='In Progress'>In Progress</option>
+                <option value='Completed'>Completed</option>
               </select>
             </div>
             <div class="mb-3">
