@@ -16,7 +16,6 @@
                 <table id="example" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">
                     <thead>
                         <tr>
-                          
                             <th >Name</th>
                             <th >Email</th>
                             <th >Role</th>
@@ -28,7 +27,7 @@
                         @foreach($users as $user)
                         <tr>
                            
-                            <td>{{$user->name}}</td>
+                            <td><img src="{{asset($user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="avatar-xs rounded-circle material-shadow"> {{$user->name}}</td>
                             <td>{{$user->email}}</td>
                             <td>{{$user->role}}</td>
                             <td>{{$user->status}}</td>
