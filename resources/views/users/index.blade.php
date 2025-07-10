@@ -38,7 +38,8 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><a href='#' class="dropdown-item edit-item-btn"  data-bs-toggle="modal" data-bs-target="#editUser{{$user->id}}"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</a></li>
-                                          @if(Auth::user()->id != $user->id)
+                                        <li><a href='#' class="dropdown-item edit-item-btn"  data-bs-toggle="modal" data-bs-target="#uploadAvatar{{$user->id}}"><i class="ri-file-image-line align-bottom me-2 text-muted"></i> Avatar</a></li>  
+                                        @if(Auth::user()->id != $user->id)
                                         <li>
                                           
                                             <a  href='#' class="dropdown-item remove-item-btn deactivate-user">
@@ -62,6 +63,7 @@
 @include('users.new_user')
 @foreach($users as $user)
     @include('users.edit_user')
+    @include('users.change_avatar')
 @endforeach
 
 @endsection

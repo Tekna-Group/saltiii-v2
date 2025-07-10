@@ -43,6 +43,7 @@ Route::get('payslips','PayrollController@index')->name('Payslip');
 Route::get('users','UserController@index')->name('users');
 Route::post('new-user','UserController@store')->name('users');
 Route::post('/edit-user/{id}','UserController@editUser')->name('edit-user');
+Route::post('/change-avatar/{id}','UserController@avatar');
 
 });
 

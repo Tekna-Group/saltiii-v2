@@ -56,4 +56,21 @@ class UserController extends Controller
         Alert::success('Successfully Updated')->persistent('Dismiss');
         return back();
     }
+     public function avatar(Request $request,$id)
+    {
+        // dd($request->all());
+        $user = User::findOrFail($id);
+        if ($request->hasFile('file')) {
+        }
+       $attachment = $request->file('file');
+        $original_name = $attachment->getClientOriginalName();
+        $name = time().'_'.$attachment->getClientOriginalName();
+        $attachment->move(public_path().'/avatars/', $name);
+        $file_name = '/avatars/'.$name;
+        $user->avatar = $file_name;
+        $user->save();
+        
+        Alert::success('Successfully uploaded')->persistent('Dismiss');
+        return back();
+    }
 }

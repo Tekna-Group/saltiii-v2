@@ -51,13 +51,13 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <p class="fw-medium text-muted mb-0">Completed Tasks</p>
-                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('completed',1)->count()}}">0</span></h2>
+                        <p class="fw-medium text-muted mb-0">Due Tasks</p>
+                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('date','<',date('Y-m-d'))->count()}}">0</span></h2>
                         {{-- <p class="mb-0 text-muted"><span class="badge bg-light text-danger mb-0"> <i class="ri-arrow-down-line align-middle"></i> 2.52 % </span> vs. previous month</p> --}}
                     </div>
                     <div>
                         <div class="avatar-sm flex-shrink-0">
-                            <span class="avatar-title bg-success-subtle text-success rounded-circle fs-4">
+                            <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-4">
                                 <i class="ri-checkbox-circle-line"></i>
                             </span>
                         </div>
@@ -72,8 +72,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between">
                     <div>
-                        <p class="fw-medium text-muted mb-0">Archived Tasks</p>
-                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('archived',1)->count()}}">0</span></h2>
+                        <p class="fw-medium text-muted mb-0">Completed Tasks</p>
+                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('completed',1)->count()}}">0</span></h2>
                         {{-- <p class="mb-0 text-muted"><span class="badge bg-light text-success mb-0"> <i class="ri-arrow-up-line align-middle"></i> 0.63 % </span> vs. previous month</p> --}}
                     </div>
                     <div>
@@ -116,7 +116,7 @@
                         </thead>
                         <tbody class="list form-check-all">
                             @foreach($tasks as $task)
-                            <tr>
+                            <tr @if($task->due_date < date('Y-m-d')) class='bg-warning' @endif>
                                 
                                 <td class="id"><a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary">#{{$task->id}}</a></td>
                                 <td class="project_name"><a href="{{url('view-project/'.$task->project_id)}}" target='_blank' class="fw-medium link-primary">{{$task->project->name}}</a></td>

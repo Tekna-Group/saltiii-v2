@@ -81,7 +81,7 @@
                         <div class="dropdown ms-sm-3 header-item topbar-user">
                             <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="d-flex align-items-center">
-                                    <img class="rounded-circle header-profile-user" src="{{asset('/inside_css/assets/images/users/avatar-1.jpg')}}" alt="Header Avatar">
+                                    <img class="rounded-circle header-profile-user" src="{{asset(auth()->user()->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="Header Avatar">
                                     <span class="text-start ms-xl-2">
                                         <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{current(explode(' ',auth()->user()->name))}}</span>
                                         {{-- <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">Founder</span> --}}
@@ -154,7 +154,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/tasks')}}">
-                                <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span><span class="badge badge-pill bg-danger" data-key="t-hot">2</span>
+                                <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span><span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -162,11 +162,11 @@
                                 <i class=" ri-time-line"></i> <span data-key="t-dashboards">My Timekeeping</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/payslips')}}">
                                 <i class=" ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
                             </a>
-                        </li>
+                        </li> --}}
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
                         <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
                           <li class="nav-item">
