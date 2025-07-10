@@ -49,4 +49,10 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+
+    public function login(Request $request)
+    {
+        dd(session()->all());
+        // Your custom login logic here
+    }
 }
