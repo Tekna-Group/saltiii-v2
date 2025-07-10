@@ -28,4 +28,8 @@ class Project extends Model
     {
         return $this->hasMany(ProjectBoard::class);
     }
+    public function activities()
+    {
+        return $this->hasMany(TaskActivity::class);
+    }
 }
