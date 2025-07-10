@@ -17,8 +17,12 @@ class TaskController extends Controller
     public function index()
     {
         // Fetch all tasks from the database
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->get();
-        $projects = Project::get();
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->get();
+        $projects = Project::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->get();
         $users = User::get();
         // Return the view with the tasks data
         return view('tasks.index', ['tasks' => $tasks,

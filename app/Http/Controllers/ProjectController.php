@@ -17,7 +17,9 @@ class ProjectController extends Controller
     {
         // Fetch all projects from the database
         // $projects = \App\Models\Project::all();
-        $projects = Project::get();
+        $projects = Project::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->get();
         $users = User::get();
         // Return the view with the projects data
         return view('projects.index',
