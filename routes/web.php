@@ -11,7 +11,7 @@
 |
 */
 Route::redirect('/', '/api/documentation');
-Auth::routes();
+// Auth::routes();
 Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => 'auth'], function () {
     
