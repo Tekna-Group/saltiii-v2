@@ -11,8 +11,8 @@
 |
 */
 Route::redirect('/', '/api/documentation');
-// Auth::routes();
-Route::get('login', 'Auth\LoginController@login');
+Auth::routes();
+// Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => 'auth'], function () {
     
 Route::get('/', 'HomeController@index')->name('Dashboard');
