@@ -167,7 +167,7 @@
                                 <i class=" ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
                             </a>
                         </li>
-                        @if(auth()->user()->role == "Timekeeper")
+                        @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
                         <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
                           <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
