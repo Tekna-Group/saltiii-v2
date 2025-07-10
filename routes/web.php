@@ -12,7 +12,7 @@
 */
 Route::redirect('/', '/api/documentation');
 Auth::routes();
-Route::group(['middleware' => 'auth'], function () {
+// Route::group(['middleware' => 'auth'], function () {
     
 Route::get('/', 'HomeController@index')->name('Dashboard');
 Route::get('/home', 'HomeController@index')->name('Dashboard');
@@ -45,7 +45,7 @@ Route::post('new-user','UserController@store')->name('users');
 Route::post('/edit-user/{id}','UserController@editUser')->name('edit-user');
 Route::post('/change-avatar/{id}','UserController@avatar');
 
-});
+// });
 
 Route::get('/api/documentation', function () {
     return view('l5-swagger::index');
