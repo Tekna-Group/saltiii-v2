@@ -16,7 +16,6 @@
                                     <p class="text-muted">Sign in to continue to {{ config('app.name', 'Laravel') }}.</p>
                                 </div>
                                 <div class="p-2 mt-4">
-                                    <form action="index.html">
 
                                         <div class="mb-3">
                                             <label for="email" class="form-label">Email</label>
@@ -60,7 +59,6 @@
                                                 {{-- <button type="button" class="btn btn-info btn-icon waves-effect waves-light"><i class="ri-twitter-fill fs-16"></i></button> --}}
                                             </div>
                                         </div>
-                                    </form>
                                 </div>
                             </div>
                             <!-- end card body -->
