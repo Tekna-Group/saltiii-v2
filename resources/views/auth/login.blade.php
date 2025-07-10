@@ -59,6 +59,7 @@
                                                 {{-- <button type="button" class="btn btn-info btn-icon waves-effect waves-light"><i class="ri-twitter-fill fs-16"></i></button> --}}
                                             </div>
                                         </div>
+                                    </form>
                                 </div>
                             </div>
                             <!-- end card body -->
