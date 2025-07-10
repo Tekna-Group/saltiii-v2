@@ -105,8 +105,11 @@
                                 @if ($rowCount > 0)
                                     @foreach ($dayActivities as $i => $act)
                                         <tr>
-                                            @if ($i === 0)
+                                            @if ($i < 1)
                                                 <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
+                                            @endif
+                                            @if($dayActivities->count() == 1)
+                                            <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
                                             @endif
                                             <td>{{$act->project->name}} - {{ $act->task->title }}</td>
                                             <td>{{$act->activity}}</td>

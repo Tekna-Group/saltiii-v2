@@ -15,18 +15,22 @@ class TimekeepingController extends Controller
         $TaskActivity = [];
         $date_from = $request->date_from;
         $date_to = $request->date_to;
-            if($request->date_from)
-            {
-                $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
-                $date_ranges = $this->dateRange($date_from,$date_to);
-            }
-            $users = User::get();
-            return view('timekeeping.index', ['activities' => $TaskActivity,
-                                        'date_ranges' => $date_ranges,
-                                        'date_from' => $date_from,
-                                        'date_to' => $date_to,
-                                        'users' => $users,
-                                        ]); 
+          $last_sunday = $date_from;
+        $saturday = $date_to;
+        if($request->date_from)
+        {
+            $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
+            $date_ranges = $this->dateRange($date_from,$date_to);
+        }
+        $users = User::get();
+        return view('timekeeping.index', ['activities' => $TaskActivity,
+            'date_ranges' => $date_ranges,
+            'date_from' => $date_from,
+            'date_to' => $date_to,
+            'users' => $users,
+              'last_sunday' => $last_sunday,
+                'saturday' => $saturday,
+        ]); 
     }
     public function myTimekeeping(Request $request)
     {
