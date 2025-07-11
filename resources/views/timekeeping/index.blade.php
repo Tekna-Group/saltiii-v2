@@ -113,7 +113,7 @@
                                      @foreach ($dayActivities as $act)
                                     <tr>
                                         @if ($loop->first)
-                                            <td rowspan="{{ $rowCount }}">{{ $date }}</td>
+                                            <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
                                         @endif
                                         <td>{{ $act->project->name }} - {{ $act->task->title }}</td>
                                         <td>{{ $act->activity }}</td>
