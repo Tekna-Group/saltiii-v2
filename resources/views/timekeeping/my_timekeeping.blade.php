@@ -103,19 +103,16 @@
                                 @endphp
 
                                 @if ($rowCount > 0)
-                                    @foreach ($dayActivities as $i => $act)
-                                        <tr>
-                                            @if ($i < 1)
-                                                <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
-                                            @endif
-                                            @if($dayActivities->count() == 1)
-                                            <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
-                                            @endif
-                                            <td>{{$act->project->name}} - {{ $act->task->title }}</td>
-                                            <td>{{$act->activity}}</td>
-                                            <td>{{$act->hours}} hrs</td>
-                                        </tr>
-                                    @endforeach
+                                     @foreach ($dayActivities as $act)
+                                    <tr>
+                                        @if ($loop->first)
+                                            <td rowspan="{{ $rowCount }}">{{ $date }}</td>
+                                        @endif
+                                        <td>{{ $act->project->name }} - {{ $act->task->title }}</td>
+                                        <td>{{ $act->activity }}</td>
+                                        <td>{{ $act->hours }} hrs</td>
+                                    </tr>
+                                 @endforeach
                                 @else
                                     <tr>
                                         <td>{{ date('M d - l',strtotime($date)) }}</td>
