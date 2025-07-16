@@ -19,7 +19,7 @@ class ProjectController extends Controller
         // $projects = \App\Models\Project::all();
         $projects = Project::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->get();
+        })->orderBy('id','desc')->where('completed','!=',1)->get();
         $users = User::get();
         // Return the view with the projects data
         return view('projects.index',
