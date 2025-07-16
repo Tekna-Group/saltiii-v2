@@ -75,7 +75,7 @@
                             </div>
                             <div class="flex-grow-1 ms-2">
                                 <h6 class="mb-1"><a href="pages-profile.html">{{$member->name}}</a></h6>
-                                <p class="text-muted mb-0">{{$task->activities->where('user_id',$member->user_id)->sum('hours')}} hrs </p>
+                                <p class="text-muted mb-0">{{$task->activities->where('user_id',$member->id)->sum('hours')}} hrs </p>
                             </div>
                             
                         </div>
