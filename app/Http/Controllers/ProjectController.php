@@ -154,4 +154,22 @@ class ProjectController extends Controller
         Alert::success('Successfully Updated')->persistent('Dismiss');
         return back();
     }
+    public function markComplete($id)
+    {
+        $project = Project::findOrFail($id);
+        $project->completed = 1;
+        $project->status = 'Completed';
+        $project->save();
+        Alert::success('Project marked as completed.')->persistent('Dismiss');
+        return back();
+    }
+    public function delete($id)
+    {
+        $project = Project::findOrFail($id);
+        $project->completed = 1;
+        $project->status = 'Archived';
+        $project->save();
+        Alert::success('Project marked as archived.')->persistent('Dismiss');
+        return back();
+    }
 }

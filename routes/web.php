@@ -24,6 +24,8 @@ Route::post('project-board/{id}','ProjectController@boardProject')->name('View P
 Route::post('project/edit-board', 'ProjectController@editBoard')->name('Edit Project Board');
 
 Route::get('/projects','ProjectController@index')->name('Projects');
+Route::post('/project/complete/{id}', 'ProjectController@markComplete')->name('Projects');
+Route::post('/project/delete/{id}', 'ProjectController@delete')->name('Projects');
 
 
 Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
@@ -45,6 +47,8 @@ Route::get('users','UserController@index')->name('users');
 Route::post('new-user','UserController@store')->name('users');
 Route::post('/edit-user/{id}','UserController@editUser')->name('edit-user');
 Route::post('/change-avatar/{id}','UserController@avatar');
+
+
 
 });
 
