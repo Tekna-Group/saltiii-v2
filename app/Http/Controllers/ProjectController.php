@@ -61,6 +61,15 @@ class ProjectController extends Controller
         }
 
         // Redirect back with success message
+        foreach (['To Do', 'Ongoing', 'QA', 'Done'] as $boardName) {
+            
+            $projectBoard = new ProjectBoard;
+            $projectBoard->project_id = $project->id;
+            $projectBoard->board = $boardName;
+            $projectBoard->save();
+        }
+       
+
         Alert::success('Successfully Save')->persistent('Dismiss');
         return back();
         
