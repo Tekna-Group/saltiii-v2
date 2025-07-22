@@ -26,7 +26,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $projects = Project::get();
+        $projects = Project::where('completed',0)->get();
         $tasks = Task::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->get();
