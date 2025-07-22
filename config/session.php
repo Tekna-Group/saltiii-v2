@@ -32,6 +32,7 @@ return [
     */
 
     'lifetime' =>2 * (60 * 24 * 365),
+    
 
     'expire_on_close' => false,
 
