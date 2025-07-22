@@ -65,19 +65,13 @@
                             </span>
                         </button>
 
-                      
+                    
                     </div>
 
                     <div class="d-flex align-items-center">
-
-
-                     
-
-
-                    
-                       
-
-
+                          <div class="ms-1 header-item d-none d-sm-flex">
+                                 {{hours_today()}} hrs <i class=" bx bx-time-five fs-22"></i>
+                        </div>
                         <div class="dropdown ms-sm-3 header-item topbar-user">
                             <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="d-flex align-items-center">
