@@ -136,4 +136,21 @@ class TaskController extends Controller
         Alert::success('Successfully Encoded')->persistent('Dismiss');
         return back();
     }
+     public function complete($id)
+    {
+        $project = Task::findOrFail($id);
+        $project->completed = 1;
+        $project->save();
+        Alert::success('Task marked as completed.')->persistent('Dismiss');
+        return back();
+    }
+     public function changeStatusManual(Request $request,$id)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($id);
+        $task->project_board_id = $request->project_board_id;
+        $task->save();
+        Alert::success('Task updated successfully')->persistent('Dismiss');
+        return back();
+    }
 }

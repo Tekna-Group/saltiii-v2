@@ -13,7 +13,23 @@
                 </div>
                 <h3 class="mb-1">{{$task->activities->sum('hours')}} hrs</h3>
                 <div class="hstack gap-2 justify-content-center">
-                    <button class="btn btn-success btn-sm"><i class="ri-play-circle-line align-bottom me-1"></i> Complete</button>
+                   @if ($task->completed == 1)
+                        <div class="hstack gap-2 justify-content-center">
+                            <button class="btn btn-success btn-sm" disabled>
+                                <i class="ri-check-line align-bottom me-1"></i> Completed
+                            </button>
+                        </div>
+                    @else
+                        <form action="{{ url('/task/complete/' . $task->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            {{-- @method('PATCH') --}}
+                            <div class="hstack gap-2 justify-content-center">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="ri-play-circle-line align-bottom me-1"></i> Complete
+                                </button>
+                            </div>
+                        </form>
+                    @endif
                 </div>
             </div>
         </div>
@@ -21,12 +37,18 @@
         <div class="card mb-3">
             <div class="card-body">
                 <div class="mb-4">
-                    <select class="form-control" name="choices-single-default" data-choices data-choices-search-false>
+                  <form action="{{ url('/tasks/update-board/' . $task->id) }}" method="POST">
+                    @csrf
+                    
+                    <select class="form-control" name="project_board_id" onchange="this.form.submit()">
                         <option value="">Select Task board</option>
                         @foreach($boards as $board)
-                            <option value="{{$board->id}}" @if($task->project_board_id == $board->id) selected @endif>{{$board->board}}</option>
+                            <option value="{{ $board->id }}" @if($task->project_board_id == $board->id) selected @endif>
+                                {{ $board->board }}
+                            </option>
                         @endforeach
                     </select>
+                </form>
                 </div>
                 <div class="table-card">
                     <table class="table mb-0">

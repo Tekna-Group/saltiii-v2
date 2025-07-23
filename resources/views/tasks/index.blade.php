@@ -115,7 +115,7 @@
                             </tr>
                         </thead>
                         <tbody class="list form-check-all">
-                            @foreach($tasks as $task)
+                            @foreach($tasks->where('completed',0) as $task)
                             <tr @if($task->due_date < date('Y-m-d')) class='bg-warning' @endif>
                                 
                                 <td class="id"><a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary">#{{$task->id}}</a></td>

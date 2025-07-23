@@ -36,6 +36,10 @@ Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment')
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    
 Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
 Route::post('update-task-column','TaskController@changeStatus');
+Route::post('task/complete/{id}','TaskController@complete');
+Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
+
+
 
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
 
