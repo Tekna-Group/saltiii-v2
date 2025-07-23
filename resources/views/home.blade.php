@@ -124,15 +124,9 @@
                                 <td>{{$task->board->board}}</td>
                                 <td>
                                     @foreach($task->users as $member)
-                                    @if($member->avatar)
                                     <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
-                                        <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
-                                    </a>
-                                    @else
-                                     <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
-                                        {{ strtoupper(substr($member->avatar, 0, 3)) }}
-                                    </div>
-                                    @endif
+                                            <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
+                                        </a>
                                     @endforeach
                                 </td>
                             </tr>
@@ -227,15 +221,9 @@
                                     <td>
 
                                         @foreach($project->users as $member)
-                                        @if($member->avatar)
                                             <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
                                                 <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
                                             </a>
-                                        @else
-                                            <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
-                                            {{ strtoupper(substr($member->name, 0, 3)) }}
-                                        </div>
-                                        @endif
                                         @endforeach
                                     </td>
                                     <td>
