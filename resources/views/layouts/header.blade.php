@@ -75,7 +75,13 @@
                         <div class="dropdown ms-sm-3 header-item topbar-user">
                             <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <span class="d-flex align-items-center">
+                                    @if(auth()->user()->avatar)
                                     <img class="rounded-circle header-profile-user" src="{{asset(auth()->user()->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="Header Avatar">
+                                    @else
+                                     <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 3)) }}
+                                    </div>
+                                    @endif
                                     <span class="text-start ms-xl-2">
                                         <span class="d-none d-xl-inline-block ms-1 fw-medium user-name-text">{{current(explode(' ',auth()->user()->name))}}</span>
                                         {{-- <span class="d-none d-xl-block ms-1 fs-12 user-name-sub-text">Founder</span> --}}

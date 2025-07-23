@@ -29,7 +29,7 @@ class HomeController extends Controller
         $projects = Project::where('completed',0)->get();
         $tasks = Task::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->where('completed',0)->get();
+        })->where('completed',"!=",1)->get();
         
         $last_sunday = date('Y-m-d',strtotime('last sunday'));
         $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));

@@ -27,8 +27,18 @@
                         @foreach($users as $user)
                         <tr>
                            
-                            <td><img src="{{asset($user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="avatar-xs rounded-circle material-shadow"> {{$user->name}}</td>
-                            <td>{{$user->email}}</td>
+                            <td>
+                                {{-- <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
+                                    {{ strtoupper(substr($user->name, 0, 3)) }}
+                                </div> --}}
+                                @if($user->avatar)
+                                    <img src="{{asset($user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="avatar-xs rounded-circle material-shadow"> {{$user->name}}</td>
+                                @else
+                                    <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
+                                        {{ strtoupper(substr($user->name, 0, 3)) }}
+                                    </div>
+                                @endif
+                                <td>{{$user->email}}</td>
                             <td>{{$user->role}}</td>
                             <td>{{$user->status}}</td>
                             <td>
