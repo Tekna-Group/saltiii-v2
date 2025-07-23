@@ -34,9 +34,13 @@
                                 @if($user->avatar)
                                     <img src="{{asset($user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="avatar-xs rounded-circle material-shadow">  {{$user->name}}
                                 @else
-                                    <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle" style="width:40px; height:40px; line-height:40px;">
-                                        {{ strtoupper(substr($user->name, 0, 3)) }} {{$user->name}}
+                                  <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary text-white fw-bold text-center rounded-circle me-2" style="width:40px; height:40px; line-height:40px;">
+                                        {{ strtoupper(substr($user->name, 0, 3)) }} 
                                     </div>
+                                    <span>{{ $user->name }}</span>
+                                </div>
+                                    
                                 @endif
                                 </td>
                                 <td>{{$user->email}}</td>
