@@ -58,6 +58,15 @@ class TaskController extends Controller
         Alert::success('Successfully Save')->persistent('Dismiss');
         return back();
     }
+    public function changeStatus(Request $request)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($request->task_id);
+        $task->project_board_id = $request->column_id;
+        $task->save();
+
+        return response()->json(['message' => 'Task updated successfully','data' => $task]);
+    }
     public function view($id)
     {
         // Fetch the task by ID

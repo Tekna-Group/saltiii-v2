@@ -253,9 +253,10 @@
               <button class="btn btn-sm btn-outline-danger" onclick="deleteStatus('${column.id}')">Delete</button>
             </div>
           </div>
-          <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">
+         <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">
             ${column.tasks.map(task => `
-              <div class=" card tasks-box" draggable="true" ondragstart="drag(event, '${task.id}')">
+              <div id="task-${task.id}" class="kanban-card tasks-box" draggable="true" ondragstart="drag(event)">
+
                 <div class="card-body">
                     <div class="d-flex mb-2">
                         <div class="flex-grow-1">
@@ -374,27 +375,63 @@
     
     let draggedTaskId = '';
     
-    function drag(ev, taskId) {
-      draggedTaskId = taskId;
-    }
+function drag(ev) {
+  ev.dataTransfer.setData('text/plain', ev.target.id);
+  ev.target.classList.add('dragging');
+}
+
+document.addEventListener('dragend', function (e) {
+  const draggingCard = document.querySelector('.kanban-card.dragging');
+  if (draggingCard) draggingCard.classList.remove('dragging');
+});
     
-    function allowDrop(ev) {
-      ev.preventDefault();
-    }
+   function allowDrop(ev) {
+  ev.preventDefault(); // Required to allow dropping
+}
     
-    function drop(ev, columnId) {
-      if (!draggedTaskId) return;
-      boardData.forEach(col => {
-        const taskIndex = col.tasks.findIndex(t => t.id === draggedTaskId);
-        if (taskIndex > -1) {
-          const task = col.tasks.splice(taskIndex, 1)[0];
-          const newColumn = boardData.find(c => c.id === columnId);
-          newColumn.tasks.push(task);
-        }
-      });
-      draggedTaskId = '';
-      renderBoard();
+function drop(ev, columnId) {
+  ev.preventDefault();
+  const draggedElementId = ev.dataTransfer.getData('text/plain'); // like task-3
+  const taskId = draggedElementId.replace('task-', '');
+
+  if (!taskId || !columnId) return;
+  // alert(taskId);
+  // Move task in local boardData
+  let movedTask = null;
+  boardData.forEach(col => {
+    const index = col.tasks.findIndex(t => t.id == taskId);
+    if (index > -1) {
+      movedTask = col.tasks.splice(index, 1)[0];
     }
+  });
+
+  if (movedTask) {
+    const targetCol = boardData.find(col => col.id == columnId);
+    if (targetCol) {
+      targetCol.tasks.push(movedTask);
+    }
+  }
+
+  // Send to server via AJAX
+  $.ajax({
+ url: "{{ url('/update-task-column') }}",
+  method: 'POST',
+  data: {
+    task_id: taskId,
+    column_id: columnId,
+    _token: $('meta[name="csrf-token"]').attr('content')
+  },
+  success: function (response) {
+    console.log('Task updated successfully:', response);
+  },
+  error: function (xhr) {
+    console.error('AJAX update failed:', xhr.responseText);
+  }
+});
+
+  renderBoard();
+}
+
     
     renderBoard();
     </script>

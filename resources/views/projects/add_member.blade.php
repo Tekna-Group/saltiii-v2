@@ -11,7 +11,7 @@
                         <div class="row g-3">
                                 <div class="mb-3">
                                     <label>Team Members</label>
-                                    <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member' required>
+                                    <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member_member' required>
                                         {{-- <option value="">Select Team Member</option> --}}
                                         @foreach($users as $user)
                                             <option value="{{$user->id}}" @foreach($project->users as $u) @if($user->id == $u->id) selected @endif @endforeach>{{$user->name}}</option>
