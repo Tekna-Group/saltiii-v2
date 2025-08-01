@@ -110,6 +110,7 @@
                     <table class="table table-borderless table-nowrap table-centered align-middle mb-0">
                         <thead class="table-light text-muted">
                             <tr>
+                                <th scope="col">Project</th>
                                 <th scope="col">Task</th>
                                 <th scope="col">Deadline</th>
                                 <th scope="col">Status</th>
@@ -119,7 +120,8 @@
                         <tbody>
                             @foreach($tasks as $task)
                             <tr @if($task->due_date < date('Y-m-d')) class='text-danger' @endif>
-                                <td>{{$task->title}}</td>
+                                <td><a href="{{ url('/view-project/'.$task->project_id) }}" >{{$task->project->name}}</a></td>
+                                <td><a href="{{url('view-project/view-task/'.$task->id)}}" >{{$task->title}}</a></td>
                                 <td>{{date('M d',strtotime($task->due_date))}}</td>
                                 <td>{{$task->board->board}}</td>
                                 <td>
