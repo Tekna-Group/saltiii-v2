@@ -123,11 +123,15 @@
                                 <td>{{date('M d',strtotime($task->due_date))}}</td>
                                 <td>{{$task->board->board}}</td>
                                 <td>
+                                    <div class="avatar-group flex-nowrap">
                                     @foreach($task->users as $member)
-                                    <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
-                                            <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
-                                        </a>
+                                     <div class="avatar-group-item">
+                                        <a href="javascript: void(0);" class="d-inline-block avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
+                                                <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
+                                            </a>
+                                     </div>
                                     @endforeach
+                                    </div>
                                 </td>
                             </tr>
                             @endforeach
@@ -219,12 +223,15 @@
                                     <td>{{$project->name}}</td>
                                     <td>{{$project->tasks->where('completed',1)->count()."/".$project->tasks->count()}}</td>
                                     <td>
-
+                                        <div class="avatar-group flex-nowrap">
                                         @foreach($project->users as $member)
-                                            <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
+                                          <div class="avatar-group-item">
+                                            <a href="javascript: void(0);" class="d-inline-block avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
                                                 <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
                                             </a>
+                                          </div>
                                         @endforeach
+                                        </div>
                                     </td>
                                     <td>
                                         {{$project->activities->sum('hours')}} hrs
