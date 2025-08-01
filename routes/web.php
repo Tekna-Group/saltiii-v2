@@ -38,7 +38,7 @@ Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
 Route::post('update-task-column','TaskController@changeStatus');
 Route::post('task/complete/{id}','TaskController@complete');
 Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
-
+Route::post('/update-user-password','UserController@updatePassword');
 
 
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
