@@ -8,15 +8,15 @@
 
             <div class="card-body p-4">
                 <div class="text-center mt-2">
-                    <h5 class="text-primary">Forgot Password?</h5>
-                    <p class="text-muted">Reset password with {{ config('app.name', 'Laravel') }}</p>
+                    <h5 class="text-primary">{{ __('Reset Password') }}</h5>
+                    <p class="text-muted">{{ __('Reset Password') }} with {{ config('app.name', 'Laravel') }}</p>
 
-                    <lord-icon src="https://cdn.lordicon.com/rhvddzym.json" trigger="loop" colors="primary:#0ab39c" class="avatar-xl"></lord-icon>
+                    {{-- <lord-icon src="https://cdn.lordicon.com/rhvddzym.json" trigger="loop" colors="primary:#0ab39c" class="avatar-xl"></lord-icon> --}}
 
                 </div>
 
                 <div class="alert border-0 alert-warning text-center mb-2 mx-2" role="alert">
-                    Enter your email and instructions will be sent to you!
+                    Enter your email and new password!
                 </div>
                 <div class="p-2">
                     <form method="POST" action="{{ route('password.update') }}">
