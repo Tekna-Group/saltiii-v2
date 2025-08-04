@@ -61,7 +61,7 @@ class ProjectController extends Controller
         }
 
         // Redirect back with success message
-        foreach (['To Do', 'Ongoing', 'QA', 'Done'] as $boardName) {
+        foreach (['To do', 'Ongoing', 'For Review', 'Completed','On Hold','Cancelled','Recurring Task'] as $boardName) {
             
             $projectBoard = new ProjectBoard;
             $projectBoard->project_id = $project->id;
