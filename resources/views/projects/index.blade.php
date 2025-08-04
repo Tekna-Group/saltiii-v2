@@ -29,7 +29,7 @@
                         <div class="d-flex justify-content-between">
                             <p class="text-muted mb-4">Last Update: {{ date('M d, Y H:i a', strtotime($project->updated_at)) }}</p>
                             <div class="d-flex">
-                                <form action="{{ url('/project/complete/'.$project->id) }}" method="POST" class="me-1">
+                                {{-- <form action="{{ url('/project/complete/'.$project->id) }}" method="POST" class="me-1">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-success" title="Mark Complete">
                                         <i class="ri-check-double-line"></i>
@@ -40,7 +40,7 @@
                                     <button type="submit" class="btn btn-sm btn-danger" title="Delete">
                                         <i class="ri-delete-bin-7-line"></i>
                                     </button>
-                                </form>
+                                </form> --}}
                             </div>
                         </div>
 
