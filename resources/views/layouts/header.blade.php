@@ -156,7 +156,12 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-timekeeping')}}">
-                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">My Timekeeping</span>
+                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link bg-danger" href="https://saltiii.freshdesk.com/support/home" target="_blank">
+                                <i class=" ri-ticket-line text-white"></i> <span data-key="t-submit-ticket" class='text-white'>Submit a Ticket</span>
                             </a>
                         </li>
                         {{-- <li class="nav-item">
