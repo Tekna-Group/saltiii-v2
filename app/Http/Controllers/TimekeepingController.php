@@ -43,7 +43,7 @@ class TimekeepingController extends Controller
         $saturday = $date_to;
             if($request->date_from)
             {
-                $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
+                $TaskActivity = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date',[$date_from,$date_to])->get();
                 $date_ranges = $this->dateRange($date_from,$date_to);
             }
             $users = User::where('id',auth()->user()->id)->get();
