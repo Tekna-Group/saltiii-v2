@@ -25,6 +25,13 @@
  
     {{-- <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css"> --}}
     @yield('css')
+    <style>
+        .helpdesk-link-wrapper {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+        </style>
 
 </head>
 <body>
@@ -132,13 +139,10 @@
         
             <div id="scrollbar">
                 <div class="container-fluid">
-
-
-                    <div id="two-column-menu">
-                    </div>
+                    <div id="two-column-menu"></div>
                     <ul class="navbar-nav" id="navbar-nav">
                         <li class="menu-title"><span data-key="t-menu">Menu</span></li>
-                      
+                
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/')}}">
                                 <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboard</span>
@@ -151,44 +155,59 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/tasks')}}">
-                                <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span><span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
+                                <i class="ri-check-line"></i> 
+                                <span data-key="t-dashboards">Tasks</span>
+                                <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-timekeeping')}}">
-                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">My Timekeeping</span>
+                                <i class="ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
                             </a>
                         </li>
+                
                         {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/payslips')}}">
-                                <i class=" ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
+                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
                             </a>
                         </li> --}}
+                
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
                         <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
-                          <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
-                                <i class=" ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
+                                <i class="ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
                             </a>
                         </li>
                         @endif
+                
                         @if(auth()->user()->role == "Admin")
                         <li class="menu-title"><span data-key="t-menu">Admin</span></li>
-                          <li class="nav-item">
+                        <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/users')}}">
-                                <i class=" ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
+                                <i class="ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
                             </a>
                         </li>
-                           <li class="nav-item">
-                            <a class="nav-link menu-link" href="https://api.saltiii.com/api/documentation" target='_blank'>
-                                <i class=" ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link" href="https://api.saltiii.com/api/documentation" target="_blank">
+                                <i class="ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
                             </a>
                         </li>
                         @endif
-
-
+                
                     </ul>
+                    <div class="helpdesk-link-wrapper mt-auto">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link menu-link bg-white" href="https://saltiii.freshdesk.com/support/home" target="_blank">
+                                    <i class="ri-customer-service-2-line"></i> 
+                                    <span data-key="t-submit-ticket" class="text-warning">Need Support?</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+                
                 <!-- Sidebar -->
             </div>
 

@@ -263,7 +263,6 @@
                             <h6 class="fs-15 mb-0 text-truncate task-title"><a href='view-task/${task.id}' class="d-block">${task.name}</a></h6>
                         </div>
                     </div>
-                    <p class="text-muted">${task.description}</p>
                                             
                 </div>
                 <div class="card-footer border-top-dashed">
