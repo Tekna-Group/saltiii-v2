@@ -78,8 +78,15 @@ class ProjectController extends Controller
     public function view(Request $request,$id)
     {
 
-        $project = Project::with('users','statuses','tasks','tasks.comments','tasks.attachments')->findOrFail($id);
-
+        $project =Project::with([
+            'users',
+            'statuses',
+            'tasks' => function ($query) {
+                $query->where('completed', 0);
+            },
+            'tasks.comments',
+            'tasks.attachments'
+        ])->findOrFail($id);
         $boardData = [];
         
         foreach ($project->statuses as $status) {
