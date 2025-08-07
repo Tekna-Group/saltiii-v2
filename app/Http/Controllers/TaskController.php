@@ -70,11 +70,14 @@ class TaskController extends Controller
     public function view($id)
     {
         // Fetch the task by ID
+
+        $users = User::get();
         $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
         $boards = ProjectBoard::where('project_id',$task->project_id)->get();
         // Return the view with the task data
         return view('tasks.view', ['task' => $task,
-        'boards' => $boards
+        'boards' => $boards,
+        'users' => $users,
         ]);
     }
     public function comment(Request $request,$id)
@@ -151,6 +154,14 @@ class TaskController extends Controller
         $task->project_board_id = $request->project_board_id;
         $task->save();
         Alert::success('Task updated successfully')->persistent('Dismiss');
+        return back();
+    }
+    public function changeMember(Request $request, $id)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($id);
+        $task->users()->sync($request->team_member);
+        Alert::success('Task members updated successfully')->persistent('Dismiss');
         return back();
     }
 }

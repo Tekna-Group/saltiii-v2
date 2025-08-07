@@ -53,6 +53,7 @@ Route::post('new-user','UserController@store')->name('users');
 Route::post('/edit-user/{id}','UserController@editUser')->name('edit-user');
 Route::post('/change-avatar/{id}','UserController@avatar');
 
+Route::post('task-member/{id}','TaskController@changeMember')->name('Change Password');
 
 
 });
