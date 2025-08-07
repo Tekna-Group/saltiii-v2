@@ -22,7 +22,9 @@ class TimekeepingController extends Controller
             $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
             $date_ranges = $this->dateRange($date_from,$date_to);
         }
-        $users = User::get();
+        $users = User::whereHas('activities', function ($query) use ($date_from, $date_to) {
+            $query->whereBetween('created_at', [$date_from, $date_to]);
+        })->get();
         return view('timekeeping.index', ['activities' => $TaskActivity,
             'date_ranges' => $date_ranges,
             'date_from' => $date_from,
@@ -43,7 +45,7 @@ class TimekeepingController extends Controller
         $saturday = $date_to;
             if($request->date_from)
             {
-                $TaskActivity = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date',[$date_from,$date_to])->get();
+                $TaskActivity = TaskActivity::where('user_id',auth()->user()->id        )->whereBetween('date',[$date_from,$date_to])->get();
                 $date_ranges = $this->dateRange($date_from,$date_to);
             }
             $users = User::where('id',auth()->user()->id)->get();
