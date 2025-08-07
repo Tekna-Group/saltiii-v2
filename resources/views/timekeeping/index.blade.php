@@ -87,6 +87,9 @@
         </div><!-- end card -->
     </div><!-- end col -->
     @foreach($users as $user)
+    @php
+        $totalHours = 0;
+    @endphp
     <div class='col-xl-6'>
          <div class="card card-height-100">
             <div class="card-header align-items-center d-flex">
@@ -113,6 +116,7 @@
                             @for ($date = $last_sunday; $date <= $saturday; $date = date('Y-m-d', strtotime($date . ' +1 day')))
                                 @php
                                     $dayActivities = $activities->where('user_id',$user->id)->where('date', $date);
+                                    $totalHours = $totalHours + $dayActivities->sum('hours');
                                     $rowCount = $dayActivities->count();
                                 @endphp
 
@@ -137,7 +141,7 @@
                             <tr>
                                 <td colspan='2'></td>
                             <td class="text-right">Total</td>
-                                <td>{{$activities->sum('hours')}} hrs</td>
+                                <td>{{$totalHours}} hrs</td>
                             </tr>
                         </tbody>
                     </table><!-- end table -->
