@@ -164,4 +164,12 @@ class TaskController extends Controller
         Alert::success('Task members updated successfully')->persistent('Dismiss');
         return back();
     }
+    public function destroy($id)
+    {
+        $activity = Activity::findOrFail($id);
+        $activity->delete();
+
+        Alert::success('Activity successfully deleted')->persistent('Dismiss');
+        return back();
+    }
 }

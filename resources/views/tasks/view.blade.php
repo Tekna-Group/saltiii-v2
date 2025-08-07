@@ -272,7 +272,16 @@
                                         </th>
                                         <td>{{date('d M, Y',strtotime($activity->date))}}</td>
                                         <td>{{$activity->hours}} hrs</td>
-                                        <td>{{$activity->activity}}</td>
+                                        <td>{{$activity->activity}} 
+                                            @if(auth()->user()->id == $activity->user_id)
+                                            <form action="{{ url('activity/destroy', $activity->id) }}" method="POST" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" onclick="return confirm('Are you sure you want to delete this activity?')" class="btn btn-sm btn-danger">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                            @endif
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
