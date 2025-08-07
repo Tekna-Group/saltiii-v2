@@ -60,13 +60,20 @@
                         </thead><!-- thead -->
 
                         <tbody>
+                       
                             @foreach($users as $user)
                                 <tr>
                                     <td>{{$user->name}}</td>
+                                    @php
+                                        $totalHours = 0;
+                                    @endphp
                                     @foreach($date_ranges as $date)
                                     <td scope="col">{{$activities->where('user_id',$user->id)->where('date',$date)->sum('hours')}}</td>
+                                    @php
+                                        $totalHours = $totalHours+$activities->where('user_id',$user->id)->where('date',$date)->sum('hours');
+                                    @endphp
                                     @endforeach
-                                    <td>{{$activities->where('user_id',$user->id)->sum('hours')}}</td>
+                                    <td>{{$totalHours}}</td>
 
                                 </tr>
                             @endforeach
