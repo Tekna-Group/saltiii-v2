@@ -47,7 +47,7 @@
                 <h4 class="card-title flex-grow-1 mb-0">Timekeeping Result <button class='btn btn-sm btn-danger' onclick="printTable()">Print</button></h4></h4>
             </div><!-- end cardheader -->
             <div class="card-body">
-                <div class="table-responsive table-card">
+                <div class="table-responsive table-card" id='table-container'>
                     <table class="table table-nowrap table-centered align-middle">
                         <thead class="bg-light text-muted">
                             <tr>
@@ -97,7 +97,7 @@
                 
             </div><!-- end card header -->
             <div class="card-body">
-                <div class="table-responsive table-card" id='table-container'>
+                <div class="table-responsive table-card" >
                     <table  class="table table-bordered table-nowrap table-centered align-middle mb-0">
                         <thead class="table-light">
                             
