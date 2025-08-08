@@ -44,7 +44,7 @@
     <div class="col-xl-12">
         <div class="card card-height-100">
             <div class="card-header d-flex align-items-center">
-                <h4 class="card-title flex-grow-1 mb-0">Timekeeping Result</h4>
+                <h4 class="card-title flex-grow-1 mb-0">Timekeeping Result <button class='btn btn-sm btn-danger' onclick="printTable()">Print</button></h4></h4>
             </div><!-- end cardheader -->
             <div class="card-body">
                 <div class="table-responsive table-card">
@@ -154,6 +154,16 @@
 @endif
 @endsection
 @section('js')
+<script>
+    function printTable() {
+      const printContents = document.getElementById('table-container').innerHTML;
+      const originalContents = document.body.innerHTML;
+
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+    }
+  </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
