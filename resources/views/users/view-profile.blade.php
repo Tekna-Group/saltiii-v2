@@ -127,39 +127,20 @@
                                                 <h5 class="card-title mb-0">Due Tasks</h5>
                                             </div>
                                         </div>
-                                        <div class="d-flex mb-4">
-                                            <div class="flex-shrink-0">
-                                                <img src="assets/images/small/img-4.jpg" alt="" height="50" class="rounded material-shadow" />
+                                        @foreach($tasks->where('completed',0)->where('due_date','<',date('Y-m-d')) as $task)
+                                            <div class="d-flex mb-4">
+                                            
+                                                {{-- <div class="flex-shrink-0">
+                                                    <img src="assets/images/small/img-4.jpg" alt="" height="50" class="rounded material-shadow" />
+                                                </div> --}}
+                                                <div class="flex-grow-1 ms-3 overflow-hidden">
+                                                    <a href="{{url('view-project/view-task/'.$task->id)}}">
+                                                        <h6 class="text-truncate fs-14">{{$task->project->name}} - {{$task->title}}</h6>
+                                                    </a>
+                                                    <p class="text-muted mb-0">{{date('M d, Y',strtotime($task->due_date))}}</p>
+                                                </div>
                                             </div>
-                                            <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                <a href="javascript:void(0);">
-                                                    <h6 class="text-truncate fs-14">Design your apps in your own way</h6>
-                                                </a>
-                                                <p class="text-muted mb-0">15 Dec 2021</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex mb-4">
-                                            <div class="flex-shrink-0">
-                                                <img src="assets/images/small/img-5.jpg" alt="" height="50" class="rounded material-shadow" />
-                                            </div>
-                                            <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                <a href="javascript:void(0);">
-                                                    <h6 class="text-truncate fs-14">Smartest Applications for Business</h6>
-                                                </a>
-                                                <p class="text-muted mb-0">28 Nov 2021</p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0">
-                                                <img src="assets/images/small/img-6.jpg" alt="" height="50" class="rounded material-shadow" />
-                                            </div>
-                                            <div class="flex-grow-1 ms-3 overflow-hidden">
-                                                <a href="javascript:void(0);">
-                                                    <h6 class="text-truncate fs-14">How to get creative in your work</h6>
-                                                </a>
-                                                <p class="text-muted mb-0">21 Nov 2021</p>
-                                            </div>
-                                        </div>
+                                        @endforeach
                                     </div>
                                     <!--end card-body-->
                                 </div>

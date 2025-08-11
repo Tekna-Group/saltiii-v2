@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\User;
 use App\TaskActivity;
+use App\Task;
+use App\Project;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 class UserController extends Controller
@@ -100,12 +102,20 @@ class UserController extends Controller
         
         $activities = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date', [$last_sunday, $saturday])->get();
         $user = User::findOrfail(auth()->user()->id);
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->orderBy('due_date','asc')->get();
+        $projects = Project::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->get();
         return view('users.view-profile',
             array(
                 'user' => $user,
                 'activities' => $activities,
                 'last_sunday' => $last_sunday,
                 'saturday' => $saturday,
+                'tasks' => $tasks,
+                'projects' => $projects,
                 
             )
         );
