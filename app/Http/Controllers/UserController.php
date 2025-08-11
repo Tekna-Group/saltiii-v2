@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\User;
+use App\TaskActivity;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 class UserController extends Controller
@@ -86,5 +87,27 @@ class UserController extends Controller
 
         Alert::success('Password Updated')->persistent('Dismiss');
         return redirect('/users');
+    }
+
+    public function view(Request $Request)
+    {
+
+    }
+    public function viewProfile(Request $Request)
+    {
+        $last_sunday = date('Y-m-d',strtotime('last sunday'));
+        $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
+        
+        $activities = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date', [$last_sunday, $saturday])->get();
+        $user = User::findOrfail(auth()->user()->id);
+        return view('users.view-profile',
+            array(
+                'user' => $user,
+                'activities' => $activities,
+                'last_sunday' => $last_sunday,
+                'saturday' => $saturday,
+                
+            )
+        );
     }
 }

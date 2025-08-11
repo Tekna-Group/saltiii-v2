@@ -15,6 +15,9 @@ Auth::routes();
 // Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => 'auth'], function () {
     
+
+Route::get('/view-profile/{id}','UserController@view');
+Route::get('/my-profile','UserController@viewProfile');
 Route::get('/', 'HomeController@index')->name('Dashboard');
 Route::get('/home', 'HomeController@index')->name('Dashboard');
 Route::post('new-project', 'ProjectController@store')->name('New Project');
