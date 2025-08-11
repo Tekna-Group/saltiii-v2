@@ -222,7 +222,7 @@
                             <tbody>
                                 @foreach($projects as $project)
                                 <tr>
-                                    <td>{{$project->name}}</td>
+                                    <td><a href="{{url('/view-project/'.$project->id)}}" target="_blank">{{$project->name}}</a></td>
                                     <td>{{$project->tasks->where('completed',1)->count()."/".$project->tasks->count()}}</td>
                                     <td>
                                         <div class="avatar-group flex-nowrap">
@@ -269,7 +269,7 @@
                             <tbody>
                                 @foreach($members as $member)
                                 <tr>
-                                    <td>{{$member->name}}</td>
+                                    <td><a href="{{url('/view-profile/'.$member->id)}}" target="_blank">{{$member->name}}</a></td>
                                     <td>{{$member->activities->sum('hours')}} hrs</td>
                                 </tr>
                                 @endforeach
