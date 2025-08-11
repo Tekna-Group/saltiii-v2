@@ -53,6 +53,7 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li><a href='#' class="dropdown-item edit-item-btn"  data-bs-toggle="modal" data-bs-target="#editUser{{$user->id}}"><i class="ri-pencil-fill align-bottom me-2 text-muted"></i> Edit</a></li>
+                                        <li><a href='{{url('view-profile/'.$user->id)}}' class="dropdown-item edit-item-btn"  ><i class="ri-user-fill align-bottom me-2 text-muted"></i> Profile</a></li>
                                         <li><a href='#' class="dropdown-item edit-item-btn"  data-bs-toggle="modal" data-bs-target="#uploadAvatar{{$user->id}}"><i class="ri-file-image-line align-bottom me-2 text-muted"></i> Avatar</a></li>  
                                         @if(Auth::user()->id != $user->id)
                                         <li>

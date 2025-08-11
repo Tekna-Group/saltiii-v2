@@ -91,9 +91,30 @@ class UserController extends Controller
         return redirect('/users');
     }
 
-    public function view(Request $Request)
+    public function view(Request $Request,$id)
     {
-
+        $last_sunday = date('Y-m-d',strtotime('last sunday'));
+        $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
+        
+        $activities = TaskActivity::where('user_id',$id)->whereBetween('date', [$last_sunday, $saturday])->get();
+        $user = User::findOrfail($id);
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query)  use ($id) {
+            $query->where('user_id', $id);
+        })->orderBy('due_date','asc')->get();
+        $projects = Project::whereHas('users', function ($query) use ($id) {
+            $query->where('user_id', $id);
+        })->get();
+        return view('users.view-profile',
+            array(
+                'user' => $user,
+                'activities' => $activities,
+                'last_sunday' => $last_sunday,
+                'saturday' => $saturday,
+                'tasks' => $tasks,
+                'projects' => $projects,
+                
+            )
+        );
     }
     public function viewProfile(Request $Request)
     {
