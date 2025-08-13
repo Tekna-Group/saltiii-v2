@@ -166,7 +166,7 @@ class TaskController extends Controller
     }
     public function destroy($id)
     {
-        $activity = Activity::findOrFail($id);
+        $activity = TaskActivity::findOrFail($id);
         $activity->delete();
 
         Alert::success('Activity successfully deleted')->persistent('Dismiss');

@@ -42,7 +42,7 @@ Route::post('update-task-column','TaskController@changeStatus');
 Route::post('task/complete/{id}','TaskController@complete');
 Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
 Route::post('/update-user-password','UserController@updatePassword');
-Route::post('/activities/{id}','TaskController@destroyActivity')->name('Delete Activity');
+Route::post('/activity/destroy/{id}','TaskController@destroy')->name('Delete Activity');
 
 
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
