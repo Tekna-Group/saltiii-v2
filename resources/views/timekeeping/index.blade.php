@@ -44,7 +44,7 @@
     <div class="col-xl-12">
         <div class="card card-height-100">
             <div class="card-header d-flex align-items-center">
-                <h4 class="card-title flex-grow-1 mb-0">Timekeeping Result <button class='btn btn-sm btn-danger' onclick="printTable()">Print</button></h4></h4>
+                <h4 class="card-title flex-grow-1 mb-0">Timekeeping Result <button class='btn btn-sm btn-danger' onclick="printTable('')">Print</button></h4>
             </div><!-- end cardheader -->
             <div class="card-body">
                 <div class="table-responsive table-card" id='table-container'>
@@ -93,11 +93,11 @@
     <div class='col-xl-6'>
          <div class="card card-height-100">
             <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1 py-1">Activities </h4>
+                <h4 class="card-title mb-0 flex-grow-1 py-1">Activities <button class='btn btn-sm btn-danger' onclick="printTable({{$user->id}})">Print</button></h4>
                 
             </div><!-- end card header -->
             <div class="card-body">
-                <div class="table-responsive table-card" >
+                <div class="table-responsive table-card" id='table-container{{$user->id}}'>
                     <table  class="table table-bordered table-nowrap table-centered align-middle mb-0">
                         <thead class="table-light">
                             
@@ -155,8 +155,8 @@
 @endsection
 @section('js')
 <script>
-    function printTable() {
-      const printContents = document.getElementById('table-container').innerHTML;
+    function printTable(id) {
+      const printContents = document.getElementById('table-container'+id).innerHTML;
       const originalContents = document.body.innerHTML;
 
       document.body.innerHTML = printContents;
