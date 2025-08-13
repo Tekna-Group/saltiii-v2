@@ -310,11 +310,40 @@
     $(document).ready(function() {
     
     // Initialize Select2 inside modals
-    $('#inviteMembersModal').on('shown.bs.modal', function () {
-        $('.select2').select2({
-            dropdownParent: $('#inviteMembersModal')
+    $('.modal').on('shown.bs.modal', function () {
+    let $select = $(this).find('.select2');
+
+    $select.select2({
+        dropdownParent: $(this),
+        templateResult: function (data) {
+            if (!data.id) return data.text; // placeholder
+
+            // Get current selected values
+            let selectedValues = $select.val() || [];
+
+            // Hide from list if already selected
+            if (selectedValues.includes(data.id)) {
+                return null;
+            }
+
+            return data.text;
+        }
+    }).on('change', function () {
+        // Force Select2 to re-render results without flicker
+        $select.select2('destroy').select2({
+            dropdownParent: $(this).closest('.modal'),
+            templateResult: function (data) {
+                if (!data.id) return data.text;
+                let selectedValues = $select.val() || [];
+                if (selectedValues.includes(data.id)) {
+                    return null;
+                }
+                return data.text;
+            }
         });
     });
+});
+
 });
 </script>
 @endsection
