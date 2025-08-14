@@ -141,8 +141,8 @@
                                     <tr>
                                         <td><a href="{{url('/view-profile/'.$member->id)}}" target="_blank">{{$member->name}}</a></td>
                                         <td>{{$member->activities->sum('hours')}} hrs</td>
-                                        <td>{{$member->tasks->where('completed',0)->count()}}</td>
-                                        <td>{{($member->tasks)->where('completed',0)->where('due_date','<',date('Y-m-d'))->count()}}</td>
+                                        <td><a href='#' data-bs-target="#ongoing_tasks{{$member->id}}"  data-bs-toggle="modal">{{$member->tasks->where('completed',0)->count()}}</a></td>
+                                        <td><a href='#' data-bs-target="#delayed_tasks{{$member->id}}"  data-bs-toggle="modal">{{($member->tasks)->where('completed',0)->where('due_date','<',date('Y-m-d'))->count()}}</a></td>
                                     </tr>
                                     @endforeach
                                 </tbody><!-- end tbody -->
@@ -239,21 +239,13 @@
             </div><!-- end col -->
         </div>
     </div>
-</div><!-- end row -->
-@if(auth()->user()->role == "Admin")
-    <div class="row">
-        <div class="col-xl-4">
-           
-        </div><!-- end col -->
-        <div class="col-xxl-4">
-        
-        </div><!-- end col -->
-
-
-    </div>
-@endif
+</div>
 
 @include('home.view_projects')
+@foreach($members as $member)
+    @include('home.view_employee_tasks')
+    @include('home.view_employee_delayed')
+@endforeach
 @endsection
 @section('js')
 <script src="{{asset('inside_css/assets/libs/apexcharts/apexcharts.min.js')}}"></script>
