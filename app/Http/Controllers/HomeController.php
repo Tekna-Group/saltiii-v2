@@ -49,7 +49,6 @@ class HomeController extends Controller
                 return $activity->user_id == auth()->user()->id;
             });
         }
-        $activities = TaskActivity::where('user_id',auth()->user()->id)->get();
         $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
             $query->whereBetween('date', [$last_sunday, $saturday]);
         }])->get();
