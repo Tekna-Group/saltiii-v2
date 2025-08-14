@@ -102,7 +102,7 @@
                                         @endphp
                                             <tr>
                                                     <td >{{ date('M d - l',strtotime($date)) }}</td>
-                                                <td>{{ $activities->where('date',date('Y-m-d', strtotime($date)))->sum('hours') }} hrs</td>
+                                                <td>{{ $activities->where('user_id',auth()->user()->id)->where('date',date('Y-m-d', strtotime($date)))->sum('hours') }} hrs</td>
                                             </tr>
                                     @endfor
                                     <tr>
