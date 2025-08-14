@@ -28,7 +28,7 @@ class HomeController extends Controller
     {
         $projects = Project::with('activities')->where('completed',0)->get();
         if(auth()->user()->role != 'Admin') {
-            $projects = $projectswith->with(['activities' => function ($query) {
+            $projects = $projects->with(['activities' => function ($query) {
                 $query->where('user_id', auth()->id());
             }])->filter(function ($project) {
                 return $project->users->contains(auth()->user()->id);
