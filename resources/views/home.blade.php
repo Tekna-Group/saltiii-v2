@@ -79,6 +79,85 @@
         <div class="row">
             <div class="col-xl-4">
                 <div class="card card-height">
+                    <div class="card-header border-0 align-items-center d-flex">
+                        <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
+                      
+                    </div><!-- end cardheader -->
+                    <div class="card-body">
+                        <div id="portfolio_donut_charts" data-projects='@json($projects_data)'
+                        data-total-hours='{{ $totalHours }}' data-colors='["--vz-primary", "--vz-info", "--vz-warning", "--vz-success"]' data-colors-minimal='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' data-colors-interactive='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' data-colors-corporate='["--vz-primary", "--vz-secondary", "--vz-info", "--vz-success"]' data-colors-galaxy='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' class="apex-charts" dir="ltr"></div>
+
+                        <ul class="list-group list-group-flush border-dashed mb-0 mt-3 pt-2">
+                            @foreach($projects_data as $proj)
+                            <li class="list-group-item px-0">
+                                <div class="d-flex">
+                                    <div class="flex-grow-1 ms-2">
+                                        <h6 class="mb-1">{{$proj['title']}}</h6>
+                                    </div>
+                                    <div class="flex-shrink-0 text-end">
+                                        <h6 class="mb-1 text-success">{{$proj['hours']}} Hr/s</h6>
+                                    </div>
+                                </div>
+                            </li><!-- end -->
+                            @endforeach
+                          
+                        </ul><!-- end -->
+                    </div><!-- end card body -->
+                </div><!-- end card -->
+               
+            </div><!-- end col -->
+            <div class="col-xl-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title mb-0">Projects Hours</h4>
+                    </div><!-- end card header -->
+
+                    <div class="card-body">
+                        <canvas id="projectsBarChart"></canvas>
+                    </div><!-- end card-body -->
+                </div><!-- end card -->
+                @if(auth()->user()->role == "Admin")
+                <div class="card card-height">
+                    <div class="card-header align-items-center d-flex">
+                        <h4 class="card-title mb-0 flex-grow-1">Team Members ({{date('M d',strtotime($last_sunday))}} - {{date('M d',strtotime($saturday))}})</h4>
+                        <div class="flex-shrink-0">
+                        </div>
+                    </div><!-- end card header -->
+    
+                    <div class="card-body">
+    
+                        <div class="table-responsive table-card">
+                            <table class="table table-borderless table-nowrap align-middle mb-0">
+                                <thead class="table-light text-muted">
+                                    <tr>
+                                        <th scope="col">Member</th>
+                                        <th scope="col">Hours</th>
+                                        <th scope="col">Pending Tasks</th>
+                                        <th scope="col">Delayed Tasks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($members as $member)
+                                    <tr>
+                                        <td><a href="{{url('/view-profile/'.$member->id)}}" target="_blank">{{$member->name}}</a></td>
+                                        <td>{{$member->activities->sum('hours')}} hrs</td>
+                                        <td>{{$member->tasks->where('completed',0)->count()}}</td>
+                                        <td>{{($member->tasks)->where('completed',0)->where('due_date','<',date('Y-m-d'))->count()}}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody><!-- end tbody -->
+                            </table><!-- end table -->
+                        </div>
+                    </div><!-- end cardbody -->
+                </div><!-- end card -->
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-3">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet</h4>
                         
@@ -114,48 +193,12 @@
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
-                <div class="card card-height">
-                    <div class="card-header border-0 align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
-                      
-                    </div><!-- end cardheader -->
-                    <div class="card-body">
-                        <div id="portfolio_donut_charts" data-projects='@json($projects_data)'
-                        data-total-hours='{{ $totalHours }}' data-colors='["--vz-primary", "--vz-info", "--vz-warning", "--vz-success"]' data-colors-minimal='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' data-colors-interactive='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' data-colors-corporate='["--vz-primary", "--vz-secondary", "--vz-info", "--vz-success"]' data-colors-galaxy='["--vz-primary", "--vz-primary-rgb, 0.85", "--vz-primary-rgb, 0.65", "--vz-primary-rgb, 0.50"]' class="apex-charts" dir="ltr"></div>
-
-                        <ul class="list-group list-group-flush border-dashed mb-0 mt-3 pt-2">
-                            @foreach($projects_data as $proj)
-                            <li class="list-group-item px-0">
-                                <div class="d-flex">
-                                    <div class="flex-grow-1 ms-2">
-                                        <h6 class="mb-1">{{$proj['title']}}</h6>
-                                    </div>
-                                    <div class="flex-shrink-0 text-end">
-                                        <h6 class="mb-1 text-success">{{$proj['hours']}} Hr/s</h6>
-                                    </div>
-                                </div>
-                            </li><!-- end -->
-                            @endforeach
-                          
-                        </ul><!-- end -->
-                    </div><!-- end card body -->
-                </div><!-- end card -->
-            </div><!-- end col -->
-            <div class="col-xl-4">
-                
-            </div>
-        </div>
-    </div>
-    <div class="col-xxl-3">
-        <div class="row">
-            <div class="col-lg-12">
                 <div class="card">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0  me-2">Recent Activity</h4>
-                        <div class="flex-shrink-0 ms-auto">
-                        </div>
+                        <h4 class="card-title mb-0 me-2">Recent Activity</h4>
+                        <div class="flex-shrink-0 ms-auto"></div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
                         <div class="tab-content text-muted">
                             <div class="tab-pane active" id="today" role="tabpanel">
                                 <div class="profile-timeline">
@@ -166,11 +209,19 @@
                                                     <a class="accordion-button p-2 shadow-none" data-bs-toggle="collapse" href="#collapsethree" aria-expanded="false">
                                                         <div class="d-flex">
                                                             <div class="flex-shrink-0">
-                                                                <img src="{{asset($activity->user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" title='{{$activity->user->name}}'  alt="" class="avatar-xs rounded-circle material-shadow" />
+                                                                <img src="{{asset($activity->user->avatar)}}" 
+                                                                     onerror="this.src='{{url('images/Favicon.png')}}';" 
+                                                                     title='{{$activity->user->name}}'  
+                                                                     alt="" 
+                                                                     class="avatar-xs rounded-circle material-shadow" />
                                                             </div>
                                                             <div class="flex-grow-1 ms-3">
-                                                                <h6 class="fs-14 mb-1"> {{substr($activity->activity,0,20)}} - {{$activity->hours}} hr/s</h6>
-                                                                <small class="text-muted mb-2">{{$activity->project->name}} - <span class="text-secondary">{{$activity->task->title}} </span>  <i>{{date('M d, Y',strtotime($activity->date))}}</i></small>
+                                                                <h6 class="fs-14 mb-1">{{substr($activity->activity,0,20)}} - {{$activity->hours}} hr/s</h6>
+                                                                <small class="text-muted mb-2">
+                                                                    {{$activity->project->name}} - 
+                                                                    <span class="text-secondary">{{$activity->task->title}}</span>  
+                                                                    <i>{{date('M d, Y',strtotime($activity->date))}}</i>
+                                                                </small>
                                                             </div>
                                                         </div>
                                                     </a>
@@ -184,6 +235,7 @@
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
+                
             </div><!-- end col -->
         </div>
     </div>
@@ -191,84 +243,10 @@
 @if(auth()->user()->role == "Admin")
     <div class="row">
         <div class="col-xl-4">
-            <div class="card card-height-100">
-                <div class="card-header d-flex align-items-center">
-                    <h4 class="card-title flex-grow-1 mb-0">Projects</h4>
-                    <div class="flex-shrink-0">
-                        <a href="javascript:void(0);" class="btn btn-soft-info btn-sm material-shadow-none">Export Report</a>
-                    </div>
-                </div><!-- end cardheader -->
-                <div class="card-body">
-                    <div class="table-responsive table-card">
-                        <table class="table table-nowrap table-centered align-middle">
-                            <thead class="bg-light text-muted">
-                                <tr>
-                                    <th scope="col">Project Name</th>
-                                    <th scope="col">Tasks</th>
-                                    <th scope="col">Assignee</th>
-                                    <th scope="col">Total Hours</th>
-                                </tr><!-- end tr -->
-                            </thead><!-- thead -->
-
-                            <tbody>
-                                @foreach($projects as $project)
-                                <tr>
-                                    <td><a href="{{url('/view-project/'.$project->id)}}" target="_blank">{{$project->name}}</a></td>
-                                    <td>{{$project->tasks->where('completed',1)->count()."/".$project->tasks->count()}}</td>
-                                    <td>
-                                        <div class="avatar-group flex-nowrap">
-                                        @foreach($project->users as $member)
-                                          <div class="avatar-group-item">
-                                            <a href="javascript: void(0);" class="d-inline-block avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
-                                                <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
-                                            </a>
-                                          </div>
-                                        @endforeach
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {{$project->activities->sum('hours')}} hrs
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody><!-- end tbody -->
-                        </table><!-- end table -->
-                    </div>
-
-
-                </div><!-- end card body -->
-            </div><!-- end card -->
+           
         </div><!-- end col -->
         <div class="col-xxl-4">
-            <div class="card card-height-100">
-                <div class="card-header align-items-center d-flex">
-                    <h4 class="card-title mb-0 flex-grow-1">Team Members ({{date('M d',strtotime($last_sunday))}} - {{date('M d',strtotime($saturday))}})</h4>
-                    <div class="flex-shrink-0">
-                    </div>
-                </div><!-- end card header -->
-
-                <div class="card-body">
-
-                    <div class="table-responsive table-card">
-                        <table class="table table-borderless table-nowrap align-middle mb-0">
-                            <thead class="table-light text-muted">
-                                <tr>
-                                    <th scope="col">Member</th>
-                                    <th scope="col">Hours</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($members as $member)
-                                <tr>
-                                    <td><a href="{{url('/view-profile/'.$member->id)}}" target="_blank">{{$member->name}}</a></td>
-                                    <td>{{$member->activities->sum('hours')}} hrs</td>
-                                </tr>
-                                @endforeach
-                            </tbody><!-- end tbody -->
-                        </table><!-- end table -->
-                    </div>
-                </div><!-- end cardbody -->
-            </div><!-- end card -->
+        
         </div><!-- end col -->
 
 
@@ -282,7 +260,6 @@
 
 <!-- Swiper Js -->
 <script src="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.js')}}"></script>
-
 <!-- CRM js -->
 <!-- ApexCharts -->
 <script>
@@ -384,5 +361,73 @@
         const chart = new ApexCharts(el, options);
         chart.render();
     });
-    </script>
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const projects = @json($projects_data);
+    
+        const labels = projects.map(p => p.title);
+        const hours = projects.map(p => p.hours);
+    
+        const ctx = document.getElementById('projectsBarChart').getContext('2d');
+    
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Hours',
+                    data: hours,
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--vz-primary'),
+                    borderRadius: 10,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--vz-primary'),
+                        titleColor: "#fff",
+                        bodyColor: "#fff",
+                        borderWidth: 0,
+                        padding: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: '#6c757d'
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font: {
+                                family: "'Inter', sans-serif",
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: '#6c757d'
+                        },
+                        grid: {
+                            borderDash: [4, 4]
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection
