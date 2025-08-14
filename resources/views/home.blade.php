@@ -98,7 +98,7 @@
                                 @endphp
                                     @for ($date = $last_sunday; $date <= $saturday; $date = date('Y-m-d', strtotime($date . ' +1 day')))
                                         @php
-                                        $tot_hours = $tot_hours + $activities->where('date',date('Y-m-d', strtotime($date)))->sum('hours') ;
+                                        $tot_hours = $tot_hours + $activities->where('user_id',auth()->user()->id)->where('date',date('Y-m-d', strtotime($date)))->sum('hours') ;
                                         @endphp
                                             <tr>
                                                     <td >{{ date('M d - l',strtotime($date)) }}</td>
@@ -107,7 +107,7 @@
                                     @endfor
                                     <tr>
                                         <td >Total</td>
-                                        <td>{{$tot_hours->where('user_id',auth()->user()->id)}} hrs</td>
+                                        <td>{{$tot_hours}} hrs</td>
                                     </tr>
                                 </tbody>
                             </table><!-- end table -->
