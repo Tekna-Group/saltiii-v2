@@ -165,7 +165,7 @@
                                                     <a class="accordion-button p-2 shadow-none" data-bs-toggle="collapse" href="#collapsethree" aria-expanded="false">
                                                         <div class="d-flex">
                                                             <div class="flex-shrink-0">
-                                                                <img src="{{asset($activity->user->avatar)}}"  alt="" class="avatar-xs rounded-circle material-shadow" />
+                                                                <img src="{{asset($activity->user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" title='{{$activity->user->name}}'  alt="" class="avatar-xs rounded-circle material-shadow" />
                                                             </div>
                                                             <div class="flex-grow-1 ms-3">
                                                                 <h6 class="fs-14 mb-1"> {{substr($activity->activity,0,20)}} - {{$activity->hours}} hr/s</h6>
