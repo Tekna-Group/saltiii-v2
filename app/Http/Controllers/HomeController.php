@@ -26,14 +26,19 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $projects = Project::with('activities')->where('completed',0)->get();
-        if(auth()->user()->role != 'Admin') {
-            $projects = $projects->with(['activities' => function ($query) {
-                $query->where('user_id', auth()->id());
-            }])->filter(function ($project) {
-                return $project->users->contains(auth()->user()->id);
-            });
+        $query = Project::with('activities')
+        ->where('completed', 0);
+    
+        if (auth()->user()->role != 'Admin') {
+            $query->with(['activities' => function ($q) {
+                    $q->where('user_id', auth()->id());
+                }])
+                ->whereHas('users', function ($q) {
+                    $q->where('users.id', auth()->id());
+                });
         }
+        
+        $projects = $query->get();
         $tasks = Task::where('completed',0)->get();
         if(auth()->user()->role != 'Admin') {
             $tasks = $tasks->filter(function ($task) {
@@ -59,7 +64,7 @@ class HomeController extends Controller
                     'hours' => $project->activities->sum('hours')
                 ];
             })->sortByDesc('hours') // Sort by hours in descending order
-            ->values();;
+            ->values();
         // dd($task_due);
         return view('home',
             array(
