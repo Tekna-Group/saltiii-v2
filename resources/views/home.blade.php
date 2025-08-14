@@ -78,9 +78,9 @@
         </div><!-- end row -->
         <div class="row">
             <div class="col-xl-4">
-                <div class="card card-height-100">
+                <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1 py-1">Hours</h4>
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet</h4>
                         
                     </div><!-- end card header -->
                     <div class="card-body">
@@ -114,9 +114,7 @@
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
-            </div><!-- end col -->
-            <div class="col-xl-4">
-                <div class="card card-height-100">
+                <div class="card card-height">
                     <div class="card-header border-0 align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
                       
@@ -142,6 +140,9 @@
                         </ul><!-- end -->
                     </div><!-- end card body -->
                 </div><!-- end card -->
+            </div><!-- end col -->
+            <div class="col-xl-4">
+                
             </div>
         </div>
     </div>
