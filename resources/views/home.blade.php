@@ -367,8 +367,20 @@
     document.addEventListener("DOMContentLoaded", function () {
         const projects = @json($projects_data);
     
-        const labels = projects.map(p => p.title);
-        const hours = projects.map(p => p.hours);
+        // Sort projects by hours descending
+        const sorted = [...projects].sort((a, b) => b.hours - a.hours);
+    
+        const labels = sorted.map(p => p.title);
+        const hours = sorted.map(p => p.hours);
+    
+        // Color palette
+        const colors = [
+            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+            '#858796', '#fd7e14', '#20c997', '#6610f2', '#6f42c1'
+        ];
+    
+        // Assign different colors to each bar
+        const barColors = labels.map((_, i) => colors[i % colors.length]);
     
         const ctx = document.getElementById('projectsBarChart').getContext('2d');
     
@@ -377,38 +389,35 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Hours',
                     data: hours,
-                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--vz-primary'),
-                    borderRadius: 10,
-                    maxBarThickness: 40
+                    backgroundColor: barColors,
+                    borderRadius: 8,
+                    maxBarThickness: 35
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    },
+                    legend: { display: false },
                     tooltip: {
-                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--vz-primary'),
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label; // Show project title on hover
+                            },
+                            label: function (context) {
+                                return context.formattedValue + ' Hr/s';
+                            }
+                        },
+                        backgroundColor: '#000',
                         titleColor: "#fff",
                         bodyColor: "#fff",
-                        borderWidth: 0,
-                        padding: 10
+                        padding: 8
                     }
                 },
                 scales: {
                     x: {
-                        ticks: {
-                            font: {
-                                family: "'Inter', sans-serif",
-                                size: 12,
-                                weight: 'bold'
-                            },
-                            color: '#6c757d'
-                        },
+                        ticks: { display: false }, // Hide bottom labels
                         grid: { display: false }
                     },
                     y: {
@@ -421,9 +430,7 @@
                             },
                             color: '#6c757d'
                         },
-                        grid: {
-                            borderDash: [4, 4]
-                        }
+                        grid: { borderDash: [4, 4] }
                     }
                 }
             }
