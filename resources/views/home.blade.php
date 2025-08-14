@@ -107,7 +107,7 @@
                                     @endfor
                                     <tr>
                                         <td >Total</td>
-                                        <td>{{$tot_hours}} hrs</td>
+                                        <td>{{$tot_hours->where('user_id',auth()->user()->id)}} hrs</td>
                                     </tr>
                                 </tbody>
                             </table><!-- end table -->
