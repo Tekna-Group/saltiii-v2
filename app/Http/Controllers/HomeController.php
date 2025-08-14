@@ -58,7 +58,8 @@ class HomeController extends Controller
                     'title' => $project->name,
                     'hours' => $project->activities->sum('hours')
                 ];
-            });
+            })->sortByDesc('hours') // Sort by hours in descending order
+            ->values();;
         // dd($task_due);
         return view('home',
             array(
