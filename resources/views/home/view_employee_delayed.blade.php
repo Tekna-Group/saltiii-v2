@@ -18,7 +18,7 @@
                             </tr>
                         </thead><!-- end thead -->
                         <tbody>
-                            @foreach($member->tasks->where('due_date','<',date('Y-m-d')) as $task)
+                            @foreach($member->tasks->where('due_date','<',date('Y-m-d'))->where('completed',0) as $task)
                             <tr @if($task->due_date < date('Y-m-d')) class='text-danger' @endif>
                                 <td><a href="{{ url('/view-project/'.$task->project_id) }}" >{{$task->project->name}}</a></td>
                                 <td><a href="{{url('view-project/view-task/'.$task->id)}}" >{{$task->title}}</a></td>
