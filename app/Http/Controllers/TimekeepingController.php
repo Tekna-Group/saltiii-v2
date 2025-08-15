@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\TaskActivity;
 use App\User;
+use App\Project;
 use Illuminate\Http\Request;
 
 class TimekeepingController extends Controller
@@ -13,6 +14,7 @@ class TimekeepingController extends Controller
     {
         $date_ranges = [];
         $TaskActivity = [];
+        $projects = [];
         $date_from = $request->date_from;
         $date_to = $request->date_to;
           $last_sunday = $date_from;
@@ -21,6 +23,9 @@ class TimekeepingController extends Controller
         {
             $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
             $date_ranges = $this->dateRange($date_from,$date_to);
+            $projects = Project::whereHas('activities', function ($query) use ($date_from, $date_to) {
+                $query->whereBetween('created_at', [$date_from, $date_to]);
+            })->orderBy('name','asc')->get();
         }
         $users = User::whereHas('activities', function ($query) use ($date_from, $date_to) {
             $query->whereBetween('created_at', [$date_from, $date_to]);
@@ -30,8 +35,9 @@ class TimekeepingController extends Controller
             'date_from' => $date_from,
             'date_to' => $date_to,
             'users' => $users,
-              'last_sunday' => $last_sunday,
-                'saturday' => $saturday,
+            'last_sunday' => $last_sunday,
+            'saturday' => $saturday,
+            'projects' => $projects,
         ]); 
     }
     public function myTimekeeping(Request $request)

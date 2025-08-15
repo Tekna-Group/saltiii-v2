@@ -1,6 +1,14 @@
 @extends('layouts.header')
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+
+  
+    .wrap-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+</style>
 @endsection
 @section('content')
 <div class="row">
@@ -40,6 +48,61 @@
     </div>
 </div>
 @if($date_from)
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card card-height-100">
+            <div class="card-header d-flex align-items-center">
+                <h4 class="card-title flex-grow-1 mb-0">Projects Hours <button class='btn btn-sm btn-info' onclick="exportTableToExcel('report','WE{{date('ymd',strtotime($saturday))}}.xls')">Export to Excel</button></h4>
+            </div><!-- end cardheader -->
+            <div class="card-body">
+                <div class="table-responsive table-card" >
+                    <table class="table  table-centered align-middle" id="report">
+                        <thead class="bg-light text-muted">
+                            <tr>
+                                <th scope="col">Personnel</th>
+                                <th scope="col">Week Ending</th>
+                                <th scope="col">No. of Hours</th>
+                                @foreach($projects as $project)
+                                <th class="wrap-text" style="word-wrap: break-word; ">
+                                    <small>{!! preg_replace("/\s+/", "\n", $project->name) !!}</small>
+                                </th>
+                                @endforeach
+                                 <th>Total</th>
+                            </tr><!-- end tr -->
+                        </thead><!-- thead -->
+
+                        <tbody>
+                            @foreach($users->sortBy('name') as $user)
+                                <tr>
+                                    <td>{{$user->name}}</td>
+                                    <td>WE{{date('ymd',strtotime($saturday))}}</td>
+                                    <td>{{number_format($activities->where('user_id',$user->id)->sum('hours'),2)}}</td>
+                                    @foreach($projects as $project)
+                                        <td class="wrap-text" >{{number_format($activities->where('user_id',$user->id)->where('project_id',$project->id)->sum('hours'),2)}}</td>
+                                    @endforeach
+                                    <td>{{number_format($activities->where('user_id',$user->id)->sum('hours'),2)}}</td>
+                                </tr>
+                            @endforeach
+                            
+                            
+                            
+                        </tbody><!-- end tbody -->
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-end">Total</td>
+                                <td>{{$activities->sum('hours')}}</td>
+                                @foreach($projects as $project)
+                                    <td class="wrap-text" style="word-wrap: break-word">{{number_format($activities->where('project_id',$project->id)->sum('hours'),2)}}</td>
+                                @endforeach
+                                <td>{{number_format($activities->sum('hours'),2)}}</td>
+                            </tr>
+                        </tfoot>
+                    </table><!-- end table -->
+                </div>
+            </div><!-- end card body -->
+        </div><!-- end card -->
+    </div><!-- end col -->
+</div>
 <div class="row">
     <div class="col-xl-12">
         <div class="card card-height-100">
@@ -175,4 +238,34 @@
    
 });
 </script>
+<script>
+    function exportTableToExcel(tableId, filename = 'table.xls') {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+    
+      const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="UTF-8">
+            <!-- Optional: default text as text to preserve leading zeros -->
+            <style> td { mso-number-format:"\@"; } </style>
+          </head>
+          <body>${table.outerHTML}</body>
+        </html>`;
+    
+      const blob = new Blob(['\ufeff', html], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+    
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename.endsWith('.xls') ? filename : (filename + '.xls');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
+    </script>
 @endsection
