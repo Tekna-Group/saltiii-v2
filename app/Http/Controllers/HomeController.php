@@ -70,7 +70,19 @@ class HomeController extends Controller
         ->sortByDesc('hours')
         ->values();
          if(auth()->user()->role != 'Admin') {
-            $project_this_week  = $project_this_week->where('user_id',auth()->user()->id);
+             $project_this_week = Project::with(['activities' => function ($query) use ($last_sunday, $saturday) {
+            $query->whereBetween('date', [$last_sunday, $saturday])
+                  ->where('user_id',auth()->user()->id);
+            }])
+            ->get()
+            ->map(function ($project) {
+                return [
+                    'title' => $project->name,
+                    'hours' => $project->activities->sum('hours')
+                ];
+            })
+            ->sortByDesc('hours')
+            ->values();
          }
 
         $projects_data = $projects->map(function ($project) {
