@@ -109,7 +109,7 @@
             <div class="col-xl-8">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title mb-0">Projects Hours</h4>
+                        <h4 class="card-title mb-0">Projects Hours ({{date('M d',strtotime($last_sunday))}} - {{date('M d',strtotime($saturday))}})</h4>
                     </div><!-- end card header -->
 
                     <div class="card-body">
@@ -357,7 +357,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const projects = @json($projects_data);
+        const projects = @json($project_this_week);
     
         // Sort projects by hours descending
         const sorted = [...projects].sort((a, b) => b.hours - a.hours);

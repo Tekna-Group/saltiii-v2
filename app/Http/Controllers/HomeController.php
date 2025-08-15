@@ -57,6 +57,21 @@ class HomeController extends Controller
         $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
             $query->whereBetween('date', [$last_sunday, $saturday]);
         }])->get();
+        $project_this_week = Project::with(['activities' => function ($query) use ($last_sunday, $saturday) {
+        $query->whereBetween('date', [$last_sunday, $saturday]);
+        }])
+        ->get()
+        ->map(function ($project) {
+            return [
+                'title' => $project->name,
+                'hours' => $project->activities->sum('hours')
+            ];
+        })
+        ->sortByDesc('hours')
+        ->values();
+         if(auth()->user()->role != 'Admin') {
+            $project_this_week  = $project_this_week->where('user_id',auth()->user()->id);
+         }
 
         $projects_data = $projects->map(function ($project) {
                 return [
@@ -76,6 +91,7 @@ class HomeController extends Controller
                 'saturday' => $saturday,
                 'projects_data' => $projects_data,
                 'totalHours' => $projects_data->sum('hours'),
+                'project_this_week' => $project_this_week,
 
             )
         );
