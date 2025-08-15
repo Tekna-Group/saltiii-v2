@@ -67,22 +67,24 @@ class HomeController extends Controller
                 'hours' => $project->activities->sum('hours')
             ];
         })
+        ->filter(fn($item) => $item['hours'] > 0)
         ->sortByDesc('hours')
         ->values();
          if(auth()->user()->role != 'Admin') {
-             $project_this_week = Project::with(['activities' => function ($query) use ($last_sunday, $saturday) {
-            $query->whereBetween('date', [$last_sunday, $saturday])
-                  ->where('user_id',auth()->user()->id);
-            }])
-            ->get()
-            ->map(function ($project) {
-                return [
-                    'title' => $project->name,
-                    'hours' => $project->activities->sum('hours')
-                ];
-            })
-            ->sortByDesc('hours')
-            ->values();
+           $project_this_week = Project::with(['activities' => function ($query) use ($last_sunday, $saturday) {
+        $query->whereBetween('date', [$last_sunday, $saturday])
+              ->where('user_id', auth()->user()->id);
+    }])
+    ->get()
+    ->map(function ($project) {
+        return [
+            'title' => $project->name,
+            'hours' => $project->activities->sum('hours')
+        ];
+    })
+    ->filter(fn($item) => $item['hours'] > 0) // remove projects with 0 hours
+    ->sortByDesc('hours')
+    ->values();
          }
 
         $projects_data = $projects->map(function ($project) {
@@ -90,7 +92,8 @@ class HomeController extends Controller
                     'title' => $project->name,
                     'hours' => $project->activities->sum('hours')
                 ];
-            })->sortByDesc('hours') // Sort by hours in descending order
+            })->sortByDesc('hours')
+            ->filter(fn($item) => $item['hours'] > 0) // Sort by hours in descending order
             ->values();
         // dd($task_due);
         return view('home',
