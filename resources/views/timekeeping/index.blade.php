@@ -75,7 +75,7 @@
                             @foreach($users->sortBy('name') as $user)
                                 <tr>
                                     <td>{{$user->name}}</td>
-                                    <td>WE{{date('ymd',strtotime($saturday))}}</td>
+                                    <td>WE {{date('ymd',strtotime($saturday))}}</td>
                                     <td>{{number_format($activities->where('user_id',$user->id)->sum('hours'),2)}}</td>
                                     @foreach($projects as $project)
                                         <td class="wrap-text" >{{number_format($activities->where('user_id',$user->id)->where('project_id',$project->id)->sum('hours'),2)}}</td>
