@@ -285,7 +285,7 @@
                 <div class="card-body">
                     <div class="d-flex mb-2">
                         <div class="flex-grow-1">
-                            <h6 class="fs-15 mb-0 text-truncate task-title"><a href='view-task/${task.id}' class="d-block">${task.name}</a></h6>
+                            <h6 class="fs-15 mb-0 text-truncate task-title"><a href='view-task/${task.id}' class="d-block">${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}</a></h6>
                         </div>
                     </div>
                                             

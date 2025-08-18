@@ -78,11 +78,16 @@ class ProjectController extends Controller
     public function view(Request $request,$id)
     {
 
-        $project =Project::with([
+        $project = Project::with([
             'users',
             'statuses',
             'tasks' => function ($query) {
-                $query->where('completed', 0);
+                $query->where('completed', 0)
+                      ->when(auth()->user()->role != "Admin", function ($q) {
+                          $q->whereHas('users', function ($sub) {
+                              $sub->where('user_id', auth()->id());
+                          });
+                      });
             },
             'tasks.comments',
             'tasks.attachments'
