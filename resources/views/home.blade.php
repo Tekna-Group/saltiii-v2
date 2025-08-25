@@ -1,6 +1,7 @@
 @extends('layouts.header')
 @section('css')
     <link href="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.css')}}" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css" rel="stylesheet">
 @endsection
 @section('content')
 
@@ -107,6 +108,11 @@
                
             </div><!-- end col -->
             <div class="col-xl-8">
+                <div class="card card-h-100">
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-header">
                         <h4 class="card-title mb-0">Projects Hours</h4>
@@ -155,6 +161,7 @@
         </div>
     </div>
     <div class="col-xxl-3">
+        
         <div class="row">
             <div class="col-lg-12">
                 <div class="card card-height">
@@ -240,7 +247,17 @@
         </div>
     </div>
 </div>
-
+<div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventModalLabel">Event Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+  </div>
 @include('home.view_projects')
 @foreach($members as $member)
     @include('home.view_employee_tasks')
@@ -252,6 +269,46 @@
 
 <!-- Swiper Js -->
 <script src="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.js')}}"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const calendarEl = document.getElementById('calendar');
+  const modalEl = document.getElementById('eventModal');
+  const modalBody = document.getElementById('modalBody');
+  const modal = new bootstrap.Modal(modalEl);
+
+  // Sample events array
+  const sampleEvents = [
+    { id: '1', title: 'Team Standup', start: '2025-08-05T09:30:00', extendedProps: { location: 'Zoom', type: 'Meeting' } },
+    { id: '2', title: 'Design Review', start: '2025-08-12T14:00:00', extendedProps: { location: 'Room A', type: 'Discussion' } },
+    { id: '3', title: 'Payment Deadline', start: '2025-08-25', allDay: true, extendedProps: { location: 'Portal', type: 'Deadline' } }
+  ];
+
+  // Initialize FullCalendar
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,dayGridWeek,dayGridDay'
+    },
+    events: sampleEvents, // provide events directly as an array :contentReference[oaicite:3]{index=3}
+    eventClick: function(info) {
+      const e = info.event;
+      modalBody.innerHTML = `
+        <p><strong>Title:</strong> ${e.title}</p>
+        <p><strong>Start:</strong> ${e.start.toLocaleString()}</p>
+        ${e.extendedProps.location ? `<p><strong>Location:</strong> ${e.extendedProps.location}</p>` : ''}
+        ${e.extendedProps.type ? `<p><strong>Type:</strong> ${e.extendedProps.type}</p>` : ''}
+      `;
+      modal.show();
+    }
+  });
+
+  calendar.render();
+});
+</script>
+
 <!-- CRM js -->
 <!-- ApexCharts -->
 <script>
@@ -356,77 +413,57 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const projects = @json($projects_data);
+    document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('calendar');
+      const modalEl = document.getElementById('eventModal');
+      const modalBody = document.getElementById('modalBody');
+      const modal = new bootstrap.Modal(modalEl);
     
-        // Sort projects by hours descending
-        const sorted = [...projects].sort((a, b) => b.hours - a.hours);
+      // Convert $tasks from Laravel → JS
+      const tasks = @json($tasks);
     
-        const labels = sorted.map(p => p.title);
-        const hours = sorted.map(p => p.hours);
+      const today = new Date();
+      const events = tasks.map(task => {
+        const due = new Date(task.due_date);
+        return {
+          title: task.title,
+          start: task.due_date,
+          allDay: true,
+          extendedProps: {
+            description: task.description,
+            users: task.users.map(u => u.name) // assuming Task->users has 'name'
+          },
+          color: due <= today ? "red" : "" // red if due today or overdue
+        };
+      });
     
-        // Color palette
-        const colors = [
-            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-            '#858796', '#fd7e14', '#20c997', '#6610f2', '#6f42c1'
-        ];
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: 'dayGridMonth',
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,dayGridWeek,dayGridDay'
+  },
+  events: events,
+  dayMaxEventRows: true,   // enable "more" link
+  views: {
+    dayGridMonth: { dayMaxEventRows: 3 } // show only 3 per day
+  },
+  eventClick: function(info) {
+    const e = info.event;
+    modalBody.innerHTML = `
+      <p><strong>Title:</strong> ${e.title}</p>
+      <p><strong>Description:</strong> ${e.extendedProps.description}</p>
+      <p><strong>Due Date:</strong> ${e.start.toLocaleDateString()}</p>
+      <p><strong>Participants:</strong> ${e.extendedProps.users.join(", ")}</p>
+    `;
+    modal.show();
+  }
+});
     
-        // Assign different colors to each bar
-        const barColors = labels.map((_, i) => colors[i % colors.length]);
-    
-        const ctx = document.getElementById('projectsBarChart').getContext('2d');
-    
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: hours,
-                    backgroundColor: barColors,
-                    borderRadius: 8,
-                    maxBarThickness: 35
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            title: function(context) {
-                                return context[0].label; // Show project title on hover
-                            },
-                            label: function (context) {
-                                return context.formattedValue + ' Hr/s';
-                            }
-                        },
-                        backgroundColor: '#000',
-                        titleColor: "#fff",
-                        bodyColor: "#fff",
-                        padding: 8
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { display: false }, // Hide bottom labels
-                        grid: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                family: "'Inter', sans-serif",
-                                size: 12,
-                                weight: 'bold'
-                            },
-                            color: '#6c757d'
-                        },
-                        grid: { borderDash: [4, 4] }
-                    }
-                }
-            }
-        });
+      calendar.render();
     });
-</script>
+    </script>
+
+
 @endsection
