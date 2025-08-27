@@ -79,6 +79,52 @@
         </div><!-- end row -->
         <div class="row">
             <div class="col-xl-4">
+
+                <div class="card card-height">
+                    <div class="card-header align-items-center d-flex">
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">My Pending Tasks</h4>
+                        
+                    </div><!-- end card header -->
+                    <div class="card-body" style="max-height: 350px; overflow-y: auto;">
+                        <div class="tab-content text-muted">
+                            <div class="tab-pane active" id="today" role="tabpanel">
+                                <div class="profile-timeline">
+                                    <div class="accordion accordion-flush" id="todayExample">
+                                        @foreach(
+                                            $tasks->sortBy('due_date')
+                                                  ->filter(fn($task) => $task->users->contains('id', auth()->id()) && $task->completed == 0)
+                                            as $task
+                                        )
+                                            <div class="accordion-item border-0">
+                                                <div class="accordion-header" id="headingThree">
+                                                    <a class="accordion-button p-2 shadow-none" href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' >
+                                                        <div class="d-flex">
+                                                            <div class="flex-shrink-0">
+                                                                <img src="{{ asset($task->project->icon) }}" 
+                                                                     onerror="this.src='{{url('images/Favicon.png')}}';" 
+                                                                     title='{{$task->title}}'  
+                                                                     alt="" 
+                                                                     class="avatar-xs rounded-circle material-shadow" />
+                                                            </div>
+                                                            <div class="flex-grow-1 ms-3">
+                                                                <h6 class="fs-14 mb-1">{{substr($task->title,0,20)}} - <i @if($task->due_date < date('Y-m-d')) class='text-danger' @endif>{{date('M d, Y',strtotime($task->due_date))}}</i></h6>
+                                                                <small class="text-muted mb-2">
+                                                                    {{$task->project->name}}
+                                                                    
+                                                                </small>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <!--end accordion-->
+                                </div>
+                            </div>
+                        </div>
+                    </div><!-- end card body -->
+                </div><!-- end card -->
                 <div class="card card-height">
                     <div class="card-header border-0 align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
