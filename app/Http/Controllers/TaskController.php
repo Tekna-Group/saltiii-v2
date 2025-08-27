@@ -72,12 +72,16 @@ class TaskController extends Controller
         // Fetch the task by ID
 
         $users = User::get();
+        $projects = Project::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->where('completed',0)->get();
         $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
         $boards = ProjectBoard::where('project_id',$task->project_id)->get();
         // Return the view with the task data
         return view('tasks.view', ['task' => $task,
         'boards' => $boards,
         'users' => $users,
+        'projects' => $projects,
         ]);
     }
     public function comment(Request $request,$id)
@@ -170,6 +174,16 @@ class TaskController extends Controller
         $activity->delete();
 
         Alert::success('Activity successfully deleted')->persistent('Dismiss');
+        return back();
+    }
+    public function transfer(Request $request, $id)
+    {
+        $task = Task::findOrfail($id);
+        $task->project_id = $request->project_id;
+        $project_board = ProjectBoard::where('project_id', $request->project_id)->first();
+        $task->project_board_id = $project_board->id; // Reset the project board
+        $task->save();
+        Alert::success('Task successfully transferred')->persistent('Dismiss');
         return back();
     }
 }
