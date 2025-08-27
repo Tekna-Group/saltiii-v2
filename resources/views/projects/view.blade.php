@@ -298,7 +298,7 @@
                         <div class="flex-shrink-0">
                             <ul class="link-inline mb-0">
                                 <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> ${task.hours}</a>
+                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}</a>
                                 </li>
                                 <li class="list-inline-item">
                                     <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> ${task.comments}</a>

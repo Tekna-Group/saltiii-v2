@@ -64,7 +64,7 @@ class HomeController extends Controller
         ->map(function ($project) {
             return [
                 'title' => $project->name,
-                'hours' => $project->activities->sum('hours')
+                'hours' => number_format($project->activities->sum('hours'), 2, '.', '') // ✅ 2 decimals
             ];
         })
         ->filter(fn($item) => $item['hours'] > 0)

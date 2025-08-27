@@ -410,7 +410,7 @@
         const projects = JSON.parse(el.dataset.projects);
         const totalHours = parseFloat(el.dataset.totalHours);
         const labels = projects.map(p => p.title);
-        const series = projects.map(p => p.hours);
+        const series = projects.map(p => parseFloat(Number(p.hours).toFixed(2)));
         const chartColors = getChartColorsArray("portfolio_donut_charts");
     
         const options = {
@@ -476,12 +476,12 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const projects = @json($projects_data);
-    
-        // Sort projects by hours descending
-        const sorted = [...projects].sort((a, b) => b.hours - a.hours);
-    
-        const labels = sorted.map(p => p.title);
-        const hours = sorted.map(p => p.hours);
+
+// Sort projects by hours descending
+const sorted = [...projects].sort((a, b) => b.hours - a.hours);
+
+const labels = sorted.map(p => p.title);
+const hours = sorted.map(p => parseFloat(p.hours).toFixed(2)).map(Number);
     
         // Color palette
         const colors = [
