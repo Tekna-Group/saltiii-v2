@@ -15,7 +15,7 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="sub-tasks" class="form-label">Hours (<small><i><b>Sample</b> 1.5 for 1 hours and 30 minutes</i></small>)</label>
-                                <input type="number" class="form-control" min='0' step='.1' id="hours" placeholder="1.0" name="hours" required>
+                                <input type="number" class="form-control" min='0' step='.01' id="hours" placeholder="1.01" name="hours" required>
                             </div>
                             <div class="col-lg-12">
                                 <label for="sub-tasks" class="form-label">Date </label>
