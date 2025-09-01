@@ -29,7 +29,7 @@
                                 <label for="" class="form-label">Status of Task?</label>
                                 <select name='status' class='form-control' required>
                                     <option value='0' @if($task->status == 0) selected @endif>Still Ongoing</option>
-                                    <option value='1' @if($task->status == 1) selected @endif>Task Completed</option>
+                                    {{-- <option value='1' @if($task->status == 1) selected @endif>Task Completed</option> --}}
                                 </select>
                             </div>
                             <div class="col-lg-12">
