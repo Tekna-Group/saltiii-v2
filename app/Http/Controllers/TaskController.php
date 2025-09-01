@@ -135,8 +135,8 @@ class TaskController extends Controller
         $TaskAttachment = new TaskAttachment();
         $TaskAttachment->project_id = $task->project_id;
         $TaskAttachment->task_id = $task->id;
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
+        if ($request->hasFile('proof')) {
+            $file = $request->file('proof');
             $sizeInBytes = $file->getSize();
 
              // Optional: Convert to KB or MB        // kilobytes
@@ -152,13 +152,15 @@ class TaskController extends Controller
         }
         $TaskAttachment->user_id = auth()->user()->id;
         $TaskAttachment->save();
-
-         $TaskComment = new TaskComment();
-        $TaskComment->comment = $request->task." - ".$request->comments;
-        $TaskComment->task_id = $id;
-        $TaskComment->project_id = $task->project_id;
-        $TaskComment->user_id = auth()->user()->id;
-        $TaskComment->save();
+        if($request->comments != null){
+           
+            $TaskComment = new TaskComment();
+            $TaskComment->comment = $request->task." - ".$request->comments;
+            $TaskComment->task_id = $id;
+            $TaskComment->project_id = $task->project_id;
+            $TaskComment->user_id = auth()->user()->id;
+            $TaskComment->save();
+        }
 
         $TaskActivity = new TaskActivity();
         $TaskActivity->activity = $request->task;

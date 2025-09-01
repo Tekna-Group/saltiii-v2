@@ -1,6 +1,25 @@
 @extends('layouts.header')
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- dropzone css -->
+  <!-- FilePond styles -->
+  <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+
+  <!-- Optional FilePond plugins -->
+  <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+  <style>
+    .filepond--item {
+        width: calc(50% - 0.5em);
+    }
+    .file-upload-container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
 @endsection
 @section('content')
 <div class="row">
@@ -338,11 +357,44 @@
   </div>
 @include('tasks.change_member')
 @include('tasks.add_activity')
+
 @endsection
 
 @section('js')
+
+<!-- FilePond library -->
+<script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+
+<!-- Optional plugins -->
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+
+<script>
+  // Register FilePond plugins
+  FilePond.registerPlugin(
+    FilePondPluginFileValidateSize,
+    FilePondPluginFileValidateType,
+    FilePondPluginImagePreview
+  );
+
+  // Turn all file input elements into FilePond
+  FilePond.create(document.querySelector('.filepond'), {
+    acceptedFileTypes: ['image/*', 'application/pdf'],
+    allowMultiple: true,
+    maxFiles: 1,
+     // Keep the original input so form can submit normally
+     storeAsFile: true,
+    labelIdle: 'Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+  });
+</script>
+
+
+{{-- <script src="{{asset('inside_css/assets/js/pages/form-file-upload.init.js')}}"></script> --}}
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     $(document).ready(function() {
     
@@ -383,4 +435,6 @@
 
 });
 </script>
+
+
 @endsection
