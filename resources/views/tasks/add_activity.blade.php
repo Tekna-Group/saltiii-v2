@@ -21,6 +21,21 @@
                                 <label for="sub-tasks" class="form-label">Date </label>
                                 <input type="date" class="form-control" max='{{date('Y-m-d')}}' value='{{date('Y-m-d')}}' min='{{ date('Y-m-d', strtotime('-1 day')) }}' id="date" placeholder="1.0" name="date" required>
                             </div>
+                            <div class="col-lg-12">
+                                <label for="remarks" class="form-label">Remarks / Comments</label>
+                                <textarea class='form-control' name='comments' required></textarea>
+                            </div>
+                            <div class="col-lg-12">
+                                <label for="remarks" class="form-label">Status of Task?</label>
+                                <select name='status' class='form-control' required>
+                                    <option value='0' @if($task->status == 0) selected @endif>Still Ongoing</option>
+                                    <option value='1' @if($task->status == 1) selected @endif>Task Completed</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-12">
+                                <label for="remarks" class="form-label">Proof</label>
+                                <input type='file' class='form-control' name='file' required></textarea>
+                            </div>
                         </div>
                         <!--end row-->
                   

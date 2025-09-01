@@ -130,6 +130,36 @@ class TaskController extends Controller
     {
         // dd($request->all());
         $task = Task::findOrfail($id);
+     
+        
+        $TaskAttachment = new TaskAttachment();
+        $TaskAttachment->project_id = $task->project_id;
+        $TaskAttachment->task_id = $task->id;
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $sizeInBytes = $file->getSize();
+
+             // Optional: Convert to KB or MB        // kilobytes
+            $sizeInMB = round($sizeInBytes / 1048576, 2);
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/tasks'), $filename);
+            $TaskAttachment->file_type = $file->getClientOriginalExtension();
+            $TaskAttachment->file = 'uploads/tasks/' . $filename;
+            $TaskAttachment->name = $file->getClientOriginalName();
+           
+            $TaskAttachment->file_size =  $sizeInMB;      // megabytes
+        
+        }
+        $TaskAttachment->user_id = auth()->user()->id;
+        $TaskAttachment->save();
+
+         $TaskComment = new TaskComment();
+        $TaskComment->comment = $request->task." - ".$request->comments;
+        $TaskComment->task_id = $id;
+        $TaskComment->project_id = $task->project_id;
+        $TaskComment->user_id = auth()->user()->id;
+        $TaskComment->save();
+
         $TaskActivity = new TaskActivity();
         $TaskActivity->activity = $request->task;
         $TaskActivity->task_id = $id;
@@ -138,8 +168,13 @@ class TaskController extends Controller
         $TaskActivity->created_by = auth()->user()->id;
         $TaskActivity->hours = $request->hours;
         $TaskActivity->date = $request->date;
+        $TaskActivity->file = $TaskAttachment->name;
+        $TaskActivity->comments = $TaskComment->comment;
         $TaskActivity->save();
 
+
+        $task->completed = $request->status;
+        $task->save();
         Alert::success('Successfully Encoded')->persistent('Dismiss');
         return back();
     }
