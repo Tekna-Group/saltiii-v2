@@ -34,7 +34,7 @@
                             </div>
                             <div class="col-lg-12">
                                 <label for="" class="form-label">Proof</label>
-                                <input type="file" class="filepond" name="proof" data-max-file-size="3MB" data-max-files="1" required/>
+                                <input type="file" class="filepond" name="proof" data-max-file-size="3MB" data-max-files="1" />
                             </div>
                         </div>
                         <!--end row-->
