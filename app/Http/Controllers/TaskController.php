@@ -153,7 +153,7 @@ class TaskController extends Controller
             $TaskAttachment->save();
             $att = $TaskAttachment->name;
         }
-      
+        $comm = null;
         if($request->comments != null){
            
             $TaskComment = new TaskComment();
@@ -162,6 +162,7 @@ class TaskController extends Controller
             $TaskComment->project_id = $task->project_id;
             $TaskComment->user_id = auth()->user()->id;
             $TaskComment->save();
+            $comm = $TaskComment->comment;
         }
 
         $TaskActivity = new TaskActivity();
@@ -173,7 +174,7 @@ class TaskController extends Controller
         $TaskActivity->hours = $request->hours;
         $TaskActivity->date = $request->date;
         $TaskActivity->file = $att;
-        $TaskActivity->comments = $TaskComment->comment;
+        $TaskActivity->comments = $comm;
         $TaskActivity->save();
 
 
