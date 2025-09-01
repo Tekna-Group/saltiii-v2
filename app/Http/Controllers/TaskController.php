@@ -132,10 +132,11 @@ class TaskController extends Controller
         $task = Task::findOrfail($id);
      
         
-        $TaskAttachment = new TaskAttachment();
-        $TaskAttachment->project_id = $task->project_id;
-        $TaskAttachment->task_id = $task->id;
+        $att = null;
         if ($request->hasFile('proof')) {
+            $TaskAttachment = new TaskAttachment();
+            $TaskAttachment->project_id = $task->project_id;
+            $TaskAttachment->task_id = $task->id;
             $file = $request->file('proof');
             $sizeInBytes = $file->getSize();
 
@@ -148,10 +149,11 @@ class TaskController extends Controller
             $TaskAttachment->name = $file->getClientOriginalName();
            
             $TaskAttachment->file_size =  $sizeInMB;      // megabytes
-        
+            $TaskAttachment->user_id = auth()->user()->id;
+            $TaskAttachment->save();
+            $att = $TaskAttachment->name;
         }
-        $TaskAttachment->user_id = auth()->user()->id;
-        $TaskAttachment->save();
+      
         if($request->comments != null){
            
             $TaskComment = new TaskComment();
@@ -170,7 +172,7 @@ class TaskController extends Controller
         $TaskActivity->created_by = auth()->user()->id;
         $TaskActivity->hours = $request->hours;
         $TaskActivity->date = $request->date;
-        $TaskActivity->file = $TaskAttachment->name;
+        $TaskActivity->file = $att;
         $TaskActivity->comments = $TaskComment->comment;
         $TaskActivity->save();
 
