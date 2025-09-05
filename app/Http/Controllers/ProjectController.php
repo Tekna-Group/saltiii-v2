@@ -94,7 +94,7 @@ class ProjectController extends Controller
         $boardData = [];
         
         foreach ($project->statuses as $status) {
-            $tasks = $project->tasks
+            $tasks = $project->tasks->where('archived', '!=',1)
     ->where('project_board_id', $status->id)
     ->map(function ($task) {
         return [
