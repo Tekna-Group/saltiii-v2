@@ -104,64 +104,95 @@
                     <table class="table align-middle table-nowrap mb-0" id="tasksTable">
                         <thead class="table-light text-muted">
                             <tr>
-                               
-                                <th class="sort" data-sort="id">ID</th>
-                                <th class="sort" data-sort="project_name">Project</th>
-                                <th class="sort" data-sort="tasks_name">Task</th>
-                                <th class="sort" data-sort="assignedto">Assigned To</th>
-                                <th class="sort" data-sort="due_date">Due Date</th>
-                                <th class="sort" data-sort="status">Status</th>
-                                <th class="sort" data-sort="priority">Priority</th>
+                                <th>ID</th>
+                                <th>Project</th>
+                                <th>Task</th>
+                                <th>Assigned To</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Priority</th>
                             </tr>
                         </thead>
-                        <tbody class="list form-check-all">
+                        <tbody>
                             @foreach($tasks->where('completed',0) as $task)
-                            <tr @if($task->due_date < date('Y-m-d')) class='bg-warning' @endif>
-                                
-                                <td class="id"><a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary">#{{$task->id}}</a></td>
-                                <td class="project_name"><a href="{{url('view-project/'.$task->project_id)}}" target='_blank' class="fw-medium link-primary">{{$task->project->name}}</a></td>
+                            <tr @if($task->due_date < date('Y-m-d')) class="bg-warning" @endif>
+                                <td>
+                                    <a href="{{ url('view-project/view-task/'.$task->id) }}" target="_blank" class="fw-medium link-primary">
+                                        #{{ $task->id }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{{ url('view-project/'.$task->project_id) }}" target="_blank" class="fw-medium link-primary">
+                                        {{ $task->project->name }}
+                                    </a>
+                                </td>
                                 <td>
                                     <div class="d-flex">
-                                        <a href="{{url('view-project/view-task/'.$task->id)}}" target='_blank' class="fw-medium link-primary"><div class="flex-grow-1 tasks_name">{{$task->title}}</div><a>
+                                        <a href="{{ url('view-project/view-task/'.$task->id) }}" target="_blank" class="fw-medium link-primary">
+                                            <div class="flex-grow-1">{{ $task->title }}</div>
+                                        </a>
                                     </div>
                                 </td>
-                                <td class="assignedto">
+                                <td>
                                     <div class="avatar-group">
                                         @foreach($task->users as $member)
-                                        <a href="javascript: void(0);" class="avatar-group-item" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
-                                            <img src="{{$member->avatar}}" onerror="this.src='{{url('images/Favicon.png')}}';"  alt="" class="rounded-circle avatar-xxs" />
-                                        </a>
+                                            <a href="javascript:void(0);" class="avatar-group-item" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-trigger="hover" 
+                                               data-bs-placement="top" 
+                                               title="{{ $member->name }}">
+                                                <img src="{{ $member->avatar }}" 
+                                                     onerror="this.src='{{ url('images/Favicon.png') }}';"  
+                                                     alt="" 
+                                                     class="rounded-circle avatar-xxs" />
+                                            </a>
                                         @endforeach
                                     </div>
                                 </td>
-                                <td class="due_date">{{date('d M, Y',strtotime($task->due_date))}}</td>
-                                <td class="status"><span class="badge bg-secondary-subtle text-secondary text-uppercase">{{$task->board->board}}</span></td>
-                                <td class="priority"><span class="badge bg-danger text-uppercase">{{$task->priority}}</span></td>
+                                <td>
+                                    {{ $task->due_date ? date('d M, Y', strtotime($task->due_date)) : 'No Due Date' }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary text-uppercase">
+                                        {{ $task->board->board }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger text-uppercase">
+                                        {{ $task->priority }}
+                                    </span>
+                                </td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
-                    <!--end table-->
+            
+                    <!-- No results message -->
                     <div class="noresult" style="display: none">
                         <div class="text-center">
-                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" trigger="loop" colors="primary:#121331,secondary:#08a88a" style="width:75px;height:75px"></lord-icon>
+                            <lord-icon src="https://cdn.lordicon.com/msoeawqm.json" 
+                                       trigger="loop" 
+                                       colors="primary:#121331,secondary:#08a88a" 
+                                       style="width:75px;height:75px">
+                            </lord-icon>
                             <h5 class="mt-2">Sorry! No Result Found</h5>
-                            <p class="text-muted mb-0">We've searched more than 200k+ tasks We did not find any tasks for you search.</p>
+                            <p class="text-muted mb-0">
+                                We've searched more than 200k+ tasks but did not find any tasks for your search.
+                            </p>
                         </div>
                     </div>
                 </div>
+            
+                <!-- Pagination -->
                 <div class="d-flex justify-content-end mt-2">
                     <div class="pagination-wrap hstack gap-2">
-                        <a class="page-item pagination-prev disabled" href="#">
-                            Previous
-                        </a>
-                        <ul class="pagination listjs-pagination mb-0"></ul>
-                        <a class="page-item pagination-next" href="#">
-                            Next
-                        </a>
+                        <a class="page-item pagination-prev disabled" href="#">Previous</a>
+                        <ul class="pagination mb-0"></ul>
+                        <a class="page-item pagination-next" href="#">Next</a>
                     </div>
                 </div>
             </div>
+            
             <!--end card-body-->
         </div>
         <!--end card-->

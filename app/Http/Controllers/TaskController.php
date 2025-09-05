@@ -17,9 +17,12 @@ class TaskController extends Controller
     public function index()
     {
         // Fetch all tasks from the database
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query) {
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])
+        ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->get();
+        })
+        ->orderBy('due_date', 'asc') // ✅ Order by due_date ascending
+        ->get();
         $projects = Project::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->get();
