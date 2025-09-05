@@ -82,7 +82,7 @@ class ProjectController extends Controller
             'users',
             'statuses',
             'tasks' => function ($query) {
-                $query->where('archived','!=',1)->when(auth()->user()->role != "Admin", function ($q) {
+                $query->when(auth()->user()->role != "Admin", function ($q) {
                           $q->whereHas('users', function ($sub) {
                               $sub->where('user_id', auth()->id());
                           });
