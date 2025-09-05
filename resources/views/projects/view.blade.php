@@ -279,39 +279,58 @@
             </div>
           </div>
          <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">
-            ${column.tasks.map(task => `
-              <div id="task-${task.id}" class="kanban-card tasks-box" draggable="true" ondragstart="drag(event)">
+            ${column.tasks.map(task => {
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    let taskBgClass = '';
 
-                <div class="card-body">
-                    <div class="d-flex mb-2">
-                        <div class="flex-grow-1">
-                            <h6 class="fs-15 mb-0 text-truncate task-title"><a href='view-task/${task.id}' class="d-block">${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}</a></h6>
-                        </div>
-                    </div>
-                                            
-                </div>
-                <div class="card-footer border-top-dashed">
-                    <div class="d-flex">
-                        <div class="flex-grow-1">
-                            <span class="text-muted"><i class="ri-time-line align-bottom"></i> ${task.due_date ? task.due_date : 'No Due Date'}</span>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <ul class="link-inline mb-0">
-                                <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}</a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-question-answer-line align-bottom"></i> ${task.comments}</a>
-                                </li>
-                                <li class="list-inline-item">
-                                    <a href="javascript:void(0)" class="text-muted"><i class="ri-attachment-2 align-bottom"></i> ${task.attachments}</a>
-                                </li>
-                            </ul>
-                        </div>
+
+    return `
+        <div id="task-${task.id}" class="kanban-card tasks-box ${taskBgClass}" draggable="true" ondragstart="drag(event)">
+            <div class="card-body">
+                <div class="d-flex mb-2">
+                    <div class="flex-grow-1">
+                        <h6 class="fs-15 mb-0 text-truncate task-title">
+                            <a href='view-task/${task.id}' class="d-block">
+                              ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
+                              ${((task.due_date && task.due_date < today) && (task.completed == 0)) ? '<i class="text-danger  ri-error-warning-fill align-middle me-1"></i>' : ''}
+                                ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
+                            </a>
+                        </h6>
                     </div>
                 </div>
-               
-              </div>`).join('')}
+            </div>
+
+            <div class="card-footer border-top-dashed">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <span class="text-muted">
+                            <i class="ri-time-line align-bottom"></i> ${task.due_date ? task.due_date : 'No Due Date'}
+                        </span>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <ul class="link-inline mb-0">
+                            <li class="list-inline-item">
+                                <a href="javascript:void(0)" class="text-muted">
+                                    <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
+                                </a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="javascript:void(0)" class="text-muted">
+                                    <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
+                                </a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="javascript:void(0)" class="text-muted">
+                                    <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}).join('')}
           </div>
           <div class="p-2">
             <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')">+ Add Task</button>

@@ -82,8 +82,7 @@ class ProjectController extends Controller
             'users',
             'statuses',
             'tasks' => function ($query) {
-                $query->where('completed', 0)
-                      ->when(auth()->user()->role != "Admin", function ($q) {
+                $query->when(auth()->user()->role != "Admin", function ($q) {
                           $q->whereHas('users', function ($sub) {
                               $sub->where('user_id', auth()->id());
                           });
@@ -105,6 +104,7 @@ class ProjectController extends Controller
                     'comments' => $task->comments->count(),
                     'attachments' => $task->attachments->count(),
                     'hours' => $task->activities->sum('hours'),
+                    'completed' => $task->completed,
                     'assignees' => $task->users->pluck('name')->toArray(), // Assuming 'name' is the field in User model
                 ];
             })->values();
