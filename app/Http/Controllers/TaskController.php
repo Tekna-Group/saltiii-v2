@@ -226,4 +226,34 @@ class TaskController extends Controller
         Alert::success('Task successfully transferred')->persistent('Dismiss');
         return back();
     }
+    public function archive(Request $request, $id)
+    {
+        // Find task
+        $task = Task::find($id);
+
+        if (!$task) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Task not found.'
+            ], 404);
+        }
+
+        // Check if already completed
+        if ($task->completed != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only completed tasks can be archived.'
+            ], 400);
+        }
+
+        // Update task status
+        $task->archived = 1;  // Make sure you have 'archived' column in your tasks table
+        $task->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Task archived successfully.',
+            'task_id' => $task->id
+        ]);
+    }
 }

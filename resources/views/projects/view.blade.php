@@ -325,10 +325,17 @@
                                 </a>
                             </li>
                         </ul>
+                        
                     </div>
                 </div>
             </div>
+            ${task.completed == 1 ? `
+                        <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
+                            <i class="ri-archive-2-line"></i> Archive
+                        </button>
+                    ` : ''}
         </div>
+                    
     `;
 }).join('')}
           </div>
@@ -480,4 +487,27 @@ function drop(ev, columnId) {
     </script>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function archiveTask(taskId) {
+    if (confirm("Are you sure you want to archive this task?")) {
+        // Example: Send to backend via AJAX
+        fetch(`/tasks/${taskId}/archive`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById(`task-${data.task_id}`).remove();
+            } else {
+                alert('Failed to archive task.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+      </script>
 @endsection

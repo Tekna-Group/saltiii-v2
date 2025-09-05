@@ -82,7 +82,7 @@ class ProjectController extends Controller
             'users',
             'statuses',
             'tasks' => function ($query) {
-                $query->when(auth()->user()->role != "Admin", function ($q) {
+                $query->where('archived','!=',1)->when(auth()->user()->role != "Admin", function ($q) {
                           $q->whereHas('users', function ($sub) {
                               $sub->where('user_id', auth()->id());
                           });
@@ -94,20 +94,29 @@ class ProjectController extends Controller
         $boardData = [];
         
         foreach ($project->statuses as $status) {
-            $tasks = $project->tasks->where('project_board_id', $status->id)->map(function($task) {
-                return [
-                    'id' => $task->id,
-                    'name' => $task->title,
-                    'description' => $task->description,
-                    'due_date' => $task->due_date ? $task->due_date : null,
-                    'priority' => $task->priority,
-                    'comments' => $task->comments->count(),
-                    'attachments' => $task->attachments->count(),
-                    'hours' => $task->activities->sum('hours'),
-                    'completed' => $task->completed,
-                    'assignees' => $task->users->pluck('name')->toArray(), // Assuming 'name' is the field in User model
-                ];
-            })->values();
+            $tasks = $project->tasks
+    ->where('project_board_id', $status->id)
+    ->map(function ($task) {
+        return [
+            'id' => $task->id,
+            'name' => $task->title,
+            'description' => $task->description,
+            'due_date' => $task->due_date ? $task->due_date : null,
+            'priority' => $task->priority,
+            'comments' => $task->comments->count(),
+            'attachments' => $task->attachments->count(),
+            'hours' => $task->activities->sum('hours'),
+            'completed' => $task->completed,
+            'assignees' => $task->users->pluck('name')->toArray(),
+        ];
+    })
+    ->sortBy(function ($task) {
+        return [
+            $task['completed'],           // 0 first, then 1
+            $task['due_date'] ?? '9999-12-31', // Nulls go last
+        ];
+    })
+    ->values(); // Re-index the collection
         
             $boardData[] = [
                 'id' => $status->id, // e.g. "To Do" -> "todo"
