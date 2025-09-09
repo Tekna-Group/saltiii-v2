@@ -24,11 +24,11 @@ class TimekeepingController extends Controller
             $TaskActivity = TaskActivity::whereBetween('date',[$date_from,$date_to])->get();
             $date_ranges = $this->dateRange($date_from,$date_to);
             $projects = Project::whereHas('activities', function ($query) use ($date_from, $date_to) {
-                $query->whereBetween('created_at', [$date_from, $date_to]);
+                $query->whereBetween('date', [$date_from, $date_to]);
             })->orderBy('name','asc')->get();
         }
         $users = User::whereHas('activities', function ($query) use ($date_from, $date_to) {
-            $query->whereBetween('created_at', [$date_from, $date_to]);
+            $query->whereBetween('date', [$date_from, $date_to]);
         })->get();
         return view('timekeeping.index', ['activities' => $TaskActivity,
             'date_ranges' => $date_ranges,
