@@ -21,7 +21,7 @@
                                 <tbody>
                                     @foreach($projects->where('completed',0) as $project)
                                     <tr>
-                                        <td><a href="{{url('/view-project/'.$project->id)}}" target="_blank">{{$project->name}}</a></td>
+                                        <td><a href="{{url('/view-project/'.$project->id)}}" >{{$project->name}}</a></td>
                                         <td>{{$project->tasks->where('completed',1)->count()."/".$project->tasks->count()}}</td>
                                         <td>
                                             <div class="avatar-group flex-nowrap">

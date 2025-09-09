@@ -117,18 +117,18 @@
                             @foreach($tasks->where('completed',0) as $task)
                             <tr @if($task->due_date < date('Y-m-d')) class="bg-warning" @endif>
                                 <td>
-                                    <a href="{{ url('view-project/view-task/'.$task->id) }}" target="_blank" class="fw-medium link-primary">
+                                    <a href="{{ url('view-project/view-task/'.$task->id) }}" class="fw-medium link-primary">
                                         #{{ $task->id }}
                                     </a>
                                 </td>
                                 <td>
-                                    <a href="{{ url('view-project/'.$task->project_id) }}" target="_blank" class="fw-medium link-primary">
+                                    <a href="{{ url('view-project/'.$task->project_id) }}"  class="fw-medium link-primary">
                                         {{ $task->project->name }}
                                     </a>
                                 </td>
                                 <td>
                                     <div class="d-flex">
-                                        <a href="{{ url('view-project/view-task/'.$task->id) }}" target="_blank" class="fw-medium link-primary">
+                                        <a href="{{ url('view-project/view-task/'.$task->id) }}"  class="fw-medium link-primary">
                                             <div class="flex-grow-1">{{ $task->title }}</div>
                                         </a>
                                     </div>
