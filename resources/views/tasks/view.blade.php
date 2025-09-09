@@ -23,21 +23,35 @@
 @endsection
 @section('content')
 <div class="row">
+    <div class="col-xxl-12 mb-2">
+       
+    </div>
     <div class="col-xxl-3">
+       
         <div class="card">
+            <div class="card-header">
+                <a href="{{url('view-project/'.$task->project_id)}}" class="btn btn-primary  p-2">
+                    <i class="ri-arrow-left-line fs-4"></i> Back
+                  </a>
+            </div>
+            <!--end card-header-->
             <div class="card-body text-center">
-                <h6 class="card-title mb-3 flex-grow-1 text-start">Total Hours</h6>
+                
+               
+                
                 <div class="mb-2">
                     <lord-icon src="https://cdn.lordicon.com/kbtmbyzy.json" trigger="loop" colors="primary:#405189,secondary:#02a8b5" style="width:90px;height:90px"></lord-icon>
                 </div>
                 <h3 class="mb-1">{{$task->activities->sum('hours')}} hrs</h3>
+                <h6 class="card-title mb-3 flex-grow-1 text-start text-center">
+                    Total Hours</h6>
                 <div class="hstack gap-2 justify-content-center">
                    @if ($task->completed == 1)
-                        <div class="hstack gap-2 justify-content-center">
+                        {{-- <div class="hstack gap-2 justify-content-center">
                             <button class="btn btn-success btn-sm" disabled>
                                 <i class="ri-check-line align-bottom me-1"></i> Completed
                             </button>
-                        </div>
+                        </div> --}}
                     @else
                         <form action="{{ url('/task/complete/' . $task->id) }}" method="POST" class="d-inline">
                             @csrf
@@ -59,8 +73,8 @@
                   <form action="{{ url('/tasks/update-board/' . $task->id) }}" method="POST">
                     @csrf
                     
-                    <select class="form-control" name="project_board_id" onchange="this.form.submit()">
-                        <option value="">Select Task board</option>
+                    <select id="project_board_id" class="form-select" name="project_board_id" onchange="this.form.submit()">
+                        <option value="">Select Task Board</option>
                         @foreach($boards as $board)
                             <option value="{{ $board->id }}" @if($task->project_board_id == $board->id) selected @endif>
                                 {{ $board->board }}
