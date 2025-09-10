@@ -20,62 +20,68 @@
             'Not Yet Delayed' => ['tasks' => $tasks->where('due_date', '>', now()), 'color' => 'success'],
         ];
     @endphp
-
+  
     @foreach($sections as $sectionTitle => $sectionData)
     <div class="col-md-4">
-        <!-- Section Header -->
-        <div class="mb-2 d-flex align-items-center justify-content-between">
-            <h5 class="fw-bold text-{{$sectionData['color']}}">
-                {{$sectionTitle}} <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
-            </h5>
-        </div>
-
-        <!-- Scrollable Tasks List -->
-        <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;">
-            @forelse($sectionData['tasks'] as $task)
-            <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id='taskCard{{$task->id}}' class="text-decoration-none">
-                <div class="card shadow-sm mb-3 card-hover">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="me-2">
-                                <h6 class="fw-semibold mb-1 text-truncate" title="{{$task->title}}">
-                                    <h6 class="fw-semibold mb-1" title="{{ $task->title }}">
-                                        {{ strlen($task->title) > 20 ? substr($task->title, 0, 20) . '…' : $task->title }}
-                                    </h6> -  <span class="badge 
-                                    @if($task->priority == 'High') bg-danger text-white 
-                                    @elseif($task->priority == 'Medium') bg-warning text-dark 
-                                    @else bg-success text-white 
-                                    @endif">
-                                    {{$task->priority}}
-                                </span>
-                                </h6>
-                               
-                            </div>
-                            <small class="text-muted">
-                                <i class="ri-time-line"></i> <span>{{ $task->due_date }}</span>
-                            </small>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex justify-content-between align-items-center bg-light small text-muted">
-                        <ul class="list-inline mb-0 d-flex align-items-center gap-2">
-                            <li class="list-inline-item">
-                                <i class="ri-timer-fill"></i> {{$task->activities->sum('hours')}} hrs
-                            </li>
-                            <li class="list-inline-item">
-                                <i class="ri-question-answer-line"></i> {{$task->comments->count()}}
-                            </li>
-                            <li class="list-inline-item">
-                                <i class="ri-attachment-2"></i> {{$task->attachments->count()}}
-                            </li>
-                        </ul>
-                        <i class="ri-arrow-right-s-line"></i>
-                    </div>
+        <div class="card">
+            <div class="card-header align-items-center d-flex">
+                <h4 class="card-title mb-0 flex-grow-1 card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}"> {{$sectionTitle}} <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
+              </h4>
+                <div class="flex-shrink-0">
+                    
                 </div>
-            </a>
-            @empty
-            <div class="text-center text-muted py-3">No tasks</div>
-            @endforelse
-        </div>
+            </div><!-- end card header -->
+            <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;">
+            <div class="card-body">
+                @forelse($sectionData['tasks'] as $task)
+                    <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none">
+                        <div class="card shadow-sm mb-3 card-hover" 
+                            style="background-color: #FFF7E6; /* pastel yellow */ 
+                                    border: 1px solid #FFE3B3; 
+                                    border-radius: 10px; 
+                                    transition: transform 0.2s, box-shadow 0.2s;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="me-2 flex-grow-1">
+                                        <h6 class="fw-semibold mb-1 text-truncate" title="{{ $task->title }}">
+                                            {{ strlen($task->title) > 20 ? substr($task->title, 0, 20) . '…' : $task->title }}
+                                            -  
+                                            <span class="badge 
+                                                @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
+                                                @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
+                                                @else text-white" style="background-color:#B9F6CA;" 
+                                                @endif">
+                                                {{$task->priority}}
+                                            </span>
+                                        </h6>
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="ri-time-line"></i> <span>{{ date('M d, Y', strtotime($task->due_date)) }}</span>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0">
+                                <ul class="list-inline mb-0 d-flex align-items-center gap-2">
+                                    <li class="list-inline-item">
+                                        <i class="ri-timer-fill"></i> {{$task->activities->sum('hours')}} hrs
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="ri-question-answer-line"></i> {{$task->comments->count()}}
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="ri-attachment-2"></i> {{$task->attachments->count()}}
+                                    </li>
+                                </ul>
+                                <i class="ri-arrow-right-s-line"></i>
+                            </div>
+                        </div>
+                    </a>
+                @empty
+                    <div class="text-center text-muted py-3">No tasks</div>
+                @endforelse
+            </div>
+            </div>
+        </div><!-- end card -->
     </div>
     @endforeach
 </div>
