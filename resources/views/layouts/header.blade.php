@@ -155,6 +155,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
+                                <i class="ri-list-check"></i> <span data-key="t-dashboards">My Tasks</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/tasks')}}">
                                 <i class="ri-check-line"></i> 
                                 <span data-key="t-dashboards">Tasks</span>

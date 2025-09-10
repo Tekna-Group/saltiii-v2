@@ -42,9 +42,17 @@ Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
 Route::post('update-task-column','TaskController@changeStatus');
 Route::post('task/complete/{id}','TaskController@complete');
 Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
+Route::post('tasks/update-board/api/{id}','TaskController@updateBoard');
 Route::post('/update-user-password','UserController@updatePassword');
 Route::post('/activity/destroy/{id}','TaskController@destroy')->name('Delete Activity');
 Route::post('tasks/{id}/archive','TaskController@archive')->name('Archive Task');
+Route::post('/tasks/update-priority/{id}', 'TaskController@updatePriority');
+Route::post('task-comment/api/{id}', 'TaskController@commentPost')->name('Task Comment');
+
+//Task API
+Route::post('/tasks/{id}/update-due-date','TaskController@updateDueDate')->name('Update Due Date');
+
+Route::get('my-tasks','TaskController@myTasks');
 
 
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   

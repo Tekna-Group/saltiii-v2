@@ -33,6 +33,62 @@ class TaskController extends Controller
                                     'users' => $users,
                                     ]); 
     }
+
+    public function updateDueDate(Request $request, $id)
+    {
+        $request->validate([
+            'due_date' => 'required|date'
+        ]);
+      
+        $task = Task::findOrFail($id);
+
+        $request->merge([
+            'old_value' => $task->due_date,
+            'new_value' => $request->due_date,
+        ]);
+        $task->due_date = $request->due_date;
+        $task->save();
+        
+         $this->createTaskComment($request,$task->project_id, $task->id, 'Change Due Date');
+        return response()->json([
+            'success' => true,
+            'message' => 'Due date updated successfully',
+            'task' => $task
+        ]);
+    }
+    public function myTasks(Request $request)
+    {
+        $boards = ProjectBoard::get();
+         $tasks = Task::with(['users', 'project', 'comments', 'attachments'])
+        ->whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })
+        ->where('completed',0)
+        ->orderBy('due_date', 'asc') // ✅ Order by due_date ascending
+        ->get();
+
+        return view('tasks.myTasks', 
+        ['tasks' => $tasks,
+        'boards' => $boards,
+                                    ]); 
+    }
+    public function updatePriority(Request $request, $id)
+    {
+        $request->validate([
+            'priority' => 'required|in:High,Medium,Low',
+        ]);
+
+        $task = Task::findOrFail($id);
+        $request->merge([
+            'old_value' => $task->priority,
+            'new_value' => $request->priority,
+        ]);
+        $this->createTaskComment($request,$task->project_id, $task->id, 'Update priority');
+        $task->priority = $request->priority;
+        $task->save();
+
+        return response()->json(['success' => true]);
+    }
     public function store(Request $request, $project_id)
     {
         // dd($request->all());
@@ -101,14 +157,70 @@ class TaskController extends Controller
         return back();
     }
 
+    public function commentPost(Request $request,$taskId)
+    {
+         $request->validate([
+            'comment' => 'required|string',
+            'proof'   => 'nullable|file|max:3072', // max 3MB
+        ]);
+        $task = Task::findOrfail($taskId);
+
+        $filePath = null;
+         $remarks = e($request->comment) . "<br>";
+        
+        if ($request->hasFile('proof')) {
+               
+            $TaskActivity = new TaskAttachment();
+            $TaskActivity->project_id = $task->project_id;
+            $TaskActivity->task_id = $task->id;
+            $file = $request->file('proof');
+            $sizeInBytes = $file->getSize();
+
+             // Optional: Convert to KB or MB        // kilobytes
+            $sizeInMB = round($sizeInBytes / 1048576, 2);
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/tasks'), $filename);
+            $TaskActivity->file_type = $file->getClientOriginalExtension();
+            $TaskActivity->file = 'uploads/tasks/' . $filename;
+            $TaskActivity->name = $file->getClientOriginalName();
+           
+            $TaskActivity->file_size =  $sizeInMB;   
+            $TaskActivity->user_id = auth()->user()->id;
+            $TaskActivity->save();  // megabytes
+            $remarks .= "<a class='btn btn-sm btn-success mt-2' href='{$filename}' target='_blank'>
+                            {$original_name}
+                            </a>";
+        }
+        
+        $comment = new TaskComment();
+        $comment->task_id = $taskId;
+        $comment->project_id = $task->project_id ?? null;
+        $comment->user_id = auth()->id();
+        $comment->comment = $remarks;
+        $comment->save();
+
+        return response()->json([
+            'success' => true,
+            'comment' => [
+                'id' => $comment->id,
+                'comment' => e($comment->comment),
+                'file_path' => $comment->file_path,
+                'created_at' => $comment->created_at->format('d M, Y - h:i A'),
+                'user_name' => auth()->user()->name,
+                'user_avatar' => auth()->user()->avatar ?? url('images/Favicon.png'),
+            ]
+        ]);
+    }
+
     public function attachment(Request $request,$id)
     
     {
-        $task = Task::findOrfail($id);
-        $TaskActivity = new TaskAttachment();
-        $TaskActivity->project_id = $task->project_id;
-        $TaskActivity->task_id = $task->id;
+        
         if ($request->hasFile('file')) {
+            $task = Task::findOrfail($id);
+            $TaskActivity = new TaskAttachment();
+            $TaskActivity->project_id = $task->project_id;
+            $TaskActivity->task_id = $task->id;
             $file = $request->file('file');
             $sizeInBytes = $file->getSize();
 
@@ -120,11 +232,13 @@ class TaskController extends Controller
             $TaskActivity->file = 'uploads/tasks/' . $filename;
             $TaskActivity->name = $file->getClientOriginalName();
            
-            $TaskActivity->file_size =  $sizeInMB;      // megabytes
+            $TaskActivity->file_size =  $sizeInMB;   
+            $TaskActivity->user_id = auth()->user()->id;
+            $TaskActivity->save();
+               // megabytes
         
         }
-        $TaskActivity->user_id = auth()->user()->id;
-        $TaskActivity->save();
+     
 
         Alert::success('Successfully Uploaded')->persistent('Dismiss');
         return back();
@@ -203,6 +317,31 @@ class TaskController extends Controller
         Alert::success('Task updated successfully')->persistent('Dismiss');
         return back();
     }
+    public function updateBoard(Request $request, $id)
+    {
+        $request->validate([
+            'project_board_id' => 'required|exists:project_boards,id'
+        ]);
+  
+        $task = Task::findOrFail($id);
+     
+
+        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
+        $new_board = ProjectBoard::where('id',$request->project_board_id)->first();
+        $task->project_board_id = $request->project_board_id;
+        $request->merge([
+            'old_value' => $old_board->board,
+            'new_value' => $new_board->board,
+        ]);
+        $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
+        $task->save();
+
+        // Return the updated board name for display
+        return response()->json([
+            'success' => true,
+            'board_name' => $task->board->board ?? 'Updated'
+        ]);
+    }
     public function changeMember(Request $request, $id)
     {
         // dd($request->all());
@@ -258,5 +397,47 @@ class TaskController extends Controller
             'message' => 'Task archived successfully.',
             'task_id' => $task->id
         ]);
+    }
+
+    private function createTaskComment(Request $request,$projectId, $taskId, $action)
+    {
+        // Build basic log: Action + Old → New
+        $remarks = "<strong>{$action}</strong>: " . e($request->old_value) . 
+                    " &#x2192; " . e($request->new_value) . "<br>";
+
+        // Add optional remarks
+        if (!empty($request->remarks)) {
+            $remarks .= "Remarks: " . e($request->remarks) . "<br>";
+        }
+
+        $file_name = null;
+
+        // Handle optional file upload
+        if ($request->hasFile('proof')) {
+            $proof = $request->file('proof');
+            $original_name = $proof->getClientOriginalName();
+            $name = time() . '_' . $original_name;
+
+            // Save file
+            $proof->move(public_path('proof'), $name);
+            $file_path = url('proof/' . $name);
+
+            // Append file link
+            $remarks .= "<a class='btn btn-sm btn-success mt-2' href='{$file_path}' target='_blank'>
+                            {$original_name}
+                            </a>";
+
+            $file_name = 'proof/' . $name;
+        }
+
+        // Save to database
+        $comment = new TaskComment();
+        $comment->project_id = $projectId;
+        $comment->task_id = $taskId;
+        $comment->user_id = auth()->id();
+        $comment->comment = $remarks;
+        $comment->save();
+
+        return true;
     }
 }
