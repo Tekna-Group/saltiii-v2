@@ -39,15 +39,15 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="me-2">
                                 <h6 class="fw-semibold mb-1 text-truncate" title="{{$task->title}}">
-                                    {{$task->title}}
-                                </h6>
-                                <span class="badge 
+                                    {{$task->title}} -  <span class="badge 
                                     @if($task->priority == 'High') bg-danger text-white 
                                     @elseif($task->priority == 'Medium') bg-warning text-dark 
                                     @else bg-success text-white 
                                     @endif">
                                     {{$task->priority}}
                                 </span>
+                                </h6>
+                               
                             </div>
                             <small class="text-muted">
                                 <i class="ri-time-line"></i> <span>{{ $task->due_date }}</span>
@@ -108,6 +108,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="text-muted">
+                                <a href="{{ url('view-project/'.$task->project_id) }}" ><h4 class="mb-3 fw-bold text-uppercase">{{$task->project->name}}</h4></a>
                                 <h6 class="mb-3 fw-semibold text-uppercase">Description</h6>
                                 <p>{{$task->description}}</p>
 
@@ -185,7 +186,7 @@
                                     </li>
                                     <li class="nav-item">
                                         <a class="nav-link" data-bs-toggle="tab" href="#attachments-{{$task->id}}" role="tab">
-                                            Attachments File ({{$task->attachments->count()}})
+                                            Attachments({{$task->attachments->count()}})
                                         </a>
                                     </li>
                                     <li class="nav-item">

@@ -121,7 +121,21 @@ class TaskController extends Controller
     {
         // dd($request->all());
         $task = Task::findOrfail($request->task_id);
-        $task->project_board_id = $request->column_id;
+         $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
+        $new_board = ProjectBoard::where('id',$request->project_board_id)->first();
+        $task->project_board_id = $request->project_board_id;
+        $request->merge([
+            'old_value' => $old_board->board,
+            'new_value' => $new_board->board,
+        ]);
+        if (str_contains(strtolower($new_board->board), 'complete')) {
+            $task->completed = 1;
+        }
+        else
+        {
+             $task->completed = 0;
+        }
+        $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
 
         return response()->json(['message' => 'Task updated successfully','data' => $task]);
@@ -187,8 +201,8 @@ class TaskController extends Controller
             $TaskActivity->file_size =  $sizeInMB;   
             $TaskActivity->user_id = auth()->user()->id;
             $TaskActivity->save();  // megabytes
-            $remarks .= "<a class='btn btn-sm btn-success mt-2' href='{$filename}' target='_blank'>
-                            {$original_name}
+            $remarks .= "<a class='btn btn-sm btn-success mt-2' href='{$TaskActivity->file}' target='_blank'>
+                            {$TaskActivity->name}
                             </a>";
         }
         
@@ -313,6 +327,22 @@ class TaskController extends Controller
         // dd($request->all());
         $task = Task::findOrfail($id);
         $task->project_board_id = $request->project_board_id;
+       
+        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
+        $new_board = ProjectBoard::where('id',$request->project_board_id)->first();
+        $task->project_board_id = $request->project_board_id;
+        $request->merge([
+            'old_value' => $old_board->board,
+            'new_value' => $new_board->board,
+        ]);
+       if (str_contains(strtolower($new_board->board), 'complete')) {
+            $task->completed = 1;
+        }
+        else
+        {
+             $task->completed = 0;
+        }
+        $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
         Alert::success('Task updated successfully')->persistent('Dismiss');
         return back();
@@ -333,6 +363,13 @@ class TaskController extends Controller
             'old_value' => $old_board->board,
             'new_value' => $new_board->board,
         ]);
+       if (str_contains(strtolower($new_board->board), 'complete')) {
+            $task->completed = 1;
+        }
+        else
+        {
+             $task->completed = 0;
+        }
         $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
 
