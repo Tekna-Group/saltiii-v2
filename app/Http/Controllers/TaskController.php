@@ -474,7 +474,7 @@ class TaskController extends Controller
         Alert::success('Task members updated successfully')->persistent('Dismiss');
         return back();
     }
-    public function destroy($id)
+    public function destroy(Request $request,$id)
     {
         $activity = TaskActivity::find($id);
 
