@@ -39,7 +39,9 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="me-2">
                                 <h6 class="fw-semibold mb-1 text-truncate" title="{{$task->title}}">
-                                    {{$task->title}} -  <span class="badge 
+                                    <h6 class="fw-semibold mb-1" title="{{ $task->title }}">
+                                        {{ strlen($task->title) > 20 ? substr($task->title, 0, 20) . '…' : $task->title }}
+                                    </h6> -  <span class="badge 
                                     @if($task->priority == 'High') bg-danger text-white 
                                     @elseif($task->priority == 'Medium') bg-warning text-dark 
                                     @else bg-success text-white 
