@@ -19,22 +19,29 @@
             'Due Today' => ['tasks' => $tasks->where('due_date', now()->format('Y-m-d')), 'color' => 'warning'],
             'Not Yet Delayed' => ['tasks' => $tasks->where('due_date', '>', now()), 'color' => 'success'],
         ];
+        $key = 0;
     @endphp
-  
+    
     @foreach($sections as $sectionTitle => $sectionData)
+    
     <div class="col-md-4">
         <div class="card">
             <div class="card-header align-items-center d-flex">
-                <h4 class="card-title mb-0 flex-grow-1 card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}"> {{$sectionTitle}} <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
-              </h4>
-                <div class="flex-shrink-0">
-                    
+                <h4 class="card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}">
+                    {{$sectionTitle}} 
+                    <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
+                </h4>
+                <div class="flex-shrink-0 ms-3">
+                    <input type="text" 
+                           class="form-control form-control-sm" 
+                           placeholder="Search tasks..." 
+                           id="searchTasks{{$key}}">
                 </div>
             </div><!-- end card header -->
-            <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;">
+            <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
             <div class="card-body">
                 @forelse($sectionData['tasks'] as $task)
-                    <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none">
+                    <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none task-item">
                         <div class="card shadow-sm mb-3 card-hover" 
                             style="background-color: #FFF7E6; /* pastel yellow */ 
                                     border: 1px solid #FFE3B3; 
@@ -83,6 +90,27 @@
             </div>
         </div><!-- end card -->
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchTasks{{$key}}');
+            const tasksContainer = document.getElementById('tasksContainer{{$key}}');
+            const tasks = tasksContainer.querySelectorAll('.task-item');
+        
+            searchInput.addEventListener('input', function() {
+                const filter = this.value.toLowerCase();
+                tasks.forEach(task => {
+                    const title = task.querySelector('h6').textContent.toLowerCase();
+                    if(title.includes(filter)) {
+                        task.style.display = '';
+                    } else {
+                        task.style.display = 'none';
+                    }
+                });
+            });
+        });
+        </script>
+    @php $key++; @endphp
     @endforeach
 </div>
 @foreach($tasks as $task)
@@ -1053,4 +1081,5 @@ document.addEventListener('click', async function(e) {
     });
 });
 </script>
+
 @endsection

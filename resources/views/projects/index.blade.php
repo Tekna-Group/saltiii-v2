@@ -3,7 +3,6 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endsection
 @section('content')
-
 <div class="row g-4 mb-3">
     @if(auth()->user()->role == 'Admin')
     <div class="col-sm-auto">
@@ -15,89 +14,72 @@
     <div class="col-sm">
         <div class="d-flex justify-content-sm-end gap-2">
             <div class="search-box ms-2">
-                <input type="text" class="form-control" placeholder="Search...">
+                <input type="text" class="form-control" placeholder="Search..." id="projectSearch">
                 <i class="ri-search-line search-icon"></i>
+            </div>
+        </div>
+    </div>
+</div><!-- end row -->  
+
+<div class="row" id="projectsContainer">
+    @foreach($projects as $project)
+    <div class="col-xxl-3 col-sm-6 project-card">
+        <div class="card card-height-100">
+            <div class="card-body">
+                <div class="d-flex flex-column h-100">
+                    <div class="d-flex justify-content-between">
+                        <p class="text-muted mb-4">Last Update: {{ date('M d, Y H:i a', strtotime($project->updated_at)) }}</p>
+                        <div class="d-flex"></div>
+                    </div>
+
+                    <div class="d-flex mb-2">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="avatar-sm">
+                                <span class="avatar-title bg-warning-subtle rounded p-2">
+                                    <img src="{{ asset($project->icon) }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="" class="img-fluid p-1">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1 fs-15 project-name">
+                                <a href="{{ url('/view-project/'.$project->id) }}" class="text-body">{{ $project->name }}</a>
+                            </h5>
+                            <p class="text-muted text-truncate-two-lines mb-3">{{ $project->description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-auto">
+                        <div class="d-flex mb-2">
+                            <div class="flex-grow-1">Tasks</div>
+                            <div class="flex-shrink-0">
+                                <i class="ri-list-check align-bottom me-1 text-muted"></i> 
+                                {{ $project->tasks->where('completed', 1)->count() }}/{{ $project->tasks->count() }}
+                            </div>
+                        </div>
+                        <div class="progress progress-sm animated-progress">
+                            @php
+                                $total = $project->tasks->count();
+                                $completed = $project->tasks->where('completed', 1)->count();
+                                $percentage = $total > 0 ? ($completed / $total) * 100 : 0;
+                            @endphp
+                            <div class="progress-bar bg-success" style="width: {{ $percentage }}%;" role="progressbar" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card-footer bg-transparent border-top-dashed py-2">
+                <div class="d-flex align-items-center">
+                    <div class="text-muted">
+                        <i class="ri-calendar-event-fill me-1 align-bottom"></i> {{ date('d M, Y', strtotime($project->created_at)) }}
+                    </div>
+                </div>
             </div>
 
         </div>
     </div>
-</div><!-- end row -->  
-<div class="row">
-    @foreach($projects as $project)
-        <div class="col-xxl-3 col-sm-6 project-card">
-            <div class="card card-height-100">
-                <div class="card-body">
-                    <div class="d-flex flex-column h-100">
-                        <div class="d-flex justify-content-between">
-                            <p class="text-muted mb-4">Last Update: {{ date('M d, Y H:i a', strtotime($project->updated_at)) }}</p>
-                            <div class="d-flex">
-                                {{-- <form action="{{ url('/project/complete/'.$project->id) }}" method="POST" class="me-1">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-success" title="Mark Complete">
-                                        <i class="ri-check-double-line"></i>
-                                    </button>
-                                </form>
-                                <form action="{{ url('/project/delete/'.$project->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this project?');">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-danger" title="Delete">
-                                        <i class="ri-delete-bin-7-line"></i>
-                                    </button>
-                                </form> --}}
-                            </div>
-                        </div>
-
-                        <div class="d-flex mb-2">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar-sm">
-                                    <span class="avatar-title bg-warning-subtle rounded p-2">
-                                        <img src="{{ asset($project->icon) }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="" class="img-fluid p-1">
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="mb-1 fs-15">
-                                    <a href="{{ url('/view-project/'.$project->id) }}" class="text-body">{{ $project->name }}</a>
-                                </h5>
-                                <p class="text-muted text-truncate-two-lines mb-3">{{ $project->description }}</p>
-                            </div>
-                        </div>
-
-                        <div class="mt-auto">
-                            <div class="d-flex mb-2">
-                                <div class="flex-grow-1">Tasks</div>
-                                <div class="flex-shrink-0">
-                                    <i class="ri-list-check align-bottom me-1 text-muted"></i> 
-                                    {{ $project->tasks->where('completed', 1)->count() }}/{{ $project->tasks->count() }}
-                                </div>
-                            </div>
-                            <div class="progress progress-sm animated-progress">
-                                @php
-                                    $total = $project->tasks->count();
-                                    $completed = $project->tasks->where('completed', 1)->count();
-                                    $percentage = $total > 0 ? ($completed / $total) * 100 : 0;
-                                @endphp
-                                <div class="progress-bar bg-success" style="width: {{ $percentage }}%;" role="progressbar" aria-valuenow="{{ $percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="card-footer bg-transparent border-top-dashed py-2">
-                    <div class="d-flex align-items-center">
-                        <div class="text-muted">
-                            <i class="ri-calendar-event-fill me-1 align-bottom"></i> {{ date('d M, Y', strtotime($project->created_at)) }}
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
     @endforeach
-
-    <!-- end col -->
-
-    <!-- end col -->
 </div>
 <!-- end row -->
 <div class="modal fade" id="projectModal" tabindex="-1">
@@ -147,6 +129,28 @@
   
 @endsection
 @section('js')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('projectSearch');
+        const projectCards = document.querySelectorAll('.project-card');
+    
+        searchInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+    
+            projectCards.forEach(card => {
+                const projectName = card.querySelector('.project-name').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+    
+                if(projectName.includes(filter) || description.includes(filter)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+    </script>
 <script src="{{asset('inside_css/assets/js/pages/project-list.init.js')}}"></script>
 <!-- Select2 JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
