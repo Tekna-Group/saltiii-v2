@@ -25,7 +25,7 @@
                                 <label for="remarks" class="form-label">Remarks / Comments <small><i>(Optional)</i></small></label>
                                 <textarea class='form-control' name='comments' ></textarea>
                             </div>
-                            <div class="col-lg-12">
+                            <div class="col-lg-12" style='display:none;'>
                                 <label for="" class="form-label">Status of Task?</label>
                                 <select name='status' class='form-control' required>
                                     <option value='0' @if($task->status == 0) selected @endif>Still Ongoing</option>
