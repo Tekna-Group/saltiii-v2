@@ -275,7 +275,7 @@
             <div>
                 
               <button class="btn btn-sm btn-outline-secondary" onclick="editStatus('${column.id}')">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteStatus('${column.id}')">Delete</button>
+              
             </div>
           </div>
          <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">

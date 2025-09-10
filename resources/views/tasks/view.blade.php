@@ -46,23 +46,7 @@
                 <h6 class="card-title mb-3 flex-grow-1 text-start text-center">
                     Total Hours</h6>
                 <div class="hstack gap-2 justify-content-center">
-                   @if ($task->completed == 1)
-                        {{-- <div class="hstack gap-2 justify-content-center">
-                            <button class="btn btn-success btn-sm" disabled>
-                                <i class="ri-check-line align-bottom me-1"></i> Completed
-                            </button>
-                        </div> --}}
-                    @else
-                        <form action="{{ url('/task/complete/' . $task->id) }}" method="POST" class="d-inline">
-                            @csrf
-                            {{-- @method('PATCH') --}}
-                            <div class="hstack gap-2 justify-content-center">
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    <i class="ri-play-circle-line align-bottom me-1"></i> Complete
-                                </button>
-                            </div>
-                        </form>
-                    @endif
+                   
                 </div>
             </div>
         </div>
@@ -174,7 +158,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#messages-1" role="tab">
-                                Attachments File ({{$task->attachments->count()}})
+                                Attachments ({{$task->attachments->count()}})
                             </a>
                         </li>
                         <li class="nav-item ">
@@ -198,7 +182,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <h5 class="fs-13"><a href="pages-profile.html">{{$comment->user->name}}</a> <small class="text-muted">{{date('d M, Y - H:i a',strtotime($comment->created_at))}}</small></h5>
-                                    <p class="text-muted">{{$comment->comment}}</p>
+                                    <p class="text-muted">{!!$comment->comment!!}</p>
                                     
                                 </div>
                             </div>

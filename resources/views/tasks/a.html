@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FilePond Sample</title>
+
+  <!-- FilePond styles -->
+  <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+
+  <!-- Optional FilePond plugins -->
+  <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 50px;
+      background-color: #f5f5f5;
+    }
+
+    .file-upload-container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="file-upload-container">
+  <h2>Upload Your File</h2>
+  <!-- File input for FilePond -->
+  <input type="file" class="filepond" name="filepond" multiple data-max-file-size="5MB" />
+</div>
+
+<!-- FilePond library -->
+<script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+
+<!-- Optional plugins -->
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+
+<script>
+  // Register FilePond plugins
+  FilePond.registerPlugin(
+    FilePondPluginFileValidateSize,
+    FilePondPluginFileValidateType,
+    FilePondPluginImagePreview
+  );
+
+  // Turn all file input elements into FilePond
+  FilePond.create(document.querySelector('.filepond'), {
+    acceptedFileTypes: ['image/*', 'application/pdf'],
+    allowMultiple: true,
+    maxFiles: 3,
+    labelIdle: 'Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+  });
+</script>
+
+</body>
+</html>

@@ -156,7 +156,9 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
-                                <i class="ri-list-check"></i> <span data-key="t-dashboards">My Tasks</span>
+                                <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span>
+                                <span class="badge badge-pill bg-warning" data-key="t-hot">BETA</span>
+                                <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
                             </a>
                         </li>
                         <li class="nav-item">

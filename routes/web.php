@@ -39,6 +39,10 @@ Route::get('/view-task/{id}', 'TaskController@view')->name('View Task');
 Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment');
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    
 Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
+Route::post('task-activity/api/{id}','TaskController@storeActivityApi')->name('Activity');
+Route::delete('activity/destroy/{id}', 'TaskController@destroyApi')->name('Delete Activity');
+Route::post('task-activity/api/edit/{id}', 'TaskController@updateApi')->name('Edit Activity');
+
 Route::post('update-task-column','TaskController@changeStatus');
 Route::post('task/complete/{id}','TaskController@complete');
 Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
@@ -48,6 +52,8 @@ Route::post('/activity/destroy/{id}','TaskController@destroy')->name('Delete Act
 Route::post('tasks/{id}/archive','TaskController@archive')->name('Archive Task');
 Route::post('/tasks/update-priority/{id}', 'TaskController@updatePriority');
 Route::post('task-comment/api/{id}', 'TaskController@commentPost')->name('Task Comment');
+Route::post('tasks/{id}/update-title','TaskController@updateTitle')->name('Update Title');
+Route::post('tasks/{id}/update-description','TaskController@updateDescription')->name(' Update Description');
 
 //Task API
 Route::post('/tasks/{id}/update-due-date','TaskController@updateDueDate')->name('Update Due Date');

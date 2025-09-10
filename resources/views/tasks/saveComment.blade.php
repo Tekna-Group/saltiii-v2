@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log('[RESPONSE] Data received:', data);
 
             if (data.success) {
-                                const commentsContainer = document.getElementById('commentsContainer' + taskId);
+                    const commentsContainer = document.getElementById('commentsContainer' + taskId);
+                    const contentDiv = commentsContainer.querySelector('.simplebar-content:first-child');
+                    const simpleBarInstance = commentsContainer.SimpleBar || SimpleBar.instances.get(commentsContainer);
+
 
                     if (commentsContainer) {
                         // Get SimpleBar instance
@@ -42,6 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         // Build new comment HTML
                         const newComment = document.createElement('div');
+
+                        const commentText = data.comment.comment; 
                         newComment.classList.add('d-flex', 'mb-4');
 
                         let fileLink = '';
@@ -54,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </a>
                             `;
                         }
-
                         newComment.innerHTML = `
                         <div class="flex-shrink-0">
                                 <img src="${data.comment.user_avatar ? `{{ asset('') }}${data.comment.user_avatar}` : `{{ asset('images/Favicon.png') }}`}" 
@@ -67,21 +71,35 @@ document.addEventListener('DOMContentLoaded', function () {
                                     <a href="#">${data.comment.user_name}</a>
                                     <small class="text-muted">${data.comment.created_at}</small>
                                 </h5>
-                                <p class="text-muted">${data.comment.comment}</p>
+                                <p class="text-muted">${commentText}</p>
                                 ${fileLink}
                             </div>
                         `;
 
                         // Prepend the new comment
-                        commentsContainer.prepend(newComment);
+                        contentDiv.prepend(newComment);
 
+                        setTimeout(() => {
+                            if (simpleBarInstance) {
+                                simpleBarInstance.getScrollElement().scrollTop = 0;
+                            }
+                        }, 10);
                         // Adjust scroll so user stays at the same position
                         const newScrollHeight = scrollElement.scrollHeight;
                         scrollElement.scrollTop += newScrollHeight - previousScrollHeight;
                     }
 
                 // Reset the form
+             
+
+                // Scroll to top
                 form.reset();
+                // Assuming you already initialized FilePond
+                const pond = FilePond.create(document.getElementById('proof' + taskId));
+
+                // After successful comment post:
+                pond.removeFiles(); // clears all selected files
+                
                 console.log('[RESET] Form cleared successfully.');
 
                 // Show success toast

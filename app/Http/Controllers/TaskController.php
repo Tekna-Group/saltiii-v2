@@ -33,7 +33,28 @@ class TaskController extends Controller
                                     'users' => $users,
                                     ]); 
     }
+    public function updateTitle(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+        ]);
+      
+        $task = Task::findOrFail($id);
 
+        $request->merge([
+            'old_value' => $task->title,
+            'new_value' => $request->title,
+        ]);
+        $task->title = $request->title;
+        $task->save();
+        
+         $this->createTaskComment($request,$task->project_id, $task->id, 'Update Title');
+        return response()->json([
+            'success' => true,
+            'message' => 'Title updated successfully',
+            'task' => $task
+        ]);
+    }
     public function updateDueDate(Request $request, $id)
     {
         $request->validate([
@@ -217,7 +238,7 @@ class TaskController extends Controller
             'success' => true,
             'comment' => [
                 'id' => $comment->id,
-                'comment' => e($comment->comment),
+                'comment' => ($comment->comment),
                 'file_path' => $comment->file_path,
                 'created_at' => $comment->created_at->format('d M, Y - h:i A'),
                 'user_name' => auth()->user()->name,
@@ -314,6 +335,72 @@ class TaskController extends Controller
         Alert::success('Successfully Encoded')->persistent('Dismiss');
         return back();
     }
+    public function storeActivityApi(Request $request, $id)
+{
+    $task = Task::findOrFail($id);
+
+    $attachmentName = null;
+    if ($request->hasFile('proof')) {
+        $file = $request->file('proof');
+        $sizeInMB = round($file->getSize() / 1048576, 2); // MB
+        $filename = time() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads/tasks'), $filename);
+
+        $taskAttachment = new TaskAttachment();
+        $taskAttachment->project_id = $task->project_id;
+        $taskAttachment->task_id = $task->id;
+        $taskAttachment->file_type = $file->getClientOriginalExtension();
+        $taskAttachment->file = 'uploads/tasks/' . $filename;
+        $taskAttachment->name = $file->getClientOriginalName();
+        $taskAttachment->file_size = $sizeInMB;
+        $taskAttachment->user_id = auth()->id();
+        $taskAttachment->save();
+
+        $attachmentName = $taskAttachment->name;
+    }
+
+    $commentText = null;
+    if (!empty($request->comments)) {
+        $taskComment = new TaskComment();
+        $taskComment->task_id = $task->id;
+        $taskComment->project_id = $task->project_id;
+        $taskComment->user_id = auth()->id();
+        $taskComment->comment = $request->task . " - " . $request->comments;
+        $taskComment->save();
+
+        $commentText = $taskComment->comment;
+    }
+
+    $taskActivity = new TaskActivity();
+    $taskActivity->task_id = $task->id;
+    $taskActivity->project_id = $task->project_id;
+    $taskActivity->user_id = auth()->id();
+    $taskActivity->created_by = auth()->id();
+    $taskActivity->activity = $request->task;
+    $taskActivity->hours = $request->hours;
+    $taskActivity->date = $request->date;
+    $taskActivity->file = $attachmentName;
+    $taskActivity->comments = $commentText;
+    $taskActivity->save();
+
+    $task->save();
+
+    return response()->json([
+        'success'    => true,
+        'activity'   => [
+            'id'         => $taskActivity->id,
+            'task'       => $taskActivity->activity,
+            'hours'      => $taskActivity->hours,
+            'date'       => date('d M, Y',strtotime($taskActivity->date)),
+            'date_old'       => $taskActivity->date,
+            'user_name'  => auth()->user()->name,
+            'user_avatar'=> auth()->user()->avatar,
+            'comments'   => $commentText,
+            'file_name'  => $attachmentName,
+        ],
+        'message'    => 'Activity created successfully',
+    ]);
+}
      public function complete($id)
     {
         $project = Task::findOrFail($id);
@@ -389,7 +476,16 @@ class TaskController extends Controller
     }
     public function destroy($id)
     {
-        $activity = TaskActivity::findOrFail($id);
+        $activity = TaskActivity::find($id);
+
+        if (!$activity) {
+            return response()->json(['success' => false, 'message' => 'Activity not found']);
+        }
+        $request->merge([
+            'old_value' => $activity->activity." - ".$activity->hours." Hours",
+            'new_value' => "Deleted",
+        ]);
+        $this->createTaskComment($request,$activity->project_id, $activity->task_id, 'Delete Activity');
         $activity->delete();
 
         Alert::success('Activity successfully deleted')->persistent('Dismiss');
@@ -418,15 +514,16 @@ class TaskController extends Controller
         }
 
         // Check if already completed
-        if ($task->completed != 1) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Only completed tasks can be archived.'
-            ], 400);
-        }
+        // if ($task->completed != 1) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Only completed tasks can be archived.'
+        //     ], 400);
+        // }
 
         // Update task status
         $task->archived = 1;  // Make sure you have 'archived' column in your tasks table
+        $task->completed = 1;  // Make sure you have 'archived' column in your tasks table
         $task->save();
 
         return response()->json([
@@ -476,5 +573,42 @@ class TaskController extends Controller
         $comment->save();
 
         return true;
+    }
+    public function destroyApi(Request $request,$id)
+    {
+        $activity = TaskActivity::find($id);
+
+        if (!$activity) {
+            return response()->json(['success' => false, 'message' => 'Activity not found']);
+        }
+        $request->merge([
+            'old_value' => $activity->activity." - ".$activity->hours." Hours",
+            'new_value' => "Deleted",
+        ]);
+        $this->createTaskComment($request,$activity->project_id, $activity->task_id, 'Delete Activity');
+        $activity->delete();
+
+        return response()->json(['success' => true, 'message' => 'Activity deleted successfully']);
+    }
+    public function updateApi(Request $request, $id)
+    {
+        $activity = TaskActivity::findOrFail($id);
+        $request->merge([
+            'old_value' => $activity->activity." - ".$activity->hours." Hours",
+            'new_value' => $request->task." - ".$request->hours." Hours",
+        ]);
+        $this->createTaskComment($request,$activity->project_id, $activity->task_id, 'Update Activity');
+        $activity->activity = $request->task;
+        $activity->hours = $request->hours;
+        $activity->save();
+
+        return response()->json([
+            'success' => true,
+            'activity' => [
+                'task' => $activity->activity,
+                'hours' => $activity->hours,
+                'date' => $activity->date
+            ]
+        ]);
     }
 }
