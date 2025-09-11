@@ -15,7 +15,11 @@ function taskDue() {
 
 function hours_today()
 {
-    $activities = TaskActivity::where('user_id',auth()->user()->id)->where('date',date('Y-m-d'))->sum('hours');
+    $last_sunday = date('Y-m-d',strtotime('last sunday'));
+    $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
+  
+    $activities = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date', [$last_sunday, $saturday])
+    ->sum('hours');
 
-    return $activities;
+    return number_format($activities,2);
 }
