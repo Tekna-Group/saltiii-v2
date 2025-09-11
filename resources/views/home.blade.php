@@ -178,7 +178,7 @@
                                                   </h6>
                                               </div>
                                               <small class="text-muted">
-                                                <i class="ri-calendar-event-fill fs-8"></i>  <span>{{ date('M d, Y', strtotime($task->due_date)) }}</span>
+                                                <i class="ri-calendar-event-fill fs-8"></i>  <span class='fs-8'>{{ date('M d, Y', strtotime($task->due_date)) }}</span>
                                               </small>
                                           </div>
                                       </div>
