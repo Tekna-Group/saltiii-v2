@@ -24,7 +24,11 @@
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="">Active Projects - <span class='badge border border-success text-success'>{{$projects->count()}}</span>  </h5>
+                        <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  @if(auth()->user()->role == 'Admin')
+                        
+                                    <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
+                                
+                            @endif </h5>
                         <!-- Swiper -->
                        <div class="swiper project-swiper">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -127,7 +131,7 @@
                     'color' => 'warning',
                     'style' => 'background-color: #FFF7E6; border: 1px solid #FFE3B3; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
                 ],
-                'Upcomming Tasks' => [
+                'Upcoming Tasks' => [
                     'tasks' => $tasks->where('due_date', '>', date('Y-m-d')),
                     'color' => 'success',
                     'style' => 'background-color: #E6FFEB; border: 1px solid #B3FFC2; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
