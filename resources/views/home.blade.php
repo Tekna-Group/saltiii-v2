@@ -458,7 +458,7 @@
                             <div class="tab-pane active" id="today" role="tabpanel">
                                 <div class="profile-timeline">
                                     <div class="accordion accordion-flush" id="todayExample">
-                                        @foreach($activities->take(20)->sortByDesc('date') as $activity)
+                                        @foreach($activities->sortByDesc('date')->take(20) as $activity)
                                             <div class="accordion-item border-0">
                                                 <div class="accordion-header" id="headingThree">
                                                     <a class="accordion-button p-2 shadow-none" data-bs-toggle="collapse" href="#collapsethree" aria-expanded="false">
