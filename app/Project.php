@@ -32,4 +32,12 @@ class Project extends Model
     {
         return $this->hasMany(TaskActivity::class);
     }
+    public function comments()
+    {
+        return $this->hasMany(TaskComment::class);
+    }
+    public function attachments()
+    {
+        return $this->hasMany(TaskAttachment::class);
+    }
 }

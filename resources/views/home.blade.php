@@ -2,6 +2,7 @@
 @section('css')
     <link href="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.css')}}" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{url('assets/libs/swiper/swiper-bundle.min.css')}}">
 @endsection
 @section('content')
 
@@ -77,9 +78,202 @@
             </div>
             <!-- end col -->
         </div><!-- end row -->
+        <div class='row'>
+            <div class='col-xl-12'>
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="">Projects  </h5>
+                        <!-- Swiper -->
+                       <div class="swiper project-swiper">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="w-50">
+                                    <input type="text" id="projectSearch" class="form-control" placeholder="Search projects...">
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <div class="slider-button-prev">
+                                        <div class="avatar-title fs-18 rounded px-1 material-shadow">
+                                            <i class="ri-arrow-left-s-line"></i>
+                                        </div>
+                                    </div>
+                                    <div class="slider-button-next">
+                                        <div class="avatar-title fs-18 rounded px-1 material-shadow">
+                                            <i class="ri-arrow-right-s-line"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="swiper-wrapper">
+                                @foreach($projects as $project)
+                                    <div class="swiper-slide project-slide">
+                                        <a href="#">
+                                            <div class="card profile-project-card shadow-none profile-project-success mb-0 material-shadow">
+                                                <div class="card-body p-4">
+                                                    <!-- Project Header -->
+                                                    <div class="d-flex">
+                                                        <div class="flex-grow-1 text-muted overflow-hidden">
+                                                            <h5 class="fs-14 text-truncate mb-1 project-name">
+                                                                
+                                                                
+                                                                
+                                                                <a href="#" class="text-body">{{ $project->name }}</a> 
+                                                                    
+                                                            </h5>
+                                                                <small><span class='fs-14 text-muted'> <i class="ri-calendar-event-fill"></i> Last Update: 
+                                                                @if($project->tasks->isNotEmpty())
+                                                                    {{ ($project->latest_comment_updated_at )
+                                                                        ? (date('M d, Y',strtotime($project->latest_comment_updated_at)))
+                                                                        : 'No Action yet' }}
+                                                                @else
+                                                                    No Action yet
+                                                                @endif
+                                                                </span></small>
+                                                        </div>
+                                                        <div class="flex-shrink-0 ms-2 text-end">
+                                                            <div class="badge bg-warning-subtle text-warning fs-10">
+                                                                {{ $project->status }}
+                                                            </div> 
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Footer Section -->
+                                                <div class="card-footer bg-light border-top p-2">
+                                                    <div class="d-flex text-muted">
+                                                        <ul class="list-inline mb-0 d-flex align-items-center gap-2 w-100">
+                                                            <li class="list-inline-item">
+                                                                <i class="ri-timer-fill"></i> {{number_format($project->activities->sum('hours'),2)}} hrs
+                                                            </li>
+                                                            <li class="list-inline-item">
+                                                                <i class="ri-question-answer-line"></i> {{$project->comments->count()}}
+                                                            </li>
+                                                            <li class="list-inline-item">
+                                                                <i class="ri-attachment-2"></i> {{$project->attachments->count()}}
+                                                            </li>
+
+                                                            <!-- Last Updated Icon + Date -->
+                                                        
+
+                                                            <!-- Completed Tasks Count -->
+                                                            <li class="list-inline-item ms-auto">
+                                                                <div class="flex-shrink-0">
+                                                                    <i class="ri-list-check align-bottom me-1 text-muted"></i>
+                                                                    {{ $project->tasks->where('completed', 1)->count() }}/{{ $project->tasks->count() }}
+                                                                </div>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- end card body -->
+                </div><!-- end card -->
+            </div>
+        </div>
+        <div class='row g-3'>
+             @php
+                $sections = [
+                    'Delayed' => ['tasks' => $tasks->where('due_date', '<', date('Y-m-d')), 'color' => 'danger'],
+                    'Due Today' => ['tasks' => $tasks->where('due_date', date('Y-m-d')), 'color' => 'warning'],
+                    'Not Yet Delayed' => ['tasks' => $tasks->where('due_date', '>', date('Y-m-d')), 'color' => 'success'],
+                ];
+                $key = 0;
+            @endphp
+             @foreach($sections as $sectionTitle => $sectionData)
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header align-items-center d-flex">
+                            <h4 class="card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}">
+                                {{$sectionTitle}} 
+                                <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
+                            </h4>
+                            <div class="flex-shrink-0 ms-3">
+                                <input type="text" 
+                                    class="form-control form-control-sm" 
+                                    placeholder="Search tasks..." 
+                                    id="searchTasks{{$key}}">
+                            </div>
+                        </div><!-- end card header -->
+                         <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
+                            @forelse($sectionData['tasks'] as $task)
+                                <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none task-item">
+                                    <div class="card-body p-1 mt-1" title="{{ $task->title }}" style=' cursor: pointer;'>
+                                        <div class="card profile-project-card shadow-none mb-0 profile-project-{{$sectionData['color']}} material-shadow">
+                                            <div class="card-body p-2">
+                                                <!-- Project Header -->
+                                                <div class="d-flex">
+                                                    <div class="flex-grow-1 text-muted overflow-hidden">
+                                                        <h5 class="fs-14 text-truncate mb-1 project-name">
+                                                            <a href="#" class="text-body">{{ strlen($task->title) > 20 ? substr($task->title, 0, 20) . '…' : $task->title }}</a>
+                                                        </h5> 
+                                                        <p class="text-muted mb-0"><span class="fs-7">{{ strlen($task->project->name) > 20 ? substr($task->project->name, 0, 20) . '…' : $task->project->name }}</span> - <span class='badge bg-success-subtle text-dark fs-10'>{{$task->board->board}}</span> <br>
+                                                        <small class='fs-8 text-muted'>
+                                                            <i class="ri-calendar-event-fill"></i> 
+                                                                @if($task->due_date)
+                                                                    {{ ($task->due_date )
+                                                                        ? (date('M d, Y',strtotime($task->due_date)))
+                                                                        : 'No Due Date' }}
+                                                                @else
+                                                                    No Due Date
+                                                                @endif
+                                                                </small>
+                                                        </p>
+                                                    
+                                                    </div>
+                                                    <div class="flex-shrink-0 ms-2 text-end">
+                                                        <div class="badge  @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
+                                                            @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
+                                                            @else text-white" style="background-color:#B9F6CA;" 
+                                                            @endif" fs-10">
+                                                              {{$task->priority}}
+                                                        </div> 
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Footer Section -->
+                                            <div class="card-footer bg-light border-top p-2">
+                                                <div class="d-flex text-muted">
+                                                    <ul class="list-inline mb-0 d-flex align-items-center gap-2 w-100">
+                                                        <li class="list-inline-item">
+                                                            <i class="ri-timer-fill"></i> 0 hrs
+                                                        </li>
+                                                        <li class="list-inline-item">
+                                                            <i class="ri-question-answer-line"></i> 0
+                                                        </li>
+                                                        <li class="list-inline-item">
+                                                            <i class="ri-attachment-2"></i> 0
+                                                        </li>
+                                                        <li class="list-inline-item ms-auto">
+                                                            <div class="flex-shrink-0">
+                                                                <i class="ri-list-check align-bottom me-1 text-muted"></i>
+                                                                0
+                                                            </div>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                    <hr>
+                                </a>
+                            @empty
+                                <div class="text-center text-muted py-3">No tasks</div>
+                            @endforelse
+                         </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
         <div class="row">
             <div class="col-xl-4">
-
                 <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1 py-1">My Pending Tasks</h4>
@@ -125,7 +319,7 @@
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
-                <div class="card card-height">
+                {{-- <div class="card card-height">
                     <div class="card-header border-0 align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
                       
@@ -150,24 +344,12 @@
                           
                         </ul><!-- end -->
                     </div><!-- end card body -->
-                </div><!-- end card -->
+                </div><!-- end card --> --}}
                
             </div><!-- end col -->
             <div class="col-xl-8">
-                <div class="card card-h-100">
-                    <div class="card-body">
-                        <div id="calendar"></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title mb-0">Projects Hours</h4>
-                    </div><!-- end card header -->
-
-                    <div class="card-body">
-                        <canvas id="projectsBarChart"></canvas>
-                    </div><!-- end card-body -->
-                </div><!-- end card -->
+               
+              
                 @if(auth()->user()->role == "Admin")
                 <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
@@ -290,6 +472,13 @@
                 </div><!-- end card -->
                 
             </div><!-- end col -->
+            <div class='col-lg-12'>
+                 <div class="card card-h-100">
+                    <div class="card-body">
+                        <div id="calendar"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -472,81 +661,35 @@
         chart.render();
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{url('assets/libs/swiper/swiper-bundle.min.js')}}"></script>
+<script src="{{url('assets/js/pages/profile.init.js')}}"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const projects = @json($projects_data);
+    // Initialize Swiper
+    const projectSwiper = new Swiper('.project-swiper', {
+        slidesPerView: 3,
+        spaceBetween: 20,
+        navigation: {
+            nextEl: '.slider-button-next',
+            prevEl: '.slider-button-prev',
+        },
+    });
 
-// Sort projects by hours descending
-const sorted = [...projects].sort((a, b) => b.hours - a.hours);
+    // Search Functionality
+    document.getElementById('projectSearch').addEventListener('keyup', function() {
+        let searchValue = this.value.toLowerCase();
+        let slides = document.querySelectorAll('.swiper-wrapper .project-slide');
 
-const labels = sorted.map(p => p.title);
-const hours = sorted.map(p => parseFloat(p.hours).toFixed(2)).map(Number);
-    
-        // Color palette
-        const colors = [
-            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
-            '#858796', '#fd7e14', '#20c997', '#6610f2', '#6f42c1'
-        ];
-    
-        // Assign different colors to each bar
-        const barColors = labels.map((_, i) => colors[i % colors.length]);
-    
-        const ctx = document.getElementById('projectsBarChart').getContext('2d');
-    
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: hours,
-                    backgroundColor: barColors,
-                    borderRadius: 8,
-                    maxBarThickness: 35
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            title: function(context) {
-                                return context[0].label; // Show project title on hover
-                            },
-                            label: function (context) {
-                                return context.formattedValue + ' Hr/s';
-                            }
-                        },
-                        backgroundColor: '#000',
-                        titleColor: "#fff",
-                        bodyColor: "#fff",
-                        padding: 8
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: { display: false }, // Hide bottom labels
-                        grid: { display: false }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            font: {
-                                family: "'Inter', sans-serif",
-                                size: 12,
-                                weight: 'bold'
-                            },
-                            color: '#6c757d'
-                        },
-                        grid: { borderDash: [4, 4] }
-                    }
-                }
+        slides.forEach(function(slide) {
+            let projectName = slide.querySelector('.project-name').textContent.toLowerCase();
+            if (projectName.includes(searchValue)) {
+                slide.classList.remove('d-none'); // Show
+            } else {
+                slide.classList.add('d-none');    // Hide
             }
         });
+
+        // Update Swiper after hiding/showing slides
+        projectSwiper.update();
     });
 </script>
-
-
 @endsection
