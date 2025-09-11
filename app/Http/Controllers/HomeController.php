@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Project;
+use App\ProjectBoard;
 use App\Task;
 use App\TaskActivity;
 use App\User;
@@ -27,6 +28,7 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $boards = ProjectBoard::get();
         $query = Project::with([
             'activities',
             'comments' => function($q) {
@@ -49,12 +51,12 @@ class HomeController extends Controller
         }
         
         $projects = $query->get();
-        $tasks = Task::where('completed',0)->get();
-        if(auth()->user()->role != 'Admin') {
+        $tasks = Task::where('completed',0)->orderBy('due_date','asc')->get();
+        // if(auth()->user()->role != 'Admin') {
             $tasks = $tasks->filter(function ($task) {
                 return $task->users->contains(auth()->user()->id);
             });
-        }
+        // }
         $last_sunday = date('Y-m-d',strtotime('last sunday'));
         $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
         
@@ -110,10 +112,11 @@ class HomeController extends Controller
             array(
                 'projects' => $projects,
                 'tasks' => $tasks,
-                'activities' => $activities->take(20),
+                'activities' => $activities,
                 'members' => $members,
                 'last_sunday' => $last_sunday,
                 'saturday' => $saturday,
+                'boards' => $boards,
                 // 'projects_data' => $projects_data,
                 // 'totalHours' => $projects_data->sum('hours'),
                 // 'project_this_week' => $project_this_week,

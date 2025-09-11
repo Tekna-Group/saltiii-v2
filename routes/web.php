@@ -39,9 +39,13 @@ Route::get('/view-task/{id}', 'TaskController@view')->name('View Task');
 Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment');
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    
 Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
+Route::post('activity','TaskController@Newactivity')->name('Activity');
 Route::post('task-activity/api/{id}','TaskController@storeActivityApi')->name('Activity');
 Route::delete('activity/destroy/{id}', 'TaskController@destroyApi')->name('Delete Activity');
 Route::post('task-activity/api/edit/{id}', 'TaskController@updateApi')->name('Edit Activity');
+Route::get('/activities/by-date/{date}', 'TaskController@getByDate')->name('activities.byDate');
+Route::post('/activities/{id}', 'TaskController@updateActivityAPI')->name('activities.update');
+Route::delete('/activities/{id}', 'TaskController@destroyActivityAPI')->name('activities.destroy');
 
 Route::post('update-task-column','TaskController@changeStatus');
 Route::post('task/complete/{id}','TaskController@complete');

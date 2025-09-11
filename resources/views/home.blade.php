@@ -1,88 +1,30 @@
 @extends('layouts.header')
 @section('css')
+<style>
+    .offcanvas.offcanvas-end {
+     width: 30% !important;
+   }
+</style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.css')}}" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{url('assets/libs/swiper/swiper-bundle.min.css')}}">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+
+  <!-- Optional FilePond plugins -->
+  <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
 @endsection
 @section('content')
 
 <div class="row project-wrapper">
     <div class="col-xxl-9">
-        <div class="row">
-            <div class="col-xl-4">
-                <div class="card card-animate">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <a href='#'>
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-primary-subtle text-primary rounded-2 fs-2">
-                                    <i data-feather="briefcase" class="text-primary"></i>
-                                </span>
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden ms-3">
-                                <p class="text-uppercase fw-medium text-muted text-truncate mb-3">Active Projects</p>
-                                <div class="d-flex align-items-center mb-3">
-                                    <a href='#' href="#" data-bs-target="#projects"  data-bs-toggle="modal"><h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{$projects->where('completed',0)->count()}}">0</span></h4></a>
-                                    {{-- <span class="badge bg-danger-subtle text-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>5.02 %</span> --}}
-                                </div>
-                                <p class="text-muted text-truncate mb-0">Projects</p>
-                            </div>
-                        
-                        </div>
-                    </div><!-- end card body -->
-                </div>
-            </div><!-- end col -->
-
-            <div class="col-xl-4">
-                <div class="card card-animate">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-warning-subtle text-warning rounded-2 fs-2">
-                                    <i data-feather="award" class="text-danger"></i>
-                                </span>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <p class="text-uppercase fw-medium text-muted mb-3">Delayed Tasks</p>
-                                <div class="d-flex align-items-center mb-3">
-                                    <a href='#' href="#" data-bs-target="#delayed_tasks"  data-bs-toggle="modal"><h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{($tasks->where('due_date','<',date('Y-m-d')))->count()}}">0</span></h4></a>
-                                    {{-- <span class="badge bg-success-subtle text-success fs-12"><i class="ri-arrow-up-s-line fs-13 align-middle me-1"></i>3.58 %</span> --}}
-                                </div>
-                                <p class="text-muted mb-0">Need action</p>
-                            </div>
-                        </div>
-                    </div><!-- end card body -->
-                </div>
-            </div><!-- end col -->
-
-            <div class="col-xl-4">
-                <div class="card card-animate">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-sm flex-shrink-0">
-                                <span class="avatar-title bg-info-subtle text-info rounded-2 fs-2">
-                                    <i data-feather="calendar" class="text-warning"></i>
-                                </span>
-                            </div>
-                            <div class="flex-grow-1 overflow-hidden ms-3">
-                                <p class="text-uppercase fw-medium text-muted text-truncate mb-3">On-going Tasks</p>
-                                <div class="d-flex align-items-center mb-3">
-                                    <a href='#' href="#" data-bs-target="#ongoing_tasks"  data-bs-toggle="modal"><h4 class="fs-4 flex-grow-1 mb-0"><span class="counter-value" data-target="{{($tasks)->count()}}">0</span></h4></a>
-                                    {{-- <span class="badge bg-danger-subtle text-danger fs-12"><i class="ri-arrow-down-s-line fs-13 align-middle me-1"></i>10.35 %</span> --}}
-                                </div>
-                                <p class="text-muted text-truncate mb-0">Tasks this week</p>
-                            </div>
-                        </div>
-                    </div><!-- end card body -->
-                </div>
-            </div>
-            <!-- end col -->
-        </div><!-- end row -->
+        
         <div class='row'>
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="">Projects  </h5>
+                        <h5 class="">Active Projects - <span class='badge border border-success text-success'>{{$projects->count()}}</span>  </h5>
                         <!-- Swiper -->
                        <div class="swiper project-swiper">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -106,18 +48,14 @@
                             <div class="swiper-wrapper">
                                 @foreach($projects as $project)
                                     <div class="swiper-slide project-slide">
-                                        <a href="#">
+                                        <a href="{{'view-project/'.$project->id}}" class="text-decoration-none">
                                             <div class="card profile-project-card shadow-none profile-project-success mb-0 material-shadow">
                                                 <div class="card-body p-4">
                                                     <!-- Project Header -->
                                                     <div class="d-flex">
                                                         <div class="flex-grow-1 text-muted overflow-hidden">
                                                             <h5 class="fs-14 text-truncate mb-1 project-name">
-                                                                
-                                                                
-                                                                
-                                                                <a href="#" class="text-body">{{ $project->name }}</a> 
-                                                                    
+                                                                <a href="{{'view-project/'.$project->id}}" class="text-body">{{ $project->name }}</a>
                                                             </h5>
                                                                 <small><span class='fs-14 text-muted'> <i class="ri-calendar-event-fill"></i> Last Update: 
                                                                 @if($project->tasks->isNotEmpty())
@@ -129,11 +67,11 @@
                                                                 @endif
                                                                 </span></small>
                                                         </div>
-                                                        <div class="flex-shrink-0 ms-2 text-end">
+                                                        {{-- <div class="flex-shrink-0 ms-2 text-end">
                                                             <div class="badge bg-warning-subtle text-warning fs-10">
                                                                 {{ $project->status }}
                                                             </div> 
-                                                        </div>
+                                                        </div> --}}
                                                     </div>
                                                 </div>
 
@@ -177,104 +115,122 @@
             </div>
         </div>
         <div class='row g-3'>
-             @php
-                $sections = [
-                    'Delayed' => ['tasks' => $tasks->where('due_date', '<', date('Y-m-d')), 'color' => 'danger'],
-                    'Due Today' => ['tasks' => $tasks->where('due_date', date('Y-m-d')), 'color' => 'warning'],
-                    'Not Yet Delayed' => ['tasks' => $tasks->where('due_date', '>', date('Y-m-d')), 'color' => 'success'],
-                ];
-                $key = 0;
-            @endphp
-             @foreach($sections as $sectionTitle => $sectionData)
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}">
-                                {{$sectionTitle}} 
-                                <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
-                            </h4>
-                            <div class="flex-shrink-0 ms-3">
-                                <input type="text" 
-                                    class="form-control form-control-sm" 
-                                    placeholder="Search tasks..." 
-                                    id="searchTasks{{$key}}">
-                            </div>
-                        </div><!-- end card header -->
-                         <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
-                            @forelse($sectionData['tasks'] as $task)
-                                <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none task-item">
-                                    <div class="card-body p-1 mt-1" title="{{ $task->title }}" style=' cursor: pointer;'>
-                                        <div class="card profile-project-card shadow-none mb-0 profile-project-{{$sectionData['color']}} material-shadow">
-                                            <div class="card-body p-2">
-                                                <!-- Project Header -->
-                                                <div class="d-flex">
-                                                    <div class="flex-grow-1 text-muted overflow-hidden">
-                                                        <h5 class="fs-14 text-truncate mb-1 project-name">
-                                                            <a href="#" class="text-body">{{ strlen($task->title) > 20 ? substr($task->title, 0, 20) . '…' : $task->title }}</a>
-                                                        </h5> 
-                                                        <p class="text-muted mb-0"><span class="fs-7">{{ strlen($task->project->name) > 20 ? substr($task->project->name, 0, 20) . '…' : $task->project->name }}</span> - <span class='badge bg-success-subtle text-dark fs-10'>{{$task->board->board}}</span> <br>
-                                                        <small class='fs-8 text-muted'>
-                                                            <i class="ri-calendar-event-fill"></i> 
-                                                                @if($task->due_date)
-                                                                    {{ ($task->due_date )
-                                                                        ? (date('M d, Y',strtotime($task->due_date)))
-                                                                        : 'No Due Date' }}
-                                                                @else
-                                                                    No Due Date
-                                                                @endif
-                                                                </small>
-                                                        </p>
-                                                    
-                                                    </div>
-                                                    <div class="flex-shrink-0 ms-2 text-end">
-                                                        <div class="badge  @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
-                                                            @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
-                                                            @else text-white" style="background-color:#B9F6CA;" 
-                                                            @endif" fs-10">
-                                                              {{$task->priority}}
-                                                        </div> 
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Footer Section -->
-                                            <div class="card-footer bg-light border-top p-2">
-                                                <div class="d-flex text-muted">
-                                                    <ul class="list-inline mb-0 d-flex align-items-center gap-2 w-100">
-                                                        <li class="list-inline-item">
-                                                            <i class="ri-timer-fill"></i> 0 hrs
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <i class="ri-question-answer-line"></i> 0
-                                                        </li>
-                                                        <li class="list-inline-item">
-                                                            <i class="ri-attachment-2"></i> 0
-                                                        </li>
-                                                        <li class="list-inline-item ms-auto">
-                                                            <div class="flex-shrink-0">
-                                                                <i class="ri-list-check align-bottom me-1 text-muted"></i>
-                                                                0
-                                                            </div>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                    <hr>
-                                </a>
-                            @empty
-                                <div class="text-center text-muted py-3">No tasks</div>
-                            @endforelse
-                         </div>
-                    </div>
-                </div>
-            @endforeach
+            @php
+            $sections = [
+                'Delayed' => [
+                    'tasks' => $tasks->where('due_date', '<', date('Y-m-d')),
+                    'color' => 'danger',
+                    'style' => 'background-color: #FFE6E6; border: 1px solid #FFB3B3; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
+                ],
+                'Due Today' => [
+                    'tasks' => $tasks->where('due_date', date('Y-m-d')),
+                    'color' => 'warning',
+                    'style' => 'background-color: #FFF7E6; border: 1px solid #FFE3B3; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
+                ],
+                'Upcomming Tasks' => [
+                    'tasks' => $tasks->where('due_date', '>', date('Y-m-d')),
+                    'color' => 'success',
+                    'style' => 'background-color: #E6FFEB; border: 1px solid #B3FFC2; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
+                ],
+            ];
+            $key = 0;
+        @endphp
+              @foreach($sections as $sectionTitle => $sectionData)
+    
+              <div class="col-md-4">
+                  <div class="card">
+                      <div class="card-header align-items-center d-flex">
+                          <h4 class="card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}">
+                              {{$sectionTitle}} 
+                              <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
+                          </h4>
+                          <div class="flex-shrink-0 ms-3">
+                              <input type="text" 
+                                     class="form-control form-control-sm" 
+                                     placeholder="Search tasks..." 
+                                     id="searchTasks{{$key}}">
+                          </div>
+                      </div><!-- end card header -->
+                      <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
+                      <div class="card-body">
+                          @forelse($sectionData['tasks'] as $task)
+                              <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none task-item">
+                                  <div class="card shadow-sm mb-3 card-hover" 
+                                  style="{{ $sectionData['style'] }}">
+                                      <div class="card-body p-3">
+                                          <div class="d-flex justify-content-between align-items-start">
+                                              <div class="me-2 flex-grow-1">
+                                                  <h6 class="fw-semibold mb-1 text-truncate" title="{{ $task->title }}">
+                                                      {{ strlen($task->title) > 15 ? substr($task->title, 0, 15) . '…' : $task->title }}
+                                                      
+                                                      <span class="badge 
+                                                          @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
+                                                          @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
+                                                          @else text-white" style="background-color:#B9F6CA;" 
+                                                          @endif">
+                                                          {{$task->priority}}
+                                                      </span>
+                                                      <br> <br>
+                                                      <small><span class="fs-8 text-muted" title="{{ $task->project->name }}">
+                                                        {{ strlen($task->project->name) > 15 ? substr($task->project->name, 0, 15) . '…' : $task->project->name }} <span class="badge bg-success-subtle text-dark fs-10">{{$task->board->board}}</span>
+                                                        </small></span> 
+                                                      </small>
+                                                  </h6>
+                                              </div>
+                                              <small class="text-muted">
+                                                <i class="ri-calendar-event-fill"></i>  <span>{{ date('M d, Y', strtotime($task->due_date)) }}</span>
+                                              </small>
+                                          </div>
+                                      </div>
+                                      <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0">
+                                          <ul class="list-inline mb-0 d-flex align-items-center gap-2">
+                                              <li class="list-inline-item">
+                                                  <i class="ri-timer-fill"></i> {{$task->activities->sum('hours')}} hrs
+                                              </li>
+                                              <li class="list-inline-item">
+                                                  <i class="ri-question-answer-line"></i> {{$task->comments->count()}}
+                                              </li>
+                                              <li class="list-inline-item">
+                                                  <i class="ri-attachment-2"></i> {{$task->attachments->count()}}
+                                              </li>
+                                          </ul>
+                                          <i class="ri-arrow-right-s-line"></i>
+                                      </div>
+                                  </div>
+                              </a>
+                          @empty
+                              <div class="text-center text-muted py-3">No tasks</div>
+                          @endforelse
+                      </div>
+                      </div>
+                  </div><!-- end card -->
+              </div>
+              
+              <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                      const searchInput = document.getElementById('searchTasks{{$key}}');
+                      const tasksContainer = document.getElementById('tasksContainer{{$key}}');
+                      const tasks = tasksContainer.querySelectorAll('.task-item');
+                  
+                      searchInput.addEventListener('input', function() {
+                          const filter = this.value.toLowerCase();
+                          tasks.forEach(task => {
+                              const title = task.querySelector('h6').textContent.toLowerCase();
+                              if(title.includes(filter)) {
+                                  task.style.display = '';
+                              } else {
+                                  task.style.display = 'none';
+                              }
+                          });
+                      });
+                  });
+                  </script>
+              @php $key++; @endphp
+              @endforeach
         </div>
         <div class="row">
-            <div class="col-xl-4">
-                <div class="card card-height">
+            {{-- <div class="col-xl-4"> --}}
+                {{-- <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1 py-1">My Pending Tasks</h4>
                         
@@ -318,7 +274,8 @@
                             </div>
                         </div>
                     </div><!-- end card body -->
-                </div><!-- end card -->
+                </div> --}}
+                <!-- end card -->
                 {{-- <div class="card card-height">
                     <div class="card-header border-0 align-items-center d-flex">
                         <h4 class="card-title mb-0 flex-grow-1">Total Hours Spend</h4>
@@ -346,10 +303,9 @@
                     </div><!-- end card body -->
                 </div><!-- end card --> --}}
                
-            </div><!-- end col -->
-            <div class="col-xl-8">
-               
-              
+            {{-- </div> --}}
+            <!-- end col -->
+            <div class="col-xl-12">
                 @if(auth()->user()->role == "Admin")
                 <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
@@ -394,7 +350,9 @@
             <div class="col-lg-12">
                 <div class="card card-height">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet</h4>
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet  <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
+                            <i class="ri-add-line align-bottom"></i>
+                        </button></h4>
                         
                     </div><!-- end card header -->
                     <div class="card-body">
@@ -406,25 +364,87 @@
                                         <th scope="col">Hours</th>
                                     </tr>
                                 </thead><!-- end thead -->
-                               <tbody>
-                                @php
-                                    $tot_hours = 0;
-                                @endphp
+                                <tbody>
+                                    @php
+                                        $tot_hours = 0;
+                                    @endphp
                                     @for ($date = $last_sunday; $date <= $saturday; $date = date('Y-m-d', strtotime($date . ' +1 day')))
                                         @php
-                                        $tot_hours = $tot_hours + $activities->where('user_id',auth()->user()->id)->where('date',date('Y-m-d', strtotime($date)))->sum('hours') ;
+                                            $dailyActivities = $activities
+                                                ->where('user_id', auth()->user()->id)
+                                                ->where('date', date('Y-m-d', strtotime($date)));
+                                            $dailyHours = $dailyActivities->sum('hours');
+                                            $tot_hours += $dailyHours;
                                         @endphp
-                                            <tr>
-                                                    <td >{{ date('M d - l',strtotime($date)) }}</td>
-                                                <td>{{ $activities->where('user_id',auth()->user()->id)->where('date',date('Y-m-d', strtotime($date)))->sum('hours') }} hrs</td>
-                                            </tr>
+                                
+                                        <tr data-date-row="{{ date('Y-m-d', strtotime($date)) }}">
+                                            <td>{{ date('M d - l', strtotime($date)) }}</td>
+                                            <td>
+                                                @if($dailyHours == 0)
+                                                    <span class="text-muted">0 hrs</span>
+                                                @else
+                                                    <a href="#" 
+                                                    class="text-primary view-activities" 
+                                                    data-bs-toggle="offcanvas" 
+                                                    data-bs-target="#activityOffcanvas" 
+                                                    data-date="{{ date('Y-m-d', strtotime($date)) }}">
+                                                        <span id='hours_daily{{$date}}'>{{  number_format($dailyHours,2) }}</span> hrs
+                                                    </a>
+                                                @endif
+                                            </td>
+                                        </tr>
                                     @endfor
+                                
                                     <tr>
-                                        <td >Total</td>
-                                        <td>{{$tot_hours}} hrs</td>
+                                        <td><strong>Total</strong></td>
+                                        <td><strong id="total-hours">{{ number_format($tot_hours,2) }}</strong> hrs</td>
                                     </tr>
                                 </tbody>
+                                
+                                <!-- Offcanvas -->
+                              
+                                
                             </table><!-- end table -->
+                            <div class="offcanvas offcanvas-end" tabindex="-1" id="activityOffcanvas" aria-labelledby="activityOffcanvasLabel">
+                                <div class="offcanvas-header">
+                                    <h5 id="activityOffcanvasLabel">Activities</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                </div>
+                                <div class="offcanvas-body">
+                                    <div id="activity-list">
+                                        <p class="text-muted">Select a date to view activities.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Edit Modal (Dynamic) -->
+                            <div class="modal fade" id="editActivityModal" tabindex="-1" aria-labelledby="editActivityLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <form id="editActivityFormapi">
+                                        @csrf
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editActivityLabelapi">Edit Activity</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <input type="hidden" id="editActivityIdapi" name="activity_id">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Activity</label>
+                                                    <input type="text" class="form-control" id="editActivityNameapi" name="activity" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Hours</label>
+                                                    <input type="number" class="form-control" id="editActivityHoursapi" name="hours" step='.01' required>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
@@ -438,7 +458,7 @@
                             <div class="tab-pane active" id="today" role="tabpanel">
                                 <div class="profile-timeline">
                                     <div class="accordion accordion-flush" id="todayExample">
-                                        @foreach($activities->sortByDesc('date') as $activity)
+                                        @foreach($activities->take(20)->sortByDesc('date') as $activity)
                                             <div class="accordion-item border-0">
                                                 <div class="accordion-header" id="headingThree">
                                                     <a class="accordion-button p-2 shadow-none" data-bs-toggle="collapse" href="#collapsethree" aria-expanded="false">
@@ -472,16 +492,12 @@
                 </div><!-- end card -->
                 
             </div><!-- end col -->
-            <div class='col-lg-12'>
-                 <div class="card card-h-100">
-                    <div class="card-body">
-                        <div id="calendar"></div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </div>
 </div>
+@include('home.add_activity')
+@if(auth()->user()->role == "Admin")
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -493,174 +509,987 @@
       </div>
     </div>
   </div>
-@include('home.view_projects')
+{{-- @include('home.view_projects') --}}
 @foreach($members as $member)
     @include('home.view_employee_tasks')
     @include('home.view_employee_delayed')
 @endforeach
+@endif
+@foreach($tasks as $task)
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="taskDetails{{$task->id}}" data-id="taskDetails{{ $task->id }}">
+        <div class="offcanvas-header d-flex justify-content-between align-items-center">
+  
+            <h5 class="offcanvas-title editable-title mb-0" 
+                id="taskTitle{{$task->id}}" 
+                ondblclick="makeTitleEditable({{$task->id}})">
+                {{$task->title}}
+            </h5>
+
+            <!-- Right Section: View Button + Close Button -->
+            <div class="d-flex align-items-center gap-2">
+                <!-- View Button -->
+                <a href='{{ url("/view-project/view-task/".$task->id) }}' 
+                   class="btn btn-outline-primary btn-sm btn-icon waves-effect waves-light material-shadow-none"
+                   title="View Task">
+                   <i class="ri-fullscreen-line"></i>
+                </a>
+            
+                <!-- Delete Button -->
+                <button type="button" 
+                        class="btn btn-outline-danger btn-sm btn-icon waves-effect waves-light material-shadow-none"
+                        title="Delete Task"
+                        onclick="deleteTask({{ $task->id }})">
+                    <i class="ri-delete-bin-line"></i>
+                </button>
+            
+                <!-- Close Button -->
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+        </div>
+        <div class="offcanvas-body">
+            <div class="row">
+                <div class="col-xl-12 col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="text-muted">
+                                <a href="{{ url('view-project/'.$task->project_id) }}" ><h4 class="mb-3 fw-bold text-uppercase">{{$task->project->name}}</h4></a>
+                                <h6 class="mb-3 fw-semibold text-uppercase">Description</h6>
+                                <p>{{$task->description}}</p>
+
+                    
+
+                                <div class="pt-3 border-top border-top-dashed mt-4">
+                                    <div class="row gy-3">
+
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div>
+                                                <p class="mb-2 text-uppercase fw-medium">Create Date :</p>
+                                                <h5 class="fs-15 mb-0">{{date('M d, Y',strtotime($task->created_at))}}</h5>
+                                            </div>
+                                        </div>
+                                       <div class="col-lg-6 col-sm-6">
+                                            <div>
+                                                <p class="mb-2 text-uppercase fw-medium">Due Date :</p>
+                                                <button class="btn btn-outline-primary btn-sm due-date" 
+                                                    data-id="{{ $task->id }}" 
+                                                    onclick="makeDueDateEditable(this)">
+                                                {{ date('M d, Y', strtotime($task->due_date)) }}
+                                                </button>
+                                                <span class="due-date-raw" data-id="{{ $task->id }}" style="display:none;">
+                                                    {{ date('Y-m-d', strtotime($task->due_date)) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div>
+                                                <p class="mb-2 text-uppercase fw-medium">Priority :</p>
+                                                <div class="badge ">
+                                                    
+                                                   <select class="form-control" 
+                                                        id="priority-field-{{$task->id}}" 
+                                                        name="priority" 
+                                                        data-id="{{$task->id}}" 
+                                                        onchange="updatePriority(this)" 
+                                                        required>
+                                                    <option value="High" @if($task->priority == "High") selected @endif>High</option>
+                                                    <option value="Medium" @if($task->priority == "Medium") selected @endif>Medium</option>
+                                                    <option value="Low" @if($task->priority == "Low") selected @endif>Low</option>
+                                                </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-sm-6">
+                                            <div>
+                                                <p class="mb-2 text-uppercase fw-medium">Status :</p>
+                                                <div class="badge fs-12"> <select id="project_board_id_{{$task->id}}" 
+                                                    class="form-select" 
+                                                    data-id="{{$task->id}}" 
+                                                    onchange="updateTaskBoard(this)">
+                                                @foreach($boards->where('project_id',$task->project_id) as $board)
+                                                    <option value="{{ $board->id }}" 
+                                                        @if($task->project_board_id == $board->id) selected @endif>
+                                                        {{ $board->board }}
+                                                    </option>
+                                                @endforeach
+                                            </select></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                              
+                            </div>
+                        </div>
+                        <!-- end card body -->
+                    </div>
+                    <!-- end card -->
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                               <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab" href="#comments-{{$task->id}}" role="tab">
+                                            Comments
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#attachments-{{$task->id}}" role="tab">
+                                            Attachments({{$task->attachments->count()}})
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#time-{{$task->id}}" role="tab">
+                                            Time Entries ({{$task->activities->count()}})
+                                        </a>
+                                    </li>
+                                </ul>
+                                <!--end nav-->
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div class="tab-pane active" id="comments-{{$task->id}}" role="tabpanel">
+                                    <h5 class="card-title mb-4">Comments</h5>
+                                    <div id="commentsContainer{{ $task->id }}" data-simplebar style="height: 200px;" class="px-3 mx-n3 mb-2">
+                                        @foreach($task->comments->sortByDesc('created_at') as $comment)
+                                            <div class="d-flex mb-4">
+                                                <div class="flex-shrink-0">
+                                                    <img src="{{ $comment->user->avatar }}" 
+                                                        onerror="this.src='{{ url('images/Favicon.png') }}';" 
+                                                        alt="" 
+                                                        class="avatar-xs rounded-circle material-shadow" />
+                                                </div>
+                                                <div class="flex-grow-1 ms-3">
+                                                    <h5 class="fs-13">
+                                                        <a href="#">{{ $comment->user->name }}</a>
+                                                        <small class="text-muted">{{ date('d M, Y - h:i A', strtotime($comment->created_at)) }}</small>
+                                                    </h5>
+                                                    <p class="text-muted">{!! $comment->comment !!}</p>
+                                                    @if($comment->file_path)
+                                                        <a href="{{ $comment->file_path }}" class="btn btn-sm btn-success mt-2" target="_blank">
+                                                            View Attachment
+                                                        </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <form id="taskCommentForm{{$task->id}}" enctype="multipart/form-data">
+                                        @csrf
+                                        <div class="row g-3 align-items-end">
+                                            
+                                            <!-- Comment Textarea -->
+                                            <div class="col-lg-12 mt-5">
+                                                <label for="commentText{{$task->id}}" class="form-label">Leave a Comment</label>
+                                                <textarea class="form-control bg-light border-light" 
+                                                        id="commentText{{$task->id}}" 
+                                                        name="comment" 
+                                                        rows="4" 
+                                                        placeholder="Enter comments"
+                                                        required></textarea>
+                                            </div>
+
+                                            <!-- File Attachment -->
+                                            <div class="col-lg-12">
+                                                <input type="file" 
+                                                    class="form-control" 
+                                                    {{-- id="proof{{$task->id}}"  --}}
+                                                    name="proof" 
+                                                    data-max-file-size="3MB" 
+                                                    data-max-files="1" />
+                                            </div>
+
+                                            <!-- Post Button -->
+                                            <div class="col-lg-12 text-end mt-4">
+                                                <button type="submit" 
+                                                        id="postBtn{{$task->id}}" 
+                                                        class="btn btn-success">
+                                                    Post Comment
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    @include('tasks.saveComment')
+                                </div>
+
+                                <!--end tab-pane-->
+                                <div class="tab-pane" id="attachments-{{$task->id}}" role="tabpanel">
+                                      
+                                    <div class="table-responsive table-card">
+                                        <table class="table table-borderless align-middle mb-0">
+                                            <thead class="table-light text-muted">
+                                                <tr>
+                                                    <th scope="col">File Name</th>
+                                                    <th scope="col">Upload Date</th>
+                                                    <th scope="col">Uploaded by</th>
+                                                    <th scope="col">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($task->attachments as $attachment)
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="avatar-sm">
+                                                                <div class="avatar-title bg-info-subtle text-info rounded fs-20">
+                                                                    <i class="ri-folder-line"></i>
+                                                                </div>
+                                                            </div>
+                                                            <div class="ms-3 flex-grow-1">
+                                                                <h6 class="fs-15 mb-0"><a href="{{url($attachment->file)}}" target='_blank'>{{$attachment->name}}</a></h6>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{date('d M, Y',strtotime($attachment->created_at))}}</td>
+                                                    <td>{{$attachment->user->name}}</td>
+                                                    <td>
+                                                        <div class="dropdown">
+                                                            <a href="javascript:void(0);" class="btn btn-light btn-icon" id="dropdownMenuLink3" data-bs-toggle="dropdown" aria-expanded="true">
+                                                                <i class="ri-equalizer-fill"></i>
+                                                            </a>
+                                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink3" data-popper-placement="bottom-end" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(0px, 23px);">
+                                                                <li><a class="dropdown-item" href="{{url($attachment->file)}}" target='_blank'><i class="ri-eye-fill me-2 align-middle"></i>View</a></li>
+                                                                <li><a class="dropdown-item" href="javascript:void(0);"><i class="ri-delete-bin-5-line me-2 align-middle"></i>Delete</a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                        <!--end table-->
+                                    </div>
+                                </div>
+                                <!--end tab-pane-->
+                                <div class="tab-pane" id="time-{{$task->id}}" role="tabpanel">
+                                    <h6 class="card-title mb-4 pb-2">
+                                        Time Entries 
+                                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity{{$task->id}}">
+                                            <i class="ri-time-line align-bottom me-1"></i> Add
+                                        </button>
+                                    </h6>
+                                
+                                    <div class="table-responsive table-card">
+                                        <table class="table align-middle mb-0" id="activitiesTable{{$task->id}}">
+                                            <thead class="table-light text-muted">
+                                                <tr>
+                                                    <th>Member</th>
+                                                    <th>Date</th>
+                                                    <th>Hours</th>
+                                                    <th>Activity</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($task->activities as $activity)
+                                                <tr id="activityRow{{$activity->id}}">
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="{{asset($activity->user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xxs">
+                                                            <div class="flex-grow-1 ms-2">
+                                                                {{$activity->user->name}}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{date('d M, Y',strtotime($activity->date))}}</td>
+                                                    <td>{{$activity->hours}} hrs</td>
+                                                    <td>{{$activity->activity}}</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-primary editActivityBtn" 
+                                                                data-id="{{ $activity->id }}" 
+                                                                data-task="{{ $activity->activity }}" 
+                                                                data-hours="{{ $activity->hours }}" 
+                                                                data-date="{{ $activity->date }}">
+                                                            <i class="ri-edit-line"></i>
+                                                        </button>
+                                                        @if(auth()->user()->id == $activity->user_id)
+                                                        <button class="btn btn-sm btn-danger deleteActivityBtn" data-id="{{$activity->id}}">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                              
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <!--edn tab-pane-->
+
+                            </div>
+                            <!--end tab-content-->
+                        </div>
+                    </div>
+                    <!-- end card -->
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    @include('tasks.addActivity')
+  
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('addActivityForm' + {{ $task->id }});
+        
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault(); // ❌ Stop page refresh
+            console.log('Submit intercepted for AJAX');
+    
+            const formData = new FormData(form);
+    
+            try {
+                const response = await fetch(`{{ url('task-activity/api') }}/{{ $task->id }}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+    
+                const data = await response.json();
+                console.log('AJAX response:', data);
+    
+                if (data.success) {
+                    // Dynamically add row
+                    const tableBody = document.querySelector('#activitiesTable' + {{ $task->id }} + ' tbody');
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'activityRow' + data.activity.id;
+                    newRow.innerHTML = `
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${data.activity.user_avatar ? `{{ asset('') }}${data.activity.user_avatar}` : `{{ asset('images/Favicon.png') }}`}" 
+                                    onerror="this.src='{{ asset('images/Favicon.png') }}';" 
+                                    alt="User Avatar" 
+                                    class="rounded-circle avatar-xxs rounded-circle material-shadow" />
+                                <div class="flex-grow-1 ms-2">${data.activity.user_name}</div>
+                            </div>
+                        </td>
+                        <td>${data.activity.date}</td>
+                        <td>${data.activity.hours} hrs</td>
+                        <td>${data.activity.task}</td>
+                        <td>
+                            
+                            <button class="btn btn-sm btn-primary editActivityBtn" 
+                                data-id="${data.activity.id}" 
+                                data-task="${data.activity.task}" 
+                                data-hours="${data.activity.hours}" 
+                                data-date="${data.activity.date_old}">
+                            <i class="ri-edit-line"></i>
+                        </button>
+                            <button class="btn btn-sm btn-danger deleteActivityBtn" data-id="${data.activity.id}">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </td>
+                    `;
+                    tableBody.prepend(newRow);
+    
+                    // Reset form & close modal
+                    form.reset();
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addActivity' + {{ $task->id }}));
+                    modal.hide();
+    
+                    Toastify({
+                        text: "Activity added successfully!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#4CAF50"
+                    }).showToast();
+                }
+    
+            } catch (err) {
+                console.error(err);
+                Toastify({
+                    text: "Error adding activity!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#FF0000"
+                }).showToast();
+            }
+        });
+    });
+    
+    </script>
+    
+@endforeach
+@include('tasks.editActivity')
 @endsection
 @section('js')
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<!-- FilePond library -->
+<script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+
+<!-- Optional plugins -->
+<script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+
+
+<script>
+  // Register FilePond plugins
+  FilePond.registerPlugin(
+    FilePondPluginFileValidateSize,
+    FilePondPluginFileValidateType,
+    FilePondPluginImagePreview
+  );
+
+  // Turn all file input elements into FilePond
+  FilePond.create(document.querySelector('.filepond'), {
+    acceptedFileTypes: ['image/*', 'application/pdf'],
+    allowMultiple: true,
+    maxFiles: 1,
+     // Keep the original input so form can submit normally
+     storeAsFile: true,
+    labelIdle: 'Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+  });
+</script>
+<script>
+      // Generic toast helper (top-right)
+  function showToast(message, type = 'info', duration = 1000) {
+    const bg = {
+      success: "linear-gradient(to right, #28a745, #2ecc71)",
+      error:   "linear-gradient(to right, #dc3545, #e74c3c)",
+      info:    "linear-gradient(to right, #007bff, #36a2ff)"
+    }[type] || "linear-gradient(to right, #333, #555)";
+
+    Toastify({
+      text: message,
+      duration: duration,
+      close: true,
+      gravity: "top",          // top or bottom
+      position: "right",      // left, center or right
+      stopOnFocus: true,      // stop timeout on hover/focus
+      style: {
+        background: bg,
+        color: "#fff",
+        boxShadow: "0 6px 18px rgba(0,0,0,0.15)"
+      }
+    }).showToast();
+  }
+
+  // Convenience wrappers
+  function showToastSuccess(msg, duration) { showToast(msg, 'success', duration); }
+  function showToastError(msg, duration)   { showToast(msg, 'error', duration); }
+  function showToastInfo(msg, duration)    { showToast(msg, 'info', duration); }
+
+  function makeTitleEditable(id) {
+    const titleElement = document.getElementById('taskTitle'+id);
+
+    // Prevent multiple input fields
+    if (titleElement.querySelector('input')) return;
+
+    // Get current title text
+    const currentTitle = titleElement.textContent.trim();
+
+    // Replace with input field
+   titleElement.innerHTML = `
+    <input type="text" class="editable-input form-control" id="titleInput${id}" value="${currentTitle}" autofocus />
+  `;
+
+    const input = document.getElementById('titleInput'+id);
+
+    // Save on Enter key
+   input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      saveTitle(id);
+        // showToastSuccess('Title updated');
+    }
+  });
+
+    // Save on blur (click outside)
+     input.addEventListener('blur', function() {
+        saveTitle(id);
+        //   showToastSuccess('Title updated');
+    });
+  }
+
+  async function saveTitle(id) {
+    const titleElement = document.getElementById('taskTitle' + id);
+    const input = document.getElementById('titleInput' + id);
+
+    if (!input) return;
+
+    const newTitle = input.value.trim() || 'Untitled Task';
+
+    try {
+        const formData = new FormData();
+        formData.append('title', newTitle);
+
+        const response = await fetch(`{{ url('/tasks') }}/${id}/update-title`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Update title in the UI
+            titleElement.textContent = newTitle;
+
+            // ✅ Show success toast
+            Toastify({
+                text: "Title updated successfully!",
+                duration: 3000,             // 3 seconds
+                gravity: "top",             // top or bottom
+                position: "right",          // left, center, or right
+                backgroundColor: "#4CAF50", // green for success
+                stopOnFocus: true           // prevent dismiss on hover
+            }).showToast();
+        } else {
+            // ❌ Show error toast
+            Toastify({
+                text: "Failed to update title. Please try again.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#FF0000",
+                stopOnFocus: true
+            }).showToast();
+        }
+    } catch (error) {
+        console.error('[ERROR] AJAX request failed:', error);
+
+        // ❌ Show error toast
+        Toastify({
+            text: "Something went wrong. Please try again later.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#FF0000",
+            stopOnFocus: true
+        }).showToast();
+    }
+    }
+    function makeDueDateEditable(element) 
+    {
+    const id = element.getAttribute('data-id');
+
+    // Prevent multiple inputs
+    if (element.querySelector('input')) return;
+
+    // Get current date
+    const rawSpan = document.querySelector(`.due-date-raw[data-id="${id}"]`);
+    let currentDate = rawSpan ? rawSpan.textContent.trim() : element.textContent.trim();
+
+    // Format YYYY-MM-DD for input
+    const parts = currentDate.split('-'); 
+    const formattedDate = (parts.length === 3) 
+        ? `${parts[0]}-${parts[1]}-${parts[2]}`
+        : new Date(currentDate).toISOString().split('T')[0];
+
+    // Replace content with input
+    element.innerHTML = `<input type="date" class="form-control form-control-sm" data-id="${id}" value="${formattedDate}" autofocus />`;
+
+    const input = element.querySelector('input');
+
+    // Save on Enter
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') saveDueDate(input);
+    });
+
+    // Save on blur
+    input.addEventListener('blur', function() {
+        saveDueDate(input);
+    });
+    }
+
+    async function saveDueDate(input) {
+        const id = input.getAttribute('data-id');
+        const newDate = input.value;
+
+        // Find elements to update
+        const dueDateDiv = document.querySelector(`.due-date[data-id="${id}"]`);
+        const rawSpan = document.querySelector(`.due-date-raw[data-id="${id}"]`);
+
+        // Format for display
+        const formattedDisplay = new Date(newDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+        });
+
+        // Update UI
+        if (dueDateDiv) dueDateDiv.textContent = formattedDisplay;
+        if (rawSpan) rawSpan.textContent = newDate;
+
+        // Send AJAX
+        try {
+            const response = await fetch(`{{ url('/tasks') }}/${id}/update-due-date`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ due_date: newDate })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                Toastify({
+                    text: "Due date updated successfully!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#4CAF50",
+                    stopOnFocus: true
+                }).showToast();
+            } else {
+                Toastify({
+                    text: data.message || "Failed to update due date",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#FF0000",
+                    stopOnFocus: true
+                }).showToast();
+            }
+        } catch (error) {
+            console.error(error);
+            Toastify({
+                text: "Network error while updating due date",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#FF0000",
+                stopOnFocus: true
+            }).showToast();
+        }
+    }
+</script>
+<script>
+    async function updatePriority(selectElement) {
+    const taskId = selectElement.getAttribute('data-id');
+    const newPriority = selectElement.value;
+
+    if (!newPriority) return;
+
+    try {
+        const response = await fetch(`{{ url('/tasks/update-priority') }}/${taskId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ priority: newPriority })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Update the badge text and style dynamically
+            const badge = document.getElementById('task_status' + taskId);
+            badge.textContent = newPriority;
+
+            // Reset existing classes first
+            badge.className = 'badge';
+
+            // Apply new style based on priority
+            if (newPriority === 'High') {
+                badge.classList.add('bg-danger-subtle', 'text-danger');
+            } else if (newPriority === 'Medium') {
+                badge.classList.add('bg-warning-subtle', 'text-warning');
+            } else {
+                badge.classList.add('bg-success-subtle', 'text-success');
+            }
+
+            // Show success toast
+            Toastify({
+                text: "Priority updated successfully!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#28a745",
+                stopOnFocus: true
+            }).showToast();
+        } else {
+            Toastify({
+                text: "Failed to update priority.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#dc3545",
+                stopOnFocus: true
+            }).showToast();
+        }
+    } catch (error) {
+        console.error('Error updating priority:', error);
+
+        Toastify({
+            text: "An error occurred. Please try again.",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#dc3545",
+            stopOnFocus: true
+        }).showToast();
+    }
+    }
+</script>
+<script>
+    async function updateTaskBoard(selectElement) {
+        const taskId = selectElement.getAttribute('data-id');
+        const boardId = selectElement.value;
+
+        if (!boardId) return; // Skip if no board selected
+
+        try {
+            const response = await fetch(`{{ url('/tasks/update-board/api') }}/${taskId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ project_board_id: boardId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Update the badge text dynamically
+                // const badge = document.getElementById('task_board_status' + taskId);
+                // badge.textContent = data.board_name || 'Updated';
+
+                // Show success toast
+             
+                Toastify({
+                    text: "Status updated successfully!",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#28a745",
+                    stopOnFocus: true
+                }).showToast();
+            } else {
+                Toastify({
+                    text: "Failed to update Status.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#dc3545",
+                    stopOnFocus: true
+                }).showToast();
+            }
+        } catch (error) {
+            console.log('Error updating task board:', error);
+
+            Toastify({
+                text: "An error occurred. Please try again.",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#dc3545",
+                stopOnFocus: true
+            }).showToast();
+        }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function deleteTask(id) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This task will be permanently deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Perform AJAX delete
+                fetch(`{{ url('/tasks/${id}/archive') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const offcanvasEl = document.getElementById('taskDetails' + id);
+                        if (offcanvasEl) {
+                            // Get existing instance or create one
+                            let bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+                            if (!bsOffcanvas) {
+                                bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+                            }
+                            bsOffcanvas.hide();
+                        }
+                        Toastify({
+                            text: 'Task deleted successfully!',
+                            duration: 2000,
+                            gravity: 'top',
+                            position: 'right',
+                            backgroundColor: '#4CAF50'
+                        }).showToast();
+    
+                        // Optional: remove task card from UI
+                        const taskCard = document.getElementById('taskCard' + id);
+                        if (taskCard) taskCard.remove();
+    
+                    } else {
+                        Toastify({
+                            text: data.message || 'Failed to delete task',
+                            duration: 3000,
+                            gravity: 'top',
+                            position: 'right',
+                            backgroundColor: '#FF0000'
+                        }).showToast();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Toastify({
+                        text: 'Network error while deleting task',
+                        duration: 3000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#FF0000'
+                    }).showToast();
+                });
+            }
+        });
+    }
+    </script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+// Delegate click for dynamically added rows
+document.addEventListener('click', async function(e) {
+    if (e.target.closest('.deleteActivityBtn')) {
+        const btn = e.target.closest('.deleteActivityBtn');
+        const activityId = btn.getAttribute('data-id');
+
+        // SweetAlert2 confirmation
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`{{ url('activity/destroy') }}/${activityId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    console.log('Delete response:', data);
+
+                    if (data.success) {
+                        // Remove row
+                        const row = document.getElementById('activityRow' + activityId);
+                        if (row) row.remove();
+
+                        Swal.fire(
+                            'Deleted!',
+                            'Activity has been deleted.',
+                            'success'
+                        );
+                    } else {
+                        Swal.fire('Error!', 'Failed to delete activity.', 'error');
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Error!', 'Something went wrong.', 'error');
+                }
+            }
+        });
+    }
+});
+
+});
+
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const offcanvasEl = document.getElementById('editActivityOffcanvas');
+    const offcanvas = new bootstrap.Offcanvas(offcanvasEl);
+    const form = document.getElementById('editActivityForm');
+
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.editActivityBtn')) {
+            const btn = e.target.closest('.editActivityBtn');
+            const id = btn.dataset.id;
+            const task = btn.dataset.task;
+            const hours = btn.dataset.hours;
+            const date = btn.dataset.date;
+
+            document.getElementById('editActivityId').value = id;
+            document.getElementById('editActivityTask').value = task;
+            document.getElementById('editActivityHours').value = hours;
+            document.getElementById('editActivityDate').value = date;
+
+            offcanvas.show();
+        }
+    });
+
+    // Handle AJAX submit
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const activityId = document.getElementById('editActivityId').value;
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch(`{{ url('task-activity/api') }}/edit/${activityId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Update table row dynamically
+                const row = document.getElementById('activityRow' + activityId);
+                row.querySelector('td:nth-child(2)').textContent = data.activity.date;
+                row.querySelector('td:nth-child(3)').textContent = data.activity.hours + ' hrs';
+                row.querySelector('td:nth-child(4)').textContent = data.activity.task;
+
+                offcanvas.hide();
+
+                Swal.fire('Success', 'Activity updated successfully!', 'success');
+            } else {
+                Swal.fire('Error', 'Failed to update activity', 'error');
+            }
+
+        } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'Something went wrong', 'error');
+        }
+    });
+});
+</script>
+
 <script src="{{asset('inside_css/assets/libs/apexcharts/apexcharts.min.js')}}"></script>
 
 <!-- Swiper Js -->
 <script src="{{asset('inside_css/assets/libs/swiper/swiper-bundle.min.js')}}"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const calendarEl = document.getElementById('calendar');
-      const modalEl = document.getElementById('eventModal');
-      const modalBody = document.getElementById('modalBody');
-      const modal = new bootstrap.Modal(modalEl);
-    
-      // Convert $tasks from Laravel → JS
-      const tasks = @json($tasks);
-    
-      const today = new Date();
-      const events = tasks.map(task => {
-        const due = new Date(task.due_date);
-        return {
-          title: task.title,
-          start: task.due_date,
-          allDay: true,
-          extendedProps: {
-            description: task.description,
-            users: task.users.map(u => u.name) // assuming Task->users has 'name'
-          },
-          color: due <= today ? "red" : "" // red if due today or overdue
-        };
-      });
-    
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-  initialView: 'dayGridMonth',
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: 'dayGridMonth,dayGridWeek,dayGridDay'
-  },
-  events: events,
-  dayMaxEventRows: true,   // enable "more" link
-  views: {
-    dayGridMonth: { dayMaxEventRows: 3 } // show only 3 per day
-  },
-  eventClick: function(info) {
-    const e = info.event;
-    modalBody.innerHTML = `
-      <p><strong>Title:</strong> ${e.title}</p>
-      <p><strong>Description:</strong> ${e.extendedProps.description}</p>
-      <p><strong>Due Date:</strong> ${e.start.toLocaleDateString()}</p>
-      <p><strong>Participants:</strong> ${e.extendedProps.users.join(", ")}</p>
-    `;
-    modal.show();
-  }
-});
-    
-      calendar.render();
-    });
-    </script>
-
-<!-- CRM js -->
-<!-- ApexCharts -->
-<script>
-    function getChartColorsArray(id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-    
-        let colors = el.getAttribute("data-colors");
-        if (!colors) {
-            console.warn("data-colors not found for", id);
-            return;
-        }
-    
-        try {
-            colors = JSON.parse(colors).map(function (value) {
-                let color = value.replace(" ", "");
-                if (color.indexOf(",") === -1) {
-                    return getComputedStyle(document.documentElement).getPropertyValue(color) || color;
-                } else {
-                    const parts = value.split(",");
-                    if (parts.length === 2) {
-                        return "rgba(" +
-                            getComputedStyle(document.documentElement).getPropertyValue(parts[0]).trim() +
-                            "," + parts[1] + ")";
-                    }
-                    return color;
-                }
-            });
-        } catch (e) {
-            console.error("Invalid JSON for", id, e);
-        }
-    
-        return colors;
-    }
-    
-    document.addEventListener("DOMContentLoaded", function () {
-        const el = document.getElementById("portfolio_donut_charts");
-        const projects = JSON.parse(el.dataset.projects);
-        const totalHours = parseFloat(el.dataset.totalHours);
-        const labels = projects.map(p => p.title);
-        const series = projects.map(p => parseFloat(Number(p.hours).toFixed(2)));
-        const chartColors = getChartColorsArray("portfolio_donut_charts");
-    
-        const options = {
-            series: series,
-            labels: labels,
-            chart: {
-                type: "donut",
-                height: 224
-            },
-            plotOptions: {
-                pie: {
-                    size: 100,
-                    offsetX: 0,
-                    offsetY: 0,
-                    donut: {
-                        size: "70%",
-                        labels: {
-                            show: true,
-                            name: {
-                                show: true,
-                                fontSize: "18px",
-                                offsetY: -5
-                            },
-                            value: {
-                                show: true,
-                                fontSize: "20px",
-                                color: "#343a40",
-                                fontWeight: 500,
-                                offsetY: 5
-                            },
-                            total: {
-                                show: true,
-                                fontSize: "13px",
-                                label: "Total Hours",
-                                color: "#9599ad",
-                                fontWeight: 500,
-                                formatter: function () {
-                                    return totalHours;
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            dataLabels: { enabled: false },
-            legend: { show: false },
-            yaxis: {
-                labels: {
-                    formatter: function (val) {
-                        return val;
-                    }
-                }
-            },
-            stroke: { lineCap: "round", width: 2 },
-            colors: chartColors
-        };
-    
-        const chart = new ApexCharts(el, options);
-        chart.render();
-    });
-</script>
 <script src="{{url('assets/libs/swiper/swiper-bundle.min.js')}}"></script>
 <script src="{{url('assets/js/pages/profile.init.js')}}"></script>
 <script>
@@ -692,4 +1521,301 @@
         projectSwiper.update();
     });
 </script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+    
+    // Initialize Select2 inside modals
+    $('.modal').on('shown.bs.modal', function () {
+    let $select = $(this).find('.select2');
+
+    $select.select2({
+        dropdownParent: $(this),
+        templateResult: function (data) {
+            if (!data.id) return data.text; // placeholder
+
+            // Get current selected values
+            let selectedValues = $select.val() || [];
+
+            // Hide from list if already selected
+            if (selectedValues.includes(data.id)) {
+                return null;
+            }
+
+            return data.text;
+        }
+    }).on('change', function () {
+        // Force Select2 to re-render results without flicker
+        $select.select2('destroy').select2({
+            dropdownParent: $(this).closest('.modal'),
+            templateResult: function (data) {
+                if (!data.id) return data.text;
+                let selectedValues = $select.val() || [];
+                if (selectedValues.includes(data.id)) {
+                    return null;
+                }
+                return data.text;
+            }
+        });
+    });
+});
+
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const activityList = document.getElementById('activity-list');
+    const totalHoursElement = document.getElementById('total-hours');
+
+    // === When clicking a day's hours, load its activities ===
+    document.querySelectorAll('.view-activities').forEach(el => {
+        el.addEventListener('click', function () {
+            const date = this.getAttribute('data-date');
+            loadActivities(date);
+        });
+    });
+
+    /**
+     * Load activities for a given date into the offcanvas
+     */
+    function loadActivities(date) {
+        fetch(`/activities/by-date/${date}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let html = '';
+            if (data.activities.length > 0) {
+                html = '<ul class="list-group">';
+                data.activities.forEach(activity => {
+                    html += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${activity.activity}</strong><br>
+                                <small class="text-muted">
+                                    ${activity.project_name ?? 'No Project'} - ${activity.hours} hrs
+                                </small>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-warning edit-btn" 
+                                    data-id="${activity.id}" 
+                                    data-activity="${activity.activity}" 
+                                    data-hours="${activity.hours}" 
+                                    data-date="${date}">
+                                    <i class="ri-edit-line"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger delete-btn" 
+                                    data-id="${activity.id}" 
+                                    data-date="${date}">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+            } else {
+                html = '<p class="text-muted">No activities for this day.</p>';
+            }
+
+            activityList.innerHTML = html;
+            attachEditHandlers();
+            attachDeleteHandlers();
+        });
+    }
+
+    /**
+     * Attach edit button handlers
+     */
+    function attachEditHandlers() {
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const activity = this.getAttribute('data-activity');
+                const hours = this.getAttribute('data-hours');
+
+                document.getElementById('editActivityIdapi').value = id;
+                document.getElementById('editActivityNameapi').value = activity;
+                document.getElementById('editActivityHoursapi').value = hours;
+
+                new bootstrap.Modal(document.getElementById('editActivityModal')).show();
+            });
+        });
+    }
+
+    /**
+     * Handle edit form submit
+     */
+    document.getElementById('editActivityFormapi').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const id = document.getElementById('editActivityIdapi').value;
+        const formData = new FormData(this);
+
+        fetch(`/activities/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Updated!', 'Activity has been updated.', 'success');
+                document.getElementById('total-hours').textContent = data.hours;
+                // Close modal
+                const editModal = bootstrap.Modal.getInstance(document.getElementById('editActivityModal'));
+                editModal.hide();
+
+                // Update the day and total dynamically
+                updateDayAndTotal(data.date);
+
+                // Close the offcanvas
+                const offcanvasEl = document.querySelector('#activityOffcanvas');
+                const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+                offcanvas.hide();
+            } else {
+                Swal.fire('Error!', data.message || 'Unable to update activity.', 'error');
+            }
+        });
+    });
+
+    /**
+     * Attach delete handlers
+     */
+    function attachDeleteHandlers() {
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-id');
+                const date = this.getAttribute('data-date');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This activity will be permanently deleted!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/activities/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Deleted!', 'Activity has been deleted.', 'success');
+                                
+                                document.getElementById('total-hours').textContent = data.hours;
+                                const offcanvasEl = document.querySelector('#activityOffcanvas');
+                                const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+                                offcanvas.hide();
+                                updateDayAndTotal(date);
+                            } else {
+                                Swal.fire('Error!', 'Unable to delete activity.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    /**
+     * Update the clicked day row and footer total
+     */
+    function updateDayAndTotal(date) {
+        fetch(`/activities/by-date/${date}`, {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let totalHoursForDay = 0;
+            data.activities.forEach(activity => {
+                totalHoursForDay += parseFloat(activity.hours) || 0;
+            });
+
+            // Update offcanvas content with latest data
+            loadActivities(date);
+
+            // === Update the actual table cell for this date ===
+            const dayRow = document.querySelector(`tr[data-date-row="${date}"] td:nth-child(2)`);
+
+            if (dayRow) {
+                if (totalHoursForDay > 0) {
+                    // Replace with clickable link
+                    dayRow.innerHTML = `
+                        <a href="#"
+                           class="text-primary view-activities"
+                           data-bs-toggle="offcanvas"
+                           data-bs-target="#activityOffcanvas"
+                           data-date="${date}">
+                            ${totalHoursForDay} hrs
+                        </a>
+                    `;
+                } else {
+                    // Replace with muted span
+                    dayRow.innerHTML = `<span class="text-muted">0 hrs</span>`;
+                }
+            }
+
+            // Rebind click handler for the new link
+            document.querySelectorAll('.view-activities').forEach(el => {
+                el.removeEventListener('click', viewActivitiesHandler); // clear old
+                el.addEventListener('click', viewActivitiesHandler);
+            });
+
+            // Update footer total
+            recalculateTotalHours();
+        });
+    }
+
+    /**
+     * Handler for dynamically added links
+     */
+    function viewActivitiesHandler(e) {
+        e.preventDefault();
+        const date = this.getAttribute('data-date');
+        loadActivities(date);
+    }
+
+    /**
+     * Recalculate total hours at the bottom
+     */
+    function recalculateTotalHours() {
+        let total = 0;
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            const cell = row.querySelector('td:nth-child(2)');
+            if (cell) {
+                const text = cell.textContent.trim().replace(' hrs', '');
+                const hours = parseFloat(text);
+                if (!isNaN(hours)) {
+                    total += hours;
+                }
+            }
+        });
+
+        // totalHoursElement.textContent = `${total.toFixed(2)} Hrs`;
+    }
+    });
+</script>
+
 @endsection

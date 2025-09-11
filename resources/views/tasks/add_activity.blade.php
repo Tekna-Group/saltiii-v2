@@ -25,13 +25,7 @@
                                 <label for="remarks" class="form-label">Remarks / Comments <small><i>(Optional)</i></small></label>
                                 <textarea class='form-control' name='comments' ></textarea>
                             </div>
-                            <div class="col-lg-12" style='display:none;'>
-                                <label for="" class="form-label">Status of Task?</label>
-                                <select name='status' class='form-control' required>
-                                    <option value='0' @if($task->status == 0) selected @endif>Still Ongoing</option>
-                                    {{-- <option value='1' @if($task->status == 1) selected @endif>Task Completed</option> --}}
-                                </select>
-                            </div>
+                           
                             <div class="col-lg-12">
                                 <label for="" class="form-label">Proof</label>
                                 <input type="file" class="filepond" name="proof" data-max-file-size="3MB" data-max-files="1" />

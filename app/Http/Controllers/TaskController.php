@@ -329,14 +329,68 @@ class TaskController extends Controller
         $TaskActivity->comments = $comm;
         $TaskActivity->save();
 
+        $task->save();
+        Alert::success('Successfully Encoded')->persistent('Dismiss');
+        return back();
+    }
+    public function Newactivity (Request $request)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($request->task_id);
+     
+        
+        $att = null;
+        if ($request->hasFile('proof')) {
+            $TaskAttachment = new TaskAttachment();
+            $TaskAttachment->project_id = $task->project_id;
+            $TaskAttachment->task_id = $task->id;
+            $file = $request->file('proof');
+            $sizeInBytes = $file->getSize();
 
-        $task->completed = $request->status;
+             // Optional: Convert to KB or MB        // kilobytes
+            $sizeInMB = round($sizeInBytes / 1048576, 2);
+            $filename = time() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/tasks'), $filename);
+            $TaskAttachment->file_type = $file->getClientOriginalExtension();
+            $TaskAttachment->file = 'uploads/tasks/' . $filename;
+            $TaskAttachment->name = $file->getClientOriginalName();
+           
+            $TaskAttachment->file_size =  $sizeInMB;      // megabytes
+            $TaskAttachment->user_id = auth()->user()->id;
+            $TaskAttachment->save();
+            $att = $TaskAttachment->name;
+        }
+        $comm = null;
+        if($request->comments != null){
+           
+            $TaskComment = new TaskComment();
+            $TaskComment->comment = $request->task." - ".$request->comments;
+            $TaskComment->task_id = $request->task_id;
+            $TaskComment->project_id = $task->project_id;
+            $TaskComment->user_id = auth()->user()->id;
+            $TaskComment->save();
+            $comm = $TaskComment->comment;
+        }
+
+        $TaskActivity = new TaskActivity();
+        $TaskActivity->activity = $request->task;
+        $TaskActivity->task_id = $request->task_id;
+        $TaskActivity->project_id = $task->project_id;
+        $TaskActivity->user_id = auth()->user()->id;
+        $TaskActivity->created_by = auth()->user()->id;
+        $TaskActivity->hours = $request->hours;
+        $TaskActivity->date = $request->date;
+        $TaskActivity->file = $att;
+        $TaskActivity->comments = $comm;
+        $TaskActivity->save();
+
+
         $task->save();
         Alert::success('Successfully Encoded')->persistent('Dismiss');
         return back();
     }
     public function storeActivityApi(Request $request, $id)
-{
+    {
     $task = Task::findOrFail($id);
 
     $attachmentName = null;
@@ -400,7 +454,7 @@ class TaskController extends Controller
         ],
         'message'    => 'Activity created successfully',
     ]);
-}
+    }   
      public function complete($id)
     {
         $project = Task::findOrFail($id);
@@ -611,4 +665,76 @@ class TaskController extends Controller
             ]
         ]);
     }
+    public function getByDate($date)
+    {
+        $activities = TaskActivity::with('project')
+            ->where('user_id', auth()->id())
+            ->whereDate('date', $date)
+            ->get()
+            ->map(function($activity) {
+                return [
+                    'id' => $activity->id,
+                    'activity' => $activity->activity,
+                    'hours' => $activity->hours,
+                    'project_name' => $activity->project->name ?? null
+                ];
+            }); 
+
+        return response()->json(['activities' => $activities]);
+    }
+
+    public function updateActivityAPI(Request $request, $id)
+    {
+        $last_sunday = date('Y-m-d',strtotime('last sunday'));
+        $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
+      
+        $activity = TaskActivity::find($id);
+        
+        if (!$activity) {
+            return response()->json(['success' => false, 'message' => 'Activity not found.']);
+        }
+    
+        // Validation
+        $request->validate([
+            'activity' => 'required|string|max:255',
+            'hours' => 'required|numeric|min:0.1'
+        ]);
+    
+        // Update activity
+        $request->merge([
+            'old_value' => $activity->activity." - ".$activity->hours." Hours",
+            'new_value' => $request->task." - ".$request->hours." Hours",
+        ]);
+        $this->createTaskComment($request,$activity->project_id, $activity->task_id, 'Update Activity');
+        $activity->activity = $request->activity;
+        $activity->hours = $request->hours;
+        $activity->save();
+        $total_hours = TaskActivity::where('user_id', auth()->id())
+        ->whereBetween('date', [$last_sunday, $saturday])
+        ->sum('hours');
+        return response()->json([
+            'success' => true,
+            'hours' => number_format($total_hours,2),
+            'date' => $activity->date, // e.g. "2025-09-11"
+            'activities' => TaskActivity::where('user_id', auth()->id())
+                                    ->where('date', $activity->date)
+                                    ->get(['id', 'activity', 'hours'])
+        ]);
+    }
+
+    public function destroyActivityAPI($id)
+    {
+        $last_sunday = date('Y-m-d',strtotime('last sunday'));
+        $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
+      
+        $activity = TaskActivity::findOrFail($id);
+        $activity->delete();
+        $total_hours = TaskActivity::where('user_id', auth()->id())
+        ->whereBetween('date', [$last_sunday, $saturday])
+        ->sum('hours');
+        return response()->json(['success' => true,
+        'hours' => number_format($total_hours,2),
+    ]);
+    }
+
 }

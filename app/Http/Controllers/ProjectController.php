@@ -81,13 +81,7 @@ class ProjectController extends Controller
         $project = Project::with([
             'users',
             'statuses',
-            'tasks' => function ($query) {
-                $query->when(auth()->user()->role != "Admin", function ($q) {
-                          $q->whereHas('users', function ($sub) {
-                              $sub->where('user_id', auth()->id());
-                          });
-                      });
-            },
+            'tasks',
             'tasks.comments',
             'tasks.attachments'
         ])->findOrFail($id);
@@ -95,45 +89,45 @@ class ProjectController extends Controller
         
         foreach ($project->statuses as $status) {
             $tasks = $project->tasks->where('archived', '!=',1)
-    ->where('project_board_id', $status->id)
-    ->map(function ($task) {
-        return [
-            'id' => $task->id,
-            'name' => $task->title,
-            'description' => $task->description,
-            'due_date' => $task->due_date ? $task->due_date : null,
-            'priority' => $task->priority,
-            'comments' => $task->comments->count(),
-            'attachments' => $task->attachments->count(),
-            'hours' => $task->activities->sum('hours'),
-            'completed' => $task->completed,
-            'assignees' => $task->users->pluck('name')->toArray(),
-        ];
-    })
-    ->sortBy(function ($task) {
-        return [
-            $task['completed'],           // 0 first, then 1
-            $task['due_date'] ?? '9999-12-31', // Nulls go last
-        ];
-    })
-    ->values(); // Re-index the collection
-        
-            $boardData[] = [
-                'id' => $status->id, // e.g. "To Do" -> "todo"
-                'name' => $status->board,
-                'tasks' => $tasks
+        ->where('project_board_id', $status->id)
+        ->map(function ($task) {
+            return [
+                'id' => $task->id,
+                'name' => $task->title,
+                'description' => $task->description,
+                'due_date' => $task->due_date ? $task->due_date : null,
+                'priority' => $task->priority,
+                'comments' => $task->comments->count(),
+                'attachments' => $task->attachments->count(),
+                'hours' => $task->activities->sum('hours'),
+                'completed' => $task->completed,
+                'assignees' => $task->users->pluck('name')->toArray(),
             ];
-        }
-        // Return the view with the projects data
-    
-        $users = User::get();
-        return view('projects.view',
-            array(
-                'project' => $project,
-                'users' => $users,
-                'boardData' => $boardData,
-            )
-        );
+        })
+        ->sortBy(function ($task) {
+            return [
+                $task['completed'],           // 0 first, then 1
+                $task['due_date'] ?? '9999-12-31', // Nulls go last
+            ];
+        })
+        ->values(); // Re-index the collection
+            
+                $boardData[] = [
+                    'id' => $status->id, // e.g. "To Do" -> "todo"
+                    'name' => $status->board,
+                    'tasks' => $tasks
+                ];
+            }
+            // Return the view with the projects data
+        
+            $users = User::get();
+            return view('projects.view',
+                array(
+                    'project' => $project,
+                    'users' => $users,
+                    'boardData' => $boardData,
+                )
+            );
     }
 
     public function teamMember(Request $request,$id)
