@@ -161,7 +161,7 @@
                                           <div class="d-flex justify-content-between align-items-start">
                                               <div class="me-2 flex-grow-1">
                                                   <h6 class="fw-semibold mb-1 text-truncate" title="{{ $task->title }}">
-                                                      {{ strlen($task->title) > 15 ? substr($task->title, 0, 15) . '…' : $task->title }}
+                                                      {{ strlen($task->title) > 12 ? substr($task->title, 0, 12) . '…' : $task->title }}
                                                       
                                                       <span class="badge 
                                                           @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
