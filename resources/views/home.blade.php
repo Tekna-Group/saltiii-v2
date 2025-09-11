@@ -554,7 +554,7 @@
                             <div class="text-muted">
                                 <a href="{{ url('view-project/'.$task->project_id) }}" ><h4 class="mb-3 fw-bold text-uppercase">{{$task->project->name}}</h4></a>
                                 <h6 class="mb-3 fw-semibold text-uppercase">Description</h6>
-                                <p>{{$task->description}}</p>
+                                <p>{!! $task->description !!}</p>
 
                     
 
