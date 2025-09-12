@@ -27,15 +27,27 @@
     @yield('css')
     <style>
         .helpdesk-link-wrapper {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-}
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url("{{ asset('images/loader.gif') }}") 50% 50% no-repeat white;
+            opacity: .8;
+            background-size: 120px 120px;
+        }   
         </style>
 
 </head>
 <body>
-    <div id = "loader" style="display:none;" class="loader">
+    <div id = "loader" class="loader">
     </div>
     <div id="layout-wrapper">
 
@@ -154,13 +166,13 @@
                                 <i class="ri-list-check"></i> <span data-key="t-dashboards">Projects</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
                                 <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span>
                                 <span class="badge badge-pill bg-warning" data-key="t-hot">BETA</span>
                                 <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
                             </a>
-                        </li>
+                        </li> --}}
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/tasks')}}">
                                 <i class="ri-check-line"></i> 
@@ -300,6 +312,11 @@
         document.getElementById('logout-form').submit();
     }
 
+</script>
+<script>
+    window.addEventListener('load', function() {
+        document.getElementById('loader').style.display = 'none';
+    });
 </script>
 </body>
 </html>

@@ -14,6 +14,7 @@
 
   <!-- Optional FilePond plugins -->
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+
 @endsection
 @section('content')
 
@@ -174,11 +175,7 @@
                                                           @endif">
                                                           {{$task->priority}}
                                                       </span>
-                                                      <br> <br>
-                                                      <small><span class="fs-8 text-muted" title="{{ $task->project->name }}">
-                                                        {{ strlen($task->project->name) > 15 ? substr($task->project->name, 0, 15) . '…' : $task->project->name }} <span class="badge bg-success-subtle text-dark fs-10">{{$task->board->board}}</span>
-                                                        </small></span> 
-                                                      </small>
+                                                      
                                                   </h6>
                                               </div>
                                               <small class="text-muted">
@@ -186,20 +183,38 @@
                                               </small>
                                           </div>
                                       </div>
-                                      <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0">
-                                          <ul class="list-inline mb-0 d-flex align-items-center gap-2">
-                                              <li class="list-inline-item">
-                                                  <i class="ri-timer-fill"></i> {{$task->activities->sum('hours')}} hrs
-                                              </li>
-                                              <li class="list-inline-item">
-                                                  <i class="ri-question-answer-line"></i> {{$task->comments->count()}}
-                                              </li>
-                                              <li class="list-inline-item">
-                                                  <i class="ri-attachment-2"></i> {{$task->attachments->count()}}
-                                              </li>
-                                          </ul>
-                                          <i class="ri-arrow-right-s-line"></i>
-                                      </div>
+                                      <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0 px-3 py-2">
+                                        <!-- Project Name and Board Badge -->
+                                        <div class="d-flex flex-column">
+                                            <small class="text-muted" title="{{ $task->project->name }}">
+                                                <span class="fw-semibold">
+                                                    {{ strlen($task->project->name) > 15 ? substr($task->project->name, 0, 15) . '…' : $task->project->name }}
+                                                </span>
+                                            </small>
+                                            <span class="badge bg-success-subtle text-dark mt-1 fs-10">
+                                                {{ $task->board->board }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Icons Section -->
+                                        <div class="d-flex align-items-center gap-3">
+                                            <ul class="list-inline mb-0 d-flex align-items-center gap-3">
+                                                <li class="list-inline-item d-flex align-items-center">
+                                                    <i class="ri-timer-fill me-1 "></i>
+                                                    <span class="fw-medium">{{ $task->activities->sum('hours') }} hrs</span>
+                                                </li>
+                                                <li class="list-inline-item d-flex align-items-center">
+                                                    <i class="ri-question-answer-line me-1 "></i>
+                                                    <span class="fw-medium">{{ $task->comments->count() }}</span>
+                                                </li>
+                                                <li class="list-inline-item d-flex align-items-center">
+                                                    <i class="ri-attachment-2 me-1 "></i>
+                                                    <span class="fw-medium">{{ $task->attachments->count() }}</span>
+                                                </li>
+                                            </ul>
+                                            <i class="ri-arrow-right-s-line fs-5 text-muted"></i>
+                                        </div>
+                                    </div>
                                   </div>
                               </a>
                           @empty
@@ -567,7 +582,7 @@
 
                                         <div class="col-lg-6 col-sm-6">
                                             <div>
-                                                <p class="mb-2 text-uppercase fw-medium">Create Date :</p>
+                                                <p class="mb-2 text-uppercase fw-medium">Created Date :</p>
                                                 <h5 class="fs-15 mb-0">{{date('M d, Y',strtotime($task->created_at))}}</h5>
                                             </div>
                                         </div>
@@ -686,7 +701,7 @@
                                             <!-- Comment Textarea -->
                                             <div class="col-lg-12 mt-5">
                                                 <label for="commentText{{$task->id}}" class="form-label">Leave a Comment</label>
-                                                <textarea class="form-control bg-light border-light" 
+                                                <textarea class="form-control bg-light border-light " 
                                                         id="commentText{{$task->id}}" 
                                                         name="comment" 
                                                         rows="4" 
@@ -926,6 +941,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
+
 <!-- FilePond library -->
 <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
 
@@ -934,7 +950,7 @@
 <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
 
-
+<script src="{{asset('inside_css/assets/libs/@ckeditor/ckeditor5-build-classic/build/ckeditor.js')}}"></script>
 <script>
   // Register FilePond plugins
   FilePond.registerPlugin(
@@ -1821,5 +1837,19 @@ document.addEventListener('click', async function(e) {
     }
     });
 </script>
-
+{{-- <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script> --}}
+{{-- <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.ckeditor').forEach(editorElement => {
+      ClassicEditor
+        .create(editorElement)
+        .then(editor => {
+          console.log('Editor ready for element:', editorElement);
+        })
+        .catch(error => {
+          console.error('Error initializing CKEditor:', error);
+        });
+    });
+  });
+</script> --}}
 @endsection
