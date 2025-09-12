@@ -62,7 +62,7 @@
                                                             <h5 class="fs-14 text-truncate mb-1 project-name">
                                                                 <a href="{{'view-project/'.$project->id}}" class="text-body">{{ $project->name }}</a>
                                                             </h5>
-                                                                <small><span class='fs-14 text-muted'> <i class="ri-calendar-event-fill"></i> Last Update: 
+                                                                <small><span class='fs-14 text-muted'> <i class="ri-calendar-event-fill"></i> Last Updated: 
                                                                 @if($project->tasks->isNotEmpty())
                                                                     {{ ($project->latest_comment_updated_at )
                                                                         ? (date('M d, Y',strtotime($project->latest_comment_updated_at)))
