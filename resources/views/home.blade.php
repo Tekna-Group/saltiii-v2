@@ -159,64 +159,100 @@
                       <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
                       <div class="card-body">
                           @forelse($sectionData['tasks'] as $task)
-                              <a href="#" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" id="taskCard{{$task->id}}" class="text-decoration-none task-item">
-                                  <div class="card shadow-sm mb-3 card-hover" 
-                                  style="{{ $sectionData['style'] }}">
-                                      <div class="card-body p-3">
-                                          <div class="d-flex justify-content-between align-items-start">
-                                              <div class="me-2 flex-grow-1">
-                                                  <h6 class="fw-semibold mb-1 text-truncate" title="{{ $task->title }}">
-                                                      {{ strlen($task->title) > 12 ? substr($task->title, 0, 12) . '…' : $task->title }}
-                                                      
-                                                      <span class="badge 
-                                                          @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
-                                                          @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
-                                                          @else text-white" style="background-color:#B9F6CA;" 
-                                                          @endif">
-                                                          {{$task->priority}}
-                                                      </span>
-                                                      
-                                                  </h6>
-                                              </div>
-                                              <small class="text-muted">
-                                                <i class="ri-calendar-event-fill fs-8"></i>  <span class='fs-8'>{{ date('m.d.y', strtotime($task->due_date)) }}</span>
-                                              </small>
-                                          </div>
-                                      </div>
-                                      <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0 px-3 py-2">
+                              <div  id="taskCard{{$task->id}}" class="text-decoration-none task-item">
+                                <div class="card shadow-sm mb-3 card-hover" style="{{ $sectionData['style'] }}">
+
+                                    <!-- ================= CARD BODY ================= -->
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <!-- Title and Priority -->
+                                            <div class="me-2 flex-grow-1">
+                                                <a href='#' data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" >
+                                                    <h6 class="fw-semibold mb-1 text-truncate " title="{{ $task->title }}">
+                                                        {{ strlen($task->title) > 12 ? substr($task->title, 0, 12) . '…' : $task->title }}
+                                                        
+                                                        <span class="badge 
+                                                            @if($task->priority == 'High') text-white" style="background-color:#FF8A80;" 
+                                                            @elseif($task->priority == 'Medium') text-dark" style="background-color:#FFD180;" 
+                                                            @else text-white" style="background-color:#B9F6CA;" 
+                                                            @endif">
+                                                            {{$task->priority}}
+                                                        </span>
+                                                    </h6>
+                                                </a>
+                                            </div>
+
+                                            <!-- ✅ Due Date with Action Buttons -->
+                                            <div class="d-flex align-items-center gap-1">
+                                             
+
+                                                <!-- Complete Button -->
+                                               
+
+                                                <!-- Archive Button -->
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                     onclick="deleteTask({{ $task->id }})"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Archive Task">
+                                                    <i class="ri-delete-bin-line"></i>
+                                                </button>
+
+                                                <!-- Transfer Assign Button -->
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                    data-bs-toggle="modal" data-bs-target="#inviteMembersModal{{$task->id}}"
+                                                    data-bs-toggle="tooltip" data-bs-placement="top" title="Transfer Task">
+                                                    <i class="ri-arrow-left-right-line"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                     <a href='#' data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{$task->id}}" >
+                                    <!-- ================= PROJECT & BOARD ================= -->
+                                    <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0 px-3 py-2">
                                         <!-- Project Name and Board Badge -->
                                         <div class="d-flex flex-column">
                                             <small class="text-muted" title="{{ $task->project->name }}">
                                                 <span class="fw-semibold">
                                                     {{ strlen($task->project->name) > 15 ? substr($task->project->name, 0, 15) . '…' : $task->project->name }}
                                                 </span>
+                                                 <span class="badge bg-success-subtle text-dark mt-1 fs-10">
+                                                    {{ $task->board->board }}
+                                                </span>
                                             </small>
-                                            <span class="badge bg-success-subtle text-dark mt-1 fs-10">
-                                                {{ $task->board->board }}
-                                            </span>
+                                           
                                         </div>
+                                    </div>
 
-                                        <!-- Icons Section -->
-                                        <div class="d-flex align-items-center gap-3">
-                                            <ul class="list-inline mb-0 d-flex align-items-center gap-3">
+                                    <!-- ================= TASK DETAILS (Hours, Comments, Attachments) ================= -->
+                                    <div class="card-footer d-flex justify-content-between align-items-center bg-white small text-muted border-top-0 px-3 py-2">
+                                        <!-- ✅ Left Side (UL Section) -->
+                                        <div class="d-flex align-items-center gap-1">
+                                            <ul class="list-inline mb-0 d-flex align-items-center gap-1">
                                                 <li class="list-inline-item d-flex align-items-center">
-                                                    <i class="ri-timer-fill me-1 "></i>
+                                                    <i class="ri-timer-fill me-1"></i>
                                                     <span class="fw-medium">{{ $task->activities->sum('hours') }} hrs</span>
                                                 </li>
                                                 <li class="list-inline-item d-flex align-items-center">
-                                                    <i class="ri-question-answer-line me-1 "></i>
+                                                    <i class="ri-question-answer-line me-1"></i>
                                                     <span class="fw-medium">{{ $task->comments->count() }}</span>
                                                 </li>
                                                 <li class="list-inline-item d-flex align-items-center">
-                                                    <i class="ri-attachment-2 me-1 "></i>
+                                                    <i class="ri-attachment-2 me-1"></i>
                                                     <span class="fw-medium">{{ $task->attachments->count() }}</span>
                                                 </li>
                                             </ul>
-                                            <i class="ri-arrow-right-s-line fs-5 text-muted"></i>
+                                           
                                         </div>
+                                           <span class="text-muted me-2">
+                                                    <i class="ri-calendar-event-fill fs-8"></i>  
+                                                    <span class='fs-8'>{{ date('m.d.y', strtotime($task->due_date)) }}</span>
+                                                     <i class="ri-arrow-right-s-line fs-5 text-muted"></i>
+                                           </span>
                                     </div>
-                                  </div>
-                              </a>
+                                     </a>
+
+                                </div>
+                            </div>
+                          @include('home.transfer')
                           @empty
                               <div class="text-center text-muted py-3">No tasks</div>
                           @endforelse
@@ -556,8 +592,8 @@
                 <!-- Delete Button -->
                 <button type="button" 
                         class="btn btn-outline-danger btn-sm btn-icon waves-effect waves-light material-shadow-none"
-                        title="Delete Task"
-                        onclick="deleteTask({{ $task->id }})">
+                        title="Archive Task"
+                         onclick="deleteTask({{ $task->id }})">
                     <i class="ri-delete-bin-line"></i>
                 </button>
             
@@ -1280,7 +1316,23 @@
                 // badge.textContent = data.board_name || 'Updated';
 
                 // Show success toast
-             
+                if(data.status == 1)
+                {
+                    console.log(taskId);
+                    const offcanvasEl = document.getElementById('taskDetails' + taskId);
+                    if (offcanvasEl) {
+                        // Get existing instance or create one
+                        let bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+                        if (!bsOffcanvas) {
+                            bsOffcanvas = new bootstrap.Offcanvas(offcanvasEl);
+                        }
+                        bsOffcanvas.hide();
+                    }
+                    const taskCard = document.getElementById('taskCard' + taskId);
+                    if (taskCard) taskCard.remove();
+                }
+                
+                
                 Toastify({
                     text: "Status updated successfully!",
                     duration: 3000,
@@ -1319,12 +1371,12 @@
     function deleteTask(id) {
         Swal.fire({
             title: 'Are you sure?',
-            text: "This task will be permanently deleted!",
+            text: "This task will be permanently archived!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!',
+            confirmButtonText: 'Yes, archived it!',
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {

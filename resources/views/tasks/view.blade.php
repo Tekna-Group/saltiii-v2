@@ -352,7 +352,7 @@
         </form>
       </div>
     </div>
-  </div>
+</div>
 @include('tasks.change_member')
 @include('tasks.add_activity')
 

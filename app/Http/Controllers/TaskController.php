@@ -149,17 +149,18 @@ class TaskController extends Controller
             'old_value' => $old_board->board,
             'new_value' => $new_board->board,
         ]);
+        $task->completed = 0;
         if (str_contains(strtolower($new_board->board), 'complete')) {
             $task->completed = 1;
         }
-        else
-        {
-             $task->completed = 0;
+        if (str_contains(strtolower($new_board->board), 'cancel')) {
+            $task->completed = 1;
         }
+
         $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
 
-        return response()->json(['message' => 'Task updated successfully','data' => $task]);
+        return response()->json(['message' => 'Task updated successfully','data' => $task,'status' => $task->completed]);
     }
     public function view($id)
     {
@@ -504,12 +505,12 @@ class TaskController extends Controller
             'old_value' => $old_board->board,
             'new_value' => $new_board->board,
         ]);
+        $task->completed = 0;
        if (str_contains(strtolower($new_board->board), 'complete')) {
             $task->completed = 1;
         }
-        else
-        {
-             $task->completed = 0;
+        if (str_contains(strtolower($new_board->board), 'cancel')) {
+            $task->completed = 1;
         }
         $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
@@ -517,7 +518,8 @@ class TaskController extends Controller
         // Return the updated board name for display
         return response()->json([
             'success' => true,
-            'board_name' => $task->board->board ?? 'Updated'
+            'board_name' => $task->board->board ?? 'Updated',
+            'status' => $task->completed,
         ]);
     }
     public function changeMember(Request $request, $id)
@@ -525,7 +527,7 @@ class TaskController extends Controller
         // dd($request->all());
         $task = Task::findOrfail($id);
         $task->users()->sync($request->team_member);
-        Alert::success('Task members updated successfully')->persistent('Dismiss');
+        Alert::success('Transferred Successfully')->persistent('Dismiss');
         return back();
     }
     public function destroy(Request $request,$id)
