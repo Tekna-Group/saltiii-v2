@@ -158,6 +158,9 @@
                       </div><!-- end card header -->
                       <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
                       <div class="card-body">
+                         <div class="pt-2 pb-2">
+                            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()">+ Add Task</button>
+                        </div>
                           @forelse($sectionData['tasks'] as $task)
                               <div  id="taskCard{{$task->id}}" class="text-decoration-none task-item">
                                 <div class="card shadow-sm mb-3 card-hover" style="{{ $sectionData['style'] }}">
