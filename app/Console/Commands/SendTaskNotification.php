@@ -50,33 +50,31 @@ class SendTaskNotification extends Command
         foreach ($users as $user) {
             $tasks = [
                 'delayed'   => Task::where('user_id', $user->id)
-                                    ->where('due_date', '<', $today)
+                                    ->where('due_date', '<', date('Y-m-d'))
                                     ->where('completed', 0)
                                     ->get(),
 
                 'due_today' => Task::where('user_id', $user->id)
-                                    ->whereDate('due_date', $today)
+                                    ->whereDate('due_date', date('Y-m-d'))
                                     ->where('completed', 0)
                                     ->get(),
 
-                'upcoming'  => Task::where('user_id', $user->id)
-                                    ->whereDate('due_date', '>', $today)
-                                    ->whereDate('due_date', '<=', $today->copy()->addDays(7))
+                'upcoming' => Task::where('user_id', $user->id)
                                     ->where('completed', 0)
+                                    ->whereBetween('due_date', [
+                                        date('Y-m-d', strtotime('+1 day')),  // Tomorrow
+                                        date('Y-m-d', strtotime('+7 days'))  // 7 days from today
+                                    ])
                                     ->get(),
             ];
 
             // Only send email if there are tasks to notify
-            if (
-                $tasks['delayed']->count() ||
-                $tasks['due_today']->count() ||
-                $tasks['upcoming']->count()
-            ) {
+           
                 Mail::send('emails.tasks_summary', compact('user', 'tasks'), function ($message) use ($user) {
                     $message->to($user->email)
                             ->subject('Task Notification Summary');
                 });
-            }
+            
         }
 
         $this->info('Task notification emails sent successfully.');
