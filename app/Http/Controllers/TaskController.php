@@ -6,6 +6,7 @@ use App\TaskUser;
 use App\Project;
 use App\TaskComment;
 use App\ProjectBoard;
+use App\Events\TasksSummaryGenerated;
 use App\TaskActivity;
 use App\TaskAttachment;
 use App\User;
@@ -736,7 +737,33 @@ class TaskController extends Controller
         ->sum('hours');
         return response()->json(['success' => true,
         'hours' => number_format($total_hours,2),
-    ]);
+        ]);
+    }
+    public function sendDailyTaskSummary()
+    {
+        $user = User::find(1);
+
+        $tasks = [
+            'delayed' => $user->tasks()
+                ->where('due_date', '<', date('Y-m-d'))
+                ->where('completed',0)
+                ->orderBy('due_date','asc')
+                ->get(),
+
+            'due_today' => $user->tasks()
+                ->whereDate('due_date', date('Y-m-d'))
+                 ->where('completed',0)
+                 ->orderBy('due_date','asc')
+                ->get(),
+
+            'upcoming' => $user->tasks()
+                ->where('due_date', '>', date('Y-m-d'))
+                 ->where('completed',0)
+                 ->orderBy('due_date','asc')
+                ->get(),
+        ];
+     
+        event(new TasksSummaryGenerated($user, $tasks));
     }
 
 }

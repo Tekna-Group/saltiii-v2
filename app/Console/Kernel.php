@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
+         \App\Console\Commands\SendTaskNotification::class,
         //
     ];
 
@@ -26,6 +27,12 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
+
+         $schedule->command('tasks:notify')
+        ->weekdays()
+        ->twiceDaily(20, 22)
+        ->timezone('Asia/Manila')
+        ->withoutOverlapping();
     }
 
     /**

@@ -333,6 +333,9 @@
                         <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
                             <i class="ri-archive-2-line"></i> Archive
                         </button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#transferModal-${task.id}">
+                          <i class="ri-exchange-line"></i> Transfer
+                      </button>
                     ` : ''}
         </div>
                     

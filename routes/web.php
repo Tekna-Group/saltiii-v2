@@ -86,3 +86,5 @@ Route::get('/api/documentation', function () {
     return view('l5-swagger::index');
 });
 
+Route::get('send-emails','TaskController@sendDailyTaskSummary');
+
