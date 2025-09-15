@@ -56,7 +56,7 @@
             <td style="padding:20px;text-align:center;background:linear-gradient(90deg,#0ea5a4,#06b6d4);color:#ffffff;">
                 
                 <!-- Logo/Image -->
-                <img src="{{ asset('images/Saltiii-Logo-White.svg') }}" 
+                <img src="{{asset('images/aaa.svg')}}" 
                     alt="{{ config('app.name') }} Logo" 
                     style="max-width:80px;height:auto;margin-bottom:10px;border-radius:8px;">
 
