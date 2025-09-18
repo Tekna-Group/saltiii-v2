@@ -52,7 +52,7 @@
                 <div class="d-flex justify-content-between">
                     <div>
                         <p class="fw-medium text-muted mb-0">Due Tasks</p>
-                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('date','<',date('Y-m-d'))->where('completed',0)->count()}}">0</span></h2>
+                        <h2 class="mt-4 ff-secondary fw-semibold"><span class="counter-value" data-target="{{$tasks->where('due_date','<',date('Y-m-d'))->where('completed',0)->count()}}">0</span></h2>
                         {{-- <p class="mb-0 text-muted"><span class="badge bg-light text-danger mb-0"> <i class="ri-arrow-down-line align-middle"></i> 2.52 % </span> vs. previous month</p> --}}
                     </div>
                     <div>
