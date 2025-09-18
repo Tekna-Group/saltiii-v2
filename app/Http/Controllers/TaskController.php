@@ -514,9 +514,10 @@ class TaskController extends Controller
     {
         // dd($request->all());
         $task = Task::findOrfail($id);
+
+        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
         $task->project_board_id = $request->project_board_id;
        
-        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
         $new_board = ProjectBoard::where('id',$request->project_board_id)->first();
         $task->project_board_id = $request->project_board_id;
         $request->merge([
