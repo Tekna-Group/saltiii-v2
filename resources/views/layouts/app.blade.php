@@ -98,6 +98,15 @@
     <script src="{{asset('inside_css/assets/js/pages/particles.app.js')}}"></script>
     <!-- password-addon init -->
     <script src="{{asset('inside_css/assets/js/pages/password-addon.init.js')}}"></script>
-  
+    <script>
+        function show() {
+            document.getElementById("loader").style.display = "block";
+        }
+    </script>
+    <script>
+        window.addEventListener('load', function() {
+            document.getElementById('loader').style.display = 'none';
+        });
+    </script>
 </body>
 </html>

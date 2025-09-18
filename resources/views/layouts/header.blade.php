@@ -307,6 +307,9 @@
     <script src="{{asset('inside_css/assets/js/app.js')}}"></script>
  
     <script>
+         function show() {
+            document.getElementById("loader").style.display = "block";
+        }
         function logout() {
         event.preventDefault();
         document.getElementById('logout-form').submit();

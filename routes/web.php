@@ -11,9 +11,9 @@
 |
 */
 Route::redirect('/', '/api/documentation');
-Auth::routes();
+Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => ['auth', 'verified']], function () {
     
 
 Route::get('/view-profile/{id}','UserController@view');
@@ -36,6 +36,7 @@ Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
 Route::get('/tasks','TaskController@index')->name('Tasks');
 Route::post('/tasks/transfer/{id}','TaskController@transfer')->name('Tasks');
 Route::post('new-task/{project_id}', 'TaskController@store')->name('New Task');
+Route::post('new-task-home', 'TaskController@storeNew')->name('New Task');
 Route::get('/view-task/{id}', 'TaskController@view')->name('View Task');
 Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment');
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    

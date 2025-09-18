@@ -995,6 +995,7 @@
     </script>
     
 @endforeach
+@include('home.add_task')
 @include('tasks.editActivity')
 @endsection
 @section('js')
@@ -1934,4 +1935,10 @@ document.addEventListener('click', async function(e) {
     });
   });
 </script> --}}
+
+<script>
+      function addTask(columnId) {
+          new bootstrap.Modal(document.getElementById('creatertaskModal')).show();
+      }
+</script>
 @endsection

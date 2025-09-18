@@ -139,6 +139,34 @@ class TaskController extends Controller
         Alert::success('Successfully Save')->persistent('Dismiss');
         return back();
     }
+    public function storeNew(Request $request)
+    {
+        // dd($request->all());
+        // Validate the request data
+       
+        $projectBoard = ProjectBoard::where('project_id',$request->project)->first();
+        // Create a new task instance
+        $task = new Task();
+        $task->project_id = $request->project;
+        $task->title = $request->input('task');
+        $task->description = $request->input('description');
+        $task->due_date = $request->input('dueDate');
+        $task->priority = $request->input('priority');
+        $task->project_board_id = $projectBoard->id; // Assuming status is the ID of the project board
+        $task->user_id = auth()->user()->id; // Assuming the task is created by the authenticated user
+        $task->save();
+
+      
+        $projectUser = new TaskUser();
+        $projectUser->task_id = $task->id;
+        $projectUser->user_id = auth()->user()->id;
+        $projectUser->save();
+        
+
+        // Redirect back with success message
+        Alert::success('Successfully Save')->persistent('Dismiss');
+        return back();
+    }
     public function changeStatus(Request $request)
     {
         // dd($request->all());
