@@ -401,7 +401,7 @@
                                     <tr>
                                         <th scope="col">Member</th>
                                         <th scope="col">Hours</th>
-                                        <th scope="col">Pending Tasks</th>
+                                        <th scope="col">Not Yet Delayed Tasks</th>
                                         <th scope="col">Delayed Tasks</th>
                                     </tr>
                                 </thead>
@@ -410,7 +410,7 @@
                                     <tr>
                                         <td><a href="{{url('/view-profile/'.$member->id)}}" >{{$member->name}}</a></td>
                                         <td>{{$member->activities->sum('hours')}} hrs</td>
-                                        <td><a href='#' data-bs-target="#ongoing_tasks{{$member->id}}"  data-bs-toggle="modal">{{$member->tasks->where('completed',0)->count()}}</a></td>
+                                        <td><a href='#' data-bs-target="#ongoing_tasks{{$member->id}}"  data-bs-toggle="modal">{{$member->tasks->where('completed',0)->where('due_date','>=',date('Y-m-d'))->count()}}</a></td>
                                         <td><a href='#' data-bs-target="#delayed_tasks{{$member->id}}"  data-bs-toggle="modal">{{($member->tasks)->where('completed',0)->where('due_date','<',date('Y-m-d'))->count()}}</a></td>
                                     </tr>
                                     @endforeach

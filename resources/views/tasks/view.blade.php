@@ -59,7 +59,7 @@
                     
                     <select id="project_board_id" class="form-select" name="project_board_id" onchange="this.form.submit()">
                         <option value="">Select Task Board</option>
-                        @foreach($boards as $board)
+                        @foreach($boards->sortBy('position') as $board)
                             <option value="{{ $board->id }}" @if($task->project_board_id == $board->id) selected @endif>
                                 {{ $board->board }}
                             </option>

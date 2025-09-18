@@ -19,7 +19,7 @@
                             </tr>
                         </thead><!-- end thead -->
                         <tbody>
-                            @foreach($member->tasks->sortBy('due_date')->where('completed',0) as $task)
+                            @foreach($member->tasks->sortBy('due_date')->where('completed',0)->where('due_date','>=',date('Y-m-d')) as $task)
                             <tr @if($task->due_date < date('Y-m-d')) class='text-danger' @endif>
                                 <td><a href="{{ url('/view-project/'.$task->project_id) }}" >{{$task->project->name}}</a></td>
                                 <td><a href="{{url('view-project/view-task/'.$task->id)}}" >{{$task->title}}</a></td>
