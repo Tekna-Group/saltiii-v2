@@ -274,43 +274,45 @@
                     <!--end tab-pane-->
                     <div class="tab-pane active" id="profile-1" role="tabpanel">
                         <h6 class="card-title mb-4 pb-2">Time Entries <button class="btn btn-success btn-sm" href="#addActivity" data-bs-toggle="modal"><i class="ri-time-line align-bottom me-1"></i> Add Activity</button></h6>
-                        <div class="table-responsive table-card">
-                            <table class="table align-middle mb-0">
-                                <thead class="table-light text-muted">
-                                    <tr>
-                                        <th scope="col">Member</th>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">Hours</th>
-                                        <th scope="col">Activity</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($task->activities as $activity)
-                                    <tr>
-                                        <th scope="row">
-                                            <div class="d-flex align-items-center">
-                                                <img src="{{asset($activity->user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xxs">
-                                                <div class="flex-grow-1 ms-2">
-                                                    <a href="#" class="fw-medium">{{$activity->user->name}}</a>
-                                                </div>
-                                            </div>
-                                        </th>
-                                        <td>{{date('d M, Y',strtotime($activity->date))}}</td>
-                                        <td>{{$activity->hours}} hrs</td>
-                                        <td>{{$activity->activity}} 
-                                            @if(auth()->user()->id == $activity->user_id)
-                                            <form action="{{ url('activity/destroy', $activity->id) }}" method="POST" style="display:inline;">
-                                                @csrf
-                                                <button type="submit" onclick="return confirm('Are you sure you want to delete this activity?')" class="btn btn-sm btn-danger">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                        <div  class="table-responsive table-card">
+                              <table class="table table-striped align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">User</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                    <div style="max-height: 260px; overflow-y: auto;">
+                                    <table  class="table align-middle mb-0">
+                                        
+                                        <tbody>
+                                            @foreach($task->activities->sortByDesc('date') as $activity)
+                                            <tr>
+                                                <th scope="row">
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="{{asset($activity->user->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xxs">
+                                                        <div class="flex-grow-1 ms-2">
+                                                            <a href="#" class="fw-medium">{{$activity->user->name}}</a>
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                                <td>{{date('d M, Y',strtotime($activity->date))}}</td>
+                                                <td>{{$activity->hours}} hrs</td>
+                                                <td>{{$activity->activity}} 
+                                                    @if(auth()->user()->id == $activity->user_id)
+                                                    <form action="{{ url('activity/destroy', $activity->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        <button type="submit" onclick="return confirm('Are you sure you want to delete this activity?')" class="btn btn-sm btn-danger">
+                                                            Delete
+                                                        </button>
+                                                    </form>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    </div>
                             <!--end table-->
                         </div>
                     </div>
