@@ -217,7 +217,7 @@ class TaskController extends Controller
             $query->where('user_id', auth()->id());
         })->where('completed',0)->get();
         $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
-        $boards = ProjectBoard::where('project_id',$task->project_id)->orderBy->get();
+        $boards = ProjectBoard::where('project_id',$task->project_id)->orderBy('position','asc')->get();
         // Return the view with the task data
         return view('tasks.view', ['task' => $task,
         'boards' => $boards,
@@ -514,10 +514,9 @@ class TaskController extends Controller
     {
         // dd($request->all());
         $task = Task::findOrfail($id);
-
-        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
         $task->project_board_id = $request->project_board_id;
        
+        $old_board = ProjectBoard::where('id',$task->project_board_id)->first();
         $new_board = ProjectBoard::where('id',$request->project_board_id)->first();
         $task->project_board_id = $request->project_board_id;
         $request->merge([
