@@ -141,7 +141,7 @@
             <div class="card-body">
                 <div class="text-muted">
                     <h6 class="mb-3 fw-semibold text-uppercase">Summary</h6>
-                    <p>{{$task->description}}</p>
+                    <p>{!!$task->description!!}</p>
                     
                 </div>
             </div>
