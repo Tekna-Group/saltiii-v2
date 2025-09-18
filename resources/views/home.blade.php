@@ -14,6 +14,24 @@
 
   <!-- Optional FilePond plugins -->
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+  <style>
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+        .project-slide {
+            width: 90% !important;
+        }
+        .project-name {
+            font-size: 14px;
+        }
+        .card-footer ul {
+            font-size: 12px;
+        }
+        .swiper .avatar-title {
+            padding: 4px 8px;
+            font-size: 16px;
+        }
+    }
+    </style>
 
 @endsection
 @section('content')
@@ -32,77 +50,79 @@
                             @endif </h5>
                         <!-- Swiper -->
                        <div class="swiper project-swiper">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <div class="w-50">
+    <!-- Top Controls -->
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+                                <!-- Search Bar -->
+                                <div class="w-100 w-md-50">
                                     <input type="text" id="projectSearch" class="form-control" placeholder="Search projects...">
                                 </div>
-                                <div class="d-flex gap-2">
+
+                                <!-- Navigation Buttons -->
+                                <div class="d-flex justify-content-end gap-2">
                                     <div class="slider-button-prev">
-                                        <div class="avatar-title fs-18 rounded px-1 material-shadow">
+                                        <div class="avatar-title fs-18 rounded px-2 py-1 material-shadow bg-dark">
                                             <i class="ri-arrow-left-s-line"></i>
                                         </div>
                                     </div>
                                     <div class="slider-button-next">
-                                        <div class="avatar-title fs-18 rounded px-1 material-shadow">
+                                        <div class="avatar-title fs-18 rounded px-2 py-1 material-shadow bg-dark">
                                             <i class="ri-arrow-right-s-line"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <!-- Swiper Wrapper -->
                             <div class="swiper-wrapper">
                                 @foreach($projects as $project)
                                     <div class="swiper-slide project-slide">
-                                        <a href="{{'view-project/'.$project->id}}" class="text-decoration-none">
-                                            <div class="card profile-project-card shadow-none profile-project-success mb-0 material-shadow">
-                                                <div class="card-body p-4">
+                                        <a href="{{ url('view-project/'.$project->id) }}" class="text-decoration-none">
+                                            <div class="card profile-project-card shadow-none profile-project-success mb-0 material-shadow h-100">
+                                                <div class="card-body p-3 p-md-4">
                                                     <!-- Project Header -->
-                                                    <div class="d-flex">
+                                                    <div class="d-flex flex-column flex-md-row">
                                                         <div class="flex-grow-1 text-muted overflow-hidden">
                                                             <h5 class="fs-14 text-truncate mb-1 project-name">
-                                                                <a href="{{'view-project/'.$project->id}}" class="text-body">{{ $project->name }}</a>
+                                                                <span class="text-body">{{ $project->name }}</span>
                                                             </h5>
-                                                                <small><span class='fs-14 text-muted'> <i class="ri-calendar-event-fill"></i> Last Updated: 
+                                                            <small class="fs-12 text-muted">
+                                                                <i class="ri-calendar-event-fill"></i> 
+                                                                Last Updated: 
                                                                 @if($project->tasks->isNotEmpty())
-                                                                    {{ ($project->latest_comment_updated_at )
-                                                                        ? (date('M d, Y',strtotime($project->latest_comment_updated_at)))
+                                                                    {{ $project->latest_comment_updated_at
+                                                                        ? date('M d, Y', strtotime($project->latest_comment_updated_at))
                                                                         : 'No Action yet' }}
                                                                 @else
                                                                     No Action yet
                                                                 @endif
-                                                                </span></small>
+                                                            </small>
                                                         </div>
-                                                        {{-- <div class="flex-shrink-0 ms-2 text-end">
-                                                            <div class="badge bg-warning-subtle text-warning fs-10">
-                                                                {{ $project->status }}
-                                                            </div> 
-                                                        </div> --}}
                                                     </div>
                                                 </div>
 
                                                 <!-- Footer Section -->
                                                 <div class="card-footer bg-light border-top p-2">
-                                                    <div class="d-flex text-muted">
-                                                        <ul class="list-inline mb-0 d-flex align-items-center gap-2 w-100">
-                                                            <li class="list-inline-item">
-                                                                <i class="ri-timer-fill"></i> {{number_format($project->activities->sum('hours'),2)}} hrs
-                                                            </li>
-                                                            <li class="list-inline-item">
-                                                                <i class="ri-question-answer-line"></i> {{$project->comments->count()}}
-                                                            </li>
-                                                            <li class="list-inline-item">
-                                                                <i class="ri-attachment-2"></i> {{$project->attachments->count()}}
+                                                    <div class="d-flex flex-wrap text-muted gap-2">
+                                                        <ul class="list-inline mb-0 d-flex flex-wrap align-items-center gap-3 w-100">
+                                                            <li class="list-inline-item d-flex align-items-center">
+                                                                <i class="ri-timer-fill me-1"></i>
+                                                                <span class="fs-12">{{ number_format($project->activities->sum('hours'), 2) }} hrs</span>
                                                             </li>
 
-                                                            <!-- Last Updated Icon + Date -->
-                                                        
+                                                            <li class="list-inline-item d-flex align-items-center">
+                                                                <i class="ri-question-answer-line me-1"></i>
+                                                                <span class="fs-12">{{ $project->comments->count() }}</span>
+                                                            </li>
+
+                                                            <li class="list-inline-item d-flex align-items-center">
+                                                                <i class="ri-attachment-2 me-1"></i>
+                                                                <span class="fs-12">{{ $project->attachments->count() }}</span>
+                                                            </li>
 
                                                             <!-- Completed Tasks Count -->
-                                                            <li class="list-inline-item ms-auto">
-                                                                <div class="flex-shrink-0">
-                                                                    <i class="ri-list-check align-bottom me-1 text-muted"></i>
-                                                                    {{ $project->tasks->where('completed', 1)->count() }}/{{ $project->tasks->count() }}
-                                                                </div>
+                                                            <li class="list-inline-item ms-auto d-flex align-items-center">
+                                                                <i class="ri-list-check align-bottom me-1 text-muted"></i>
+                                                                <span class="fs-12">{{ $project->tasks->where('completed', 1)->count() }}/{{ $project->tasks->count() }}</span>
                                                             </li>
                                                         </ul>
                                                     </div>
@@ -113,6 +133,7 @@
                                 @endforeach
                             </div>
                         </div>
+
 
                     </div>
                     <!-- end card body -->
@@ -1569,14 +1590,20 @@ document.addEventListener('click', async function(e) {
 <script src="{{url('assets/js/pages/profile.init.js')}}"></script>
 <script>
     // Initialize Swiper
-    const projectSwiper = new Swiper('.project-swiper', {
-        slidesPerView: 3,
-        spaceBetween: 20,
-        navigation: {
-            nextEl: '.slider-button-next',
-            prevEl: '.slider-button-prev',
-        },
-    });
+   const projectSwiper = new Swiper('.project-swiper', {
+    slidesPerView: 3,
+    spaceBetween: 20,
+    navigation: {
+        nextEl: '.slider-button-next',
+        prevEl: '.slider-button-prev',
+    },
+    breakpoints: {
+        320: { slidesPerView: 1, spaceBetween: 10 },   // Small phones
+        480: { slidesPerView: 1.2, spaceBetween: 12 }, // Larger phones
+        768: { slidesPerView: 2, spaceBetween: 15 },   // Tablets
+        1024: { slidesPerView: 3, spaceBetween: 20 }   // Desktop
+    },
+});
 
     // Search Functionality
     document.getElementById('projectSearch').addEventListener('keyup', function() {
