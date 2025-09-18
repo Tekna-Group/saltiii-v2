@@ -29,6 +29,7 @@ Route::post('project/edit-board', 'ProjectController@editBoard')->name('Edit Pro
 Route::get('/projects','ProjectController@index')->name('Projects');
 Route::post('/project/complete/{id}', 'ProjectController@markComplete')->name('Projects');
 Route::post('/project/delete/{id}', 'ProjectController@delete')->name('Projects');
+Route::post('/project/edit/{id}','ProjectController@updateTitle')->name('projects');
 
 
 Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
@@ -47,7 +48,10 @@ Route::get('/activities/by-date/{date}', 'TaskController@getByDate')->name('acti
 Route::post('/activities/{id}', 'TaskController@updateActivityAPI')->name('activities.update');
 Route::delete('/activities/{id}', 'TaskController@destroyActivityAPI')->name('activities.destroy');
 
+Route::delete('/statuses/{id}', 'ProjectController@destroy')->name('statuses.destroy');
+
 Route::post('update-task-column','TaskController@changeStatus');
+Route::post('/update-column-order', 'TaskController@updateOrder')->name('columns.updateOrder');
 Route::post('task/complete/{id}','TaskController@complete');
 Route::post('tasks/update-board/{id}','TaskController@changeStatusManual');
 Route::post('tasks/update-board/api/{id}','TaskController@updateBoard');

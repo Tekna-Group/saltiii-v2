@@ -163,6 +163,23 @@ class TaskController extends Controller
 
         return response()->json(['message' => 'Task updated successfully','data' => $task,'status' => $task->completed]);
     }
+    public function updateOrder(Request $request)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:project_boards,id',
+        ]);
+
+        // Loop through the column IDs and update their position
+        foreach ($request->order as $index => $columnId) {
+            ProjectBoard::where('id', $columnId)->update(['position' => $index + 1]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Column order updated successfully',
+        ]);
+    }
     public function view($id)
     {
         // Fetch the task by ID

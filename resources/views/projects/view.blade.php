@@ -2,6 +2,9 @@
 @section('css')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 {{-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
   <style>
     body {
       background-color: #f8f9fa;
@@ -45,6 +48,50 @@
       opacity: 0.5;
     }
   </style>
+  
+<style>
+    .kanban-board-container {
+        display: flex;
+        overflow-x: auto;
+        padding: 10px;
+    }
+    .kanban-board-wrapper {
+        display: flex;
+        gap: 15px;
+        min-height: 80vh;
+    }
+    .kanban-column {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        min-width: 280px;
+        display: flex;
+        flex-direction: column;
+    }
+    .kanban-header {
+        background: #e9ecef;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .kanban-items {
+        flex: 1;
+        padding: 10px;
+        min-height: 100px;
+    }
+    .kanban-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        cursor: grab;
+    }
+    .kanban-card.dragging {
+        opacity: 0.5;
+    }
+</style>
 @endsection
 @section('content')
  <div class="row">
@@ -64,11 +111,13 @@
                                 </div>
                                 <div class="col-md">
                                     <div>
-                                        <h4 class="fw-bold">{{$project->name}}</h4>
+                                        <h4 id="editable-project-name" class="fw-bold" data-id="{{ $project->id }}">
+                                            {{ $project->name }}
+                                        </h4>
                                         <div class="hstack gap-3 flex-wrap">
                                             {{-- <div><i class="ri-building-line align-bottom me-1"></i> Themesbrand</div> --}}
                                             {{-- <div class="vr"></div> --}}
-                                            <div>Create Date : <span class="fw-medium">{{date('d M, Y',strtotime($project->created_at))}}</span></div>
+                                            <div>Created Date : <span class="fw-medium">{{date('d M, Y',strtotime($project->created_at))}}</span></div>
                                             <div class="vr"></div>
                                             <div>Last Update : <span class="fw-medium">{{date('d M, Y',strtotime($project->updated_at))}}</span></div>
                                             <div class="vr"></div>
@@ -160,10 +209,11 @@
                     </div>
                     <!--end card-body-->
                 </div>
-                    <div class="kanban-board" id="kanbanBoard">
-                      <!-- Columns will be inserted dynamically -->
-                      
-                    </div>
+                  <div class="kanban-board-container">
+                      <div class="kanban-board-wrapper" id="kanbanBoard">
+                          <!-- Columns will be dynamically rendered -->
+                      </div>
+                  </div>
                   <!-- Modals -->
                  
                   <div class="modal fade" id="statusModal" tabindex="-1">
@@ -173,19 +223,19 @@
                           <h5 class="modal-title">Status</h5>
                           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <form method='POST' action='{{url('project/edit-board')}}' onsubmit="show();"   enctype="multipart/form-data">
+                        <form id="editBoardForm" method="POST" action="{{ url('project/edit-board') }}" enctype="multipart/form-data">
                             @csrf
-                        <div class="modal-body">
-                          <input type="hidden" name='statusId' id="statusId">
-                          <div class="mb-3">
-                            <label class="form-label">Status Name</label>
-                            <input type="text" name='statusName' class="form-control" id="statusName">
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                          <button type='submit' class="btn btn-primary" onclick="saveStatus()">Save</button>
-                        </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="statusId" id="statusId">
+                                <div class="mb-3">
+                                    <label class="form-label">Status Name</label>
+                                    <input type="text" name="statusName" class="form-control" id="statusName">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
                         </form>
                       </div>
                     </div>
@@ -238,14 +288,14 @@
             }
         });
     });
-});
+  });
 
-      
+        
 
-   
-});
+    
+  });
 </script>
- <script>
+<script>
         function getInitials(name) {
             const words = name.trim().split(' ');
             let initials = words[0].charAt(0).toUpperCase();
@@ -256,261 +306,558 @@
         }
 </script>
 
+
 <script>
-  
-    let boardData = @json($boardData);
-    console.log(boardData);
-    
+    let boardData = @json($boardData); // Laravel data for boards and tasks
+
+    console.log("Loaded board data:", boardData);
+
+    // ====== Render the whole board ======
     function renderBoard() {
-      const board = document.getElementById('kanbanBoard');
-      board.innerHTML = '';
-      boardData.forEach(column => {
-        const columnDiv = document.createElement('div');
-        columnDiv.className = 'kanban-column';
-        columnDiv.dataset.id = column.id;
-        columnDiv.innerHTML = `
-          <div class="kanban-header">
-            <span>${column.name} <button class="btn btn-sm btn-outline-primary" onclick="addTask('${column.id}')">+</button></span>
-            
-            <div>
-                
-              <button class="btn btn-sm btn-outline-secondary" onclick="editStatus('${column.id}')">Edit</button>
-              
-            </div>
-          </div>
-         <div class="kanban-items" ondragover="allowDrop(event)" ondrop="drop(event, '${column.id}')">
-            ${column.tasks.map(task => {
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    let taskBgClass = '';
+        const board = document.getElementById('kanbanBoard');
+        board.innerHTML = '';
 
+        boardData.forEach(column => {
+            const columnDiv = document.createElement('div');
+            columnDiv.className = 'kanban-column';
+            columnDiv.setAttribute('draggable', 'true'); // allow column to be dragged
+            columnDiv.dataset.id = column.id;
 
-    return `
-        <div id="task-${task.id}" class="kanban-card tasks-box ${taskBgClass}" draggable="true" ondragstart="drag(event)">
-            <div class="card-body">
-                <div class="d-flex mb-2">
-                    <div class="flex-grow-1">
-                        <h6 class="fs-15 mb-0 text-truncate task-title">
-                            <a href='view-task/${task.id}' class="d-block">
-                              ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
-                              ${((task.due_date && task.due_date < today) && (task.completed == 0)) ? '<i class="text-danger  ri-error-warning-fill align-middle me-1"></i>' : ''}
-                                ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
-                            </a>
-                        </h6>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-footer border-top-dashed">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <span class="text-muted">
-                            <i class="ri-time-line align-bottom"></i> ${task.due_date ? task.due_date : 'No Due Date'}
-                        </span>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <ul class="link-inline mb-0">
-                            <li class="list-inline-item">
-                                <a href="javascript:void(0)" class="text-muted">
-                                    <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
-                                </a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="javascript:void(0)" class="text-muted">
-                                    <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
-                                </a>
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="javascript:void(0)" class="text-muted">
-                                    <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
-                                </a>
-                            </li>
-                        </ul>
-                        
-                    </div>
-                </div>
-            </div>
-            ${task.completed == 1 ? `
-                        <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
-                            <i class="ri-archive-2-line"></i> Archive
+            columnDiv.innerHTML = `
+                <div class="kanban-header">
+                    <span class="fw-bold" id="status-name-${column.id}">${column.name}</span>
+                    <div>
+                        <!-- Edit button (visible to all) -->
+                        <button class="btn btn-sm btn-outline-secondary me-1" 
+                                onclick="editStatus('${column.id}')" 
+                                data-bs-toggle="tooltip" 
+                                title="Edit">
+                            <i class="bi bi-pencil"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#transferModal-${task.id}">
-                          <i class="ri-exchange-line"></i> Transfer
-                      </button>
-                    ` : ''}
-        </div>
-                    
-    `;
-}).join('')}
-          </div>
-          <div class="p-2">
-            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')">+ Add Task</button>
-          </div>
+
+                        <!-- Delete button (only for admins) -->
+                        @if(auth()->user()->role == 'Admin')
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="deleteStatus('${column.id}')" 
+                                    data-bs-toggle="tooltip" 
+                                    title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+                
+                <div class="kanban-items" ondragover="allowDrop(event)" ondrop="dropTask(event, '${column.id}')">
+                    ${column.tasks.map(task => renderTask(task)).join('')}
+                </div>
+
+                <div class="p-2">
+                    <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')">+ Add Task</button>
+                </div>
+            `;
+
+            board.appendChild(columnDiv);
+        });
+
+        enableColumnDrag(); // enable dragging for columns
+    }
+
+    // ====== Render a single task card ======
+    function renderTask(task) {
+        const today = new Date().toISOString().split('T')[0];
+
+        return `
+            <div id="task-${task.id}" class="kanban-card tasks-box"
+                draggable="true" ondragstart="dragTask(event)">
+                <div class="card-body">
+                    <div class="d-flex mb-2">
+                        <div class="flex-grow-1">
+                            <h6 class="fs-15 mb-0 text-truncate task-title">
+                                <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
+                                    ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
+                                    ${(task.due_date && task.due_date < today && task.completed == 0)
+                                        ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
+                                    ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
+                                </pan>
+                            </h6>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer border-top-dashed">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <span class="text-muted">
+                                <i class="ri-time-line align-bottom"></i> ${task.due_date || 'No Due Date'}
+                            </span>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <ul class="link-inline mb-0">
+                                <li class="list-inline-item">
+                                    <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
+                                </li>
+                                <li class="list-inline-item">
+                                    <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
+                                </li>
+                                <li class="list-inline-item">
+                                    <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                ${task.completed == 1 ? `
+                    <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
+                        <i class="ri-archive-2-line"></i> Archive
+                    </button>
+                   
+                ` : ''}
+            </div>
         `;
-        board.appendChild(columnDiv);
-      });
     }
-    
-    function addStatus() {
-      document.getElementById('statusId').value = '';
-      document.getElementById('statusName').value = '';
-      new bootstrap.Modal(document.getElementById('statusModal')).show();
-    }
-    
-    function saveStatus() {
-      const id = document.getElementById('statusId').value;
-    //   alert(id);
-      const name = document.getElementById('statusName').value;
-      if (!name) return alert('Please enter status name');
-    
-      const existing = boardData.find(c => c.id == id);
-      if (existing) {
-        existing.name = name;
-      } else {
-        boardData.push({ id, name, tasks: [] });
-      }
-      bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
-      renderBoard();
-    }
-    
-    function editStatus(id) {
-        console.log(boardData);
-      const column = boardData.find(c => c.id == id);
-     
-      document.getElementById('statusId').value = column.id;
-      document.getElementById('statusName').value = column.name;
-      new bootstrap.Modal(document.getElementById('statusModal')).show();
-    }
-    
-    function deleteStatus(id) {
-      if (confirm('Are you sure?')) {
-        boardData = boardData.filter(c => c.id != id);
-        renderBoard();
-      }
-    }
-    
-    function addTask(columnId) {
-      document.getElementById('taskColumn').value = columnId;
-      new bootstrap.Modal(document.getElementById('creatertaskModal')).show();
-    }
-    
-    function editTask(columnId, taskId) {
-      const column = boardData.find(c => c.id == columnId);
-      const task = column.tasks.find(t => t.id == taskId);
-      document.getElementById('taskColumn').value = columnId;
-      document.getElementById('taskId').value = taskId;
-      document.getElementById('taskName').value = task.name;
-      new bootstrap.Modal(document.getElementById('taskModal')).show();
-    }
-    
-    function saveTask() {
-      const columnId = document.getElementById('taskColumn').value;
-      const taskId = document.getElementById('taskId').value;
-      const taskName = document.getElementById('taskName').value;
-    
-      if (!taskName) return alert('Please enter task name');
-    
-      const column = boardData.find(c => c.id == columnId);
-      const taskIndex = column.tasks.findIndex(t => t.id == taskId);
-      if (taskIndex > -1) {
-        column.tasks[taskIndex].name = taskName;
-      } else {
-        column.tasks.push({ id: taskId, name: taskName });
-      }
-      bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
-      renderBoard();
-    }
-    
-    function deleteTask(columnId, taskId) {
-      const column = boardData.find(c => c.id === columnId);
-      column.tasks = column.tasks.filter(t => t.id !== taskId);
-      renderBoard();
-    }
-    
-    let draggedTaskId = '';
-    
-function drag(ev) {
-  ev.dataTransfer.setData('text/plain', ev.target.id);
-  ev.target.classList.add('dragging');
-}
 
-document.addEventListener('dragend', function (e) {
-  const draggingCard = document.querySelector('.kanban-card.dragging');
-  if (draggingCard) draggingCard.classList.remove('dragging');
-});
-    
-   function allowDrop(ev) {
-  ev.preventDefault(); // Required to allow dropping
-}
-    
-function drop(ev, columnId) {
-  ev.preventDefault();
-  const draggedElementId = ev.dataTransfer.getData('text/plain'); // like task-3
-  const taskId = draggedElementId.replace('task-', '');
+    // ====== Enable column dragging ======
+    function enableColumnDrag() {
+        const columns = document.querySelectorAll('.kanban-column');
 
-  if (!taskId || !columnId) return;
-  // alert(taskId);
-  // Move task in local boardData
-  let movedTask = null;
-  boardData.forEach(col => {
-    const index = col.tasks.findIndex(t => t.id == taskId);
-    if (index > -1) {
-      movedTask = col.tasks.splice(index, 1)[0];
+        columns.forEach(col => {
+            col.addEventListener('dragstart', dragColumnStart);
+            col.addEventListener('dragover', allowDrop);
+            col.addEventListener('drop', dropColumn);
+        });
     }
-  });
 
-  if (movedTask) {
-    const targetCol = boardData.find(col => col.id == columnId);
-    if (targetCol) {
-      targetCol.tasks.push(movedTask);
+    // Track the column being dragged
+    let draggedColumnId = null;
+
+    function dragColumnStart(event) {
+        draggedColumnId = event.target.dataset.id;
+        event.dataTransfer.effectAllowed = 'move';
     }
-  }
 
-  // Send to server via AJAX
-  $.ajax({
- url: "{{ url('/update-task-column') }}",
-  method: 'POST',
-  data: {
-    task_id: taskId,
-    column_id: columnId,
-    _token: $('meta[name="csrf-token"]').attr('content')
-  },
-  success: function (response) {
-    console.log('Task updated successfully:', response);
-  },
-  error: function (xhr) {
-    console.error('AJAX update failed:', xhr.responseText);
-  }
-});
+    function dropColumn(event) {
+        event.preventDefault();
 
-  renderBoard();
-}
+        const targetColumnId = event.target.closest('.kanban-column').dataset.id;
+        if (!draggedColumnId || draggedColumnId === targetColumnId) return;
 
-    
-    renderBoard();
-    </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      function archiveTask(taskId) {
-    if (confirm("Are you sure you want to archive this task?")) {
-        // Example: Send to backend via AJAX
-        fetch(`/tasks/${taskId}/archive`, {
+        // Reorder columns in local data
+        const draggedIndex = boardData.findIndex(col => col.id == draggedColumnId);
+        const targetIndex = boardData.findIndex(col => col.id == targetColumnId);
+
+        const [movedColumn] = boardData.splice(draggedIndex, 1);
+        boardData.splice(targetIndex, 0, movedColumn);
+
+        // Send order to backend
+        $.ajax({
+            url: "{{ url('/update-column-order') }}",
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            data: {
+                order: boardData.map(col => col.id),
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                Toastify({
+                  text: "Column order updated",
+                  duration: 3000,
+                  close: true,
+                  gravity: "top", // top or bottom
+                  position: "right", // left, center or right
+                  backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                  stopOnFocus: true,
+              }).showToast();
+            },
+            error: function (xhr) {
+                Toastify({
+                    text: "Error updating. Please try again.",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    stopOnFocus: true,
+                }).showToast();
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById(`task-${data.task_id}`).remove();
-            } else {
-                alert('Failed to archive task.');
-            }
-        })
-        .catch(error => console.error('Error:', error));
+        });
+
+        renderBoard();
     }
-}
-      </script>
+
+    // ====== Task Dragging ======
+    function dragTask(ev) {
+        ev.dataTransfer.setData('text/plain', ev.target.id);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function dropTask(ev, columnId) {
+        ev.preventDefault();
+        const draggedTaskId = ev.dataTransfer.getData('text/plain').replace('task-', '');
+
+        if (!draggedTaskId || !columnId) return;
+
+        // Move task locally
+        let movedTask = null;
+        boardData.forEach(col => {
+            const index = col.tasks.findIndex(t => t.id == draggedTaskId);
+            if (index > -1) {
+                movedTask = col.tasks.splice(index, 1)[0];
+            }
+        });
+
+        if (movedTask) {
+            const targetCol = boardData.find(col => col.id == columnId);
+            if (targetCol) targetCol.tasks.push(movedTask);
+        }
+
+        // Update on server
+        $.ajax({
+            url: "{{ url('/update-task-column') }}",
+            method: 'POST',
+            data: {
+                task_id: draggedTaskId,
+                project_board_id: columnId,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                Toastify({
+                  text: "Task updated successfully!",
+                  duration: 3000,
+                  close: true,
+                  gravity: "top", // top or bottom
+                  position: "right", // left, center or right
+                  backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                  stopOnFocus: true,
+              }).showToast();
+            },
+            error: function (xhr) {
+                Toastify({
+                    text: "Error updating task. Please try again.",
+                    duration: 3000,
+                    close: true,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    stopOnFocus: true,
+                }).showToast();
+            }
+        });
+
+        renderBoard();
+    }
+
+    // ====== Status CRUD ======
+    function addStatus() {
+        document.getElementById('statusId').value = '';
+        document.getElementById('statusName').value = '';
+        new bootstrap.Modal(document.getElementById('statusModal')).show();
+    }
+
+    function saveStatus() {
+        const id = document.getElementById('statusId').value;
+        const name = document.getElementById('statusName').value;
+        if (!name) return alert('Please enter status name');
+
+        const existing = boardData.find(c => c.id == id);
+        if (existing) {
+            existing.name = name;
+        } else {
+            boardData.push({ id: Date.now().toString(), name, tasks: [] });
+        }
+        bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide();
+        renderBoard();
+    }
+
+    function editStatus(id) {
+        const column = boardData.find(c => c.id == id);
+        document.getElementById('statusId').value = column.id;
+        document.getElementById('statusName').value = column.name;
+        new bootstrap.Modal(document.getElementById('statusModal')).show();
+    }
+
+   function deleteStatus(id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This will permanently delete the status and its tasks!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+
+            $.ajax({
+                url: "{{ url('/statuses') }}/" + id, // Laravel style URL
+                method: "DELETE",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content') // CSRF token
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Remove column from local boardData
+                        boardData = boardData.filter(c => c.id != id);
+                        renderBoard();
+
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'The status has been deleted.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: response.message || 'Failed to delete the status.',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while deleting the status.',
+                        icon: 'error'
+                    });
+                    console.error(xhr.responseText);
+                }
+            });
+
+        }
+    });
+  }
+
+      // ====== Tasks ======
+      function addTask(columnId) {
+          document.getElementById('taskColumn').value = columnId;
+          new bootstrap.Modal(document.getElementById('creatertaskModal')).show();
+      }
+  function archiveTask(taskId) {
+    const archiveUrl = `{{ url('tasks') }}/${taskId}/archive`;
+      // Show SweetAlert confirmation dialog
+      Swal.fire({
+          title: "Are you sure?",
+          text: "This task will be archived and moved out of the active board.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, archive it!"
+      }).then((result) => {
+          if (result.isConfirmed) {
+              // Send AJAX request using fetch
+              fetch(archiveUrl, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                  }
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      // Remove task from UI
+                      document.getElementById(`task-${data.task_id}`).remove();
+
+                      // Show success Toastify
+                      Toastify({
+                          text: "Task archived successfully!",
+                          duration: 3000,
+                          gravity: "top",
+                          position: "right",
+                          backgroundColor: "#28a745",
+                          stopOnFocus: true
+                      }).showToast();
+                  } else {
+                      // Show error Toastify
+                      Toastify({
+                          text: "Failed to archive task.",
+                          duration: 3000,
+                          gravity: "top",
+                          position: "right",
+                          backgroundColor: "#dc3545",
+                          stopOnFocus: true
+                      }).showToast();
+                  }
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  Toastify({
+                      text: "An error occurred. Please try again later.",
+                      duration: 3000,
+                      gravity: "top",
+                      position: "right",
+                      backgroundColor: "#dc3545",
+                      stopOnFocus: true
+                  }).showToast();
+              });
+          }
+      });
+  }
+
+
+    // Initial render
+    renderBoard();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+  $(document).ready(function() {
+      let originalText = '';
+
+      // Use event delegation so double-click works even after replacement
+      $(document).on('dblclick', '#editable-project-name', function() {
+          let $this = $(this);
+          let currentText = $this.text().trim();
+          originalText = currentText; // Store original text
+
+          // Replace the h4 with an input
+          let input = $('<input>', {
+              type: 'text',
+              class: 'form-control form-control-sm',
+              value: currentText,
+              id: 'project-name-input'
+          });
+
+          $this.replaceWith(input);
+          input.focus().select();
+
+          // Save on Enter key
+          input.on('keypress', function(e) {
+              if (e.which === 13) { // Enter key
+                  saveProjectName(input, $this.data('id'));
+              }
+          });
+
+          // Save on blur (optional)
+          input.on('blur', function() {
+              saveProjectName(input, $this.data('id'));
+          });
+      });
+
+      function saveProjectName(input, projectId) {
+          let newName = input.val().trim();
+
+          if (newName === '') {
+              revertToText(originalText, projectId);
+              return;
+          }
+
+          $.ajax({
+              url: "{{ url('/project/edit/') }}/" + projectId,
+              method: 'POST', // using POST instead of PUT
+              data: {
+                  _token: '{{ csrf_token() }}',
+                  name: newName
+              },
+              success: function(response) {
+                  revertToText(response.name, projectId);
+
+                  Toastify({
+                      text: "Project name updated successfully!",
+                      duration: 3000,
+                      gravity: "top",
+                      position: "right",
+                      backgroundColor: "#4CAF50",
+                      close: true
+                  }).showToast();
+              },
+              error: function(xhr) {
+                  console.error(xhr.responseText);
+                  revertToText(originalText, projectId);
+
+                  let message = "Error updating project name. Please try again.";
+
+                  if (xhr.responseJSON && xhr.responseJSON.errors) {
+                      message = Object.values(xhr.responseJSON.errors)[0][0];
+                  }
+
+                  Toastify({
+                      text: message,
+                      duration: 4000,
+                      gravity: "top",
+                      position: "right",
+                      backgroundColor: "#F44336",
+                      close: true
+                  }).showToast();
+              }
+          });
+      }
+
+      function revertToText(name, projectId) {
+          let newH4 = $('<h4>', {
+              id: 'editable-project-name',
+              class: 'fw-bold',
+              'data-id': projectId,
+              text: name
+          });
+
+          $('#project-name-input').replaceWith(newH4);
+      }
+  });
+</script>
+<script>
+$(document).ready(function() {
+    $('#editBoardForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent page refresh
+
+        let formData = $(this).serialize();
+        const statusId = $('#statusId').val();
+        const statusName = $('#statusName').val();
+        $.ajax({
+            url: "{{ url('project/edit-board') }}", // ✅ Manual URL
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'), // ✅ CSRF Token
+                statusId: $('#statusId').val(),
+                statusName: $('#statusName').val()
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Hide the modal
+                    document.getElementById('status-name-' + statusId).textContent = $('#statusName').val();
+                    $('#statusModal').modal('hide');
+
+                    // Refresh the board
+                    // renderBoard();
+
+                    // Show success toast
+                    Toastify({
+                        text: response.message || "Status updated successfully!",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#28a745",
+                    }).showToast();
+                } else {
+                    // Show error toast
+                    $(`#status-name-${statusId}`).text(statusName);
+                    Toastify({
+                        text: response.message || "Failed to update status.",
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#dc3545",
+                    }).showToast();
+                }
+            },
+            error: function(xhr) {
+                console.error(xhr.responseText);
+                Toastify({
+                    text: "An error occurred while saving the status.",
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#dc3545",
+                }).showToast();
+            }
+        });
+    });
+});
+</script>
 @endsection

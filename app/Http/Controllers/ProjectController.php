@@ -78,12 +78,17 @@ class ProjectController extends Controller
     public function view(Request $request,$id)
     {
 
-        $project = Project::with([
+       $project = Project::with([
             'users',
-            'statuses',
+            // Sort statuses by position ASC when eager loading
+            'statuses' => function ($query) {
+                $query->orderBy('position', 'asc');
+            },
             'tasks',
             'tasks.comments',
-            'tasks.attachments'
+            'tasks.attachments',
+            'tasks.activities', // Prevent N+1
+            'tasks.users'       // Prevent N+1
         ])->findOrFail($id);
         $boardData = [];
         
@@ -174,9 +179,7 @@ class ProjectController extends Controller
 
         $status->board = $name;
         $status->save();
-
-        Alert::success('Successfully Updated')->persistent('Dismiss');
-        return back();
+        return response()->json(['success' => true, 'message' => 'Status updated successfully.']);
     }
     public function markComplete($id)
     {
@@ -196,4 +199,36 @@ class ProjectController extends Controller
         Alert::success('Project marked as archived.')->persistent('Dismiss');
         return back();
     }
+    public function updateTitle(Request $request,$id)
+    {
+        $request->validate([
+        'name' => 'required|string|max:255',
+        ]);
+
+        $project = Project::findOrFail($id);
+        $project->name = $request->name;
+        $project->save();
+
+        return response()->json([
+            'success' => true,
+            'name' => $project->name
+        ]);
+    }
+    public function destroy($id)
+    {
+          if (!auth()->user()->role == 'Admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized.'], 403);
+        }
+
+        $status = ProjectBoard::find($id);
+
+        if (!$status) {
+            return response()->json(['success' => false, 'message' => 'Status not found.'], 404);
+        }
+
+        $status->delete();
+
+        return response()->json(['success' => true, 'message' => 'Status deleted successfully.']);
+    }
+
 }
