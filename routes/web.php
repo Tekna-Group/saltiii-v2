@@ -14,7 +14,7 @@
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => ['auth', 'verified']], function () {
-Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
+
     
 
 Route::get('/view-profile/{id}','UserController@view');
@@ -85,18 +85,18 @@ Route::post('/change-avatar/{id}','UserController@avatar');
 
 Route::post('task-member/{id}','TaskController@changeMember')->name('Change Password');
 
-Route::get('/', 'InvoiceController@index')->name('invoices.index');
+Route::get('/invoices', 'InvoiceController@index')->name('invoices.index');
 Route::get('/invoice/create', 'InvoiceController@createInvoice')->name('invoices.create');
 Route::get('/invoice/pay/{id}', 'InvoiceController@pay')->name('invoices.pay');
 Route::post('/invoice/pay/{id}', 'InvoiceController@processPayment')->name('invoices.processPayment');
 
-
+Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
 
 });
 
-Route::get('/api/documentation', function () {
-    return view('l5-swagger::index');
-});
+// Route::get('/api/documentation', function () {
+//     return view('l5-swagger::index');
+// });
 
 Route::get('send-emails','TaskController@sendDailyTaskSummary');
 

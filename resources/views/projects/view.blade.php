@@ -308,6 +308,40 @@
 
 
 <script>
+    document.getElementById('search-task-options').addEventListener('keyup', function() {
+    const searchValue = this.value.toLowerCase().trim();
+
+    // Loop through each kanban column
+    document.querySelectorAll('.kanban-items').forEach(column => {
+        const tasks = column.querySelectorAll('.task-card');
+        let hasVisibleTasks = false;
+
+        tasks.forEach(task => {
+            const taskText = task.innerText.toLowerCase();
+
+            if (taskText.includes(searchValue)) {
+                task.style.display = ''; // Show matching task
+                hasVisibleTasks = true;
+            } else {
+                task.style.display = 'none'; // Hide non-matching task
+            }
+        });
+
+        // Optional: Show "No tasks found" message if all tasks are hidden
+        let noTaskMsg = column.querySelector('.no-tasks-msg');
+
+        if (!hasVisibleTasks) {
+            if (!noTaskMsg) {
+                noTaskMsg = document.createElement('div');
+                noTaskMsg.className = 'no-tasks-msg text-muted text-center p-2';
+                noTaskMsg.innerText = 'No matching tasks';
+                column.appendChild(noTaskMsg);
+            }
+        } else if (noTaskMsg) {
+            noTaskMsg.remove();
+        }
+    });
+});
     let boardData = @json($boardData); // Laravel data for boards and tasks
 
     console.log("Loaded board data:", boardData);
@@ -325,9 +359,11 @@
 
             columnDiv.innerHTML = `
                 <div class="kanban-header">
-                    <span class="fw-bold" id="status-name-${column.id}">${column.name}</span>
+                    <span class="fw-bold" id="status-name-${column.id}">${column.name} </span>
+                    
                     <div>
                         <!-- Edit button (visible to all) -->
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+</button>
                         <button class="btn btn-sm btn-outline-secondary me-1" 
                                 onclick="editStatus('${column.id}')" 
                                 data-bs-toggle="tooltip" 
@@ -364,58 +400,57 @@
 
     // ====== Render a single task card ======
     function renderTask(task) {
-        const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
 
-        return `
-            <div id="task-${task.id}" class="kanban-card tasks-box"
-                draggable="true" ondragstart="dragTask(event)">
-                <div class="card-body">
-                    <div class="d-flex mb-2">
-                        <div class="flex-grow-1">
-                            <h6 class="fs-15 mb-0 text-truncate task-title">
-                                <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
-                                    ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
-                                    ${(task.due_date && task.due_date < today && task.completed == 0)
-                                        ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
-                                    ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
-                                </pan>
-                            </h6>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card-footer border-top-dashed">
-                    <div class="d-flex">
-                        <div class="flex-grow-1">
-                            <span class="text-muted">
-                                <i class="ri-time-line align-bottom"></i> ${task.due_date || 'No Due Date'}
+    return `
+        <div id="task-${task.id}" class="kanban-card tasks-box task-card"
+            draggable="true" ondragstart="dragTask(event)">
+            <div class="card-body">
+                <div class="d-flex mb-2">
+                    <div class="flex-grow-1">
+                        <h6 class="fs-15 mb-0 text-truncate task-title">
+                            <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
+                                ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
+                                ${(task.due_date && task.due_date < today && task.completed == 0)
+                                    ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
+                                ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
                             </span>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <ul class="link-inline mb-0">
-                                <li class="list-inline-item">
-                                    <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
-                                </li>
-                                <li class="list-inline-item">
-                                    <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
-                                </li>
-                                <li class="list-inline-item">
-                                    <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
-                                </li>
-                            </ul>
-                        </div>
+                        </h6>
                     </div>
                 </div>
-
-                ${task.completed == 1 ? `
-                    <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
-                        <i class="ri-archive-2-line"></i> Archive
-                    </button>
-                   
-                ` : ''}
             </div>
-        `;
-    }
+
+            <div class="card-footer border-top-dashed">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <span class="text-muted">
+                            <i class="ri-time-line align-bottom"></i> ${task.due_date || 'No Due Date'}
+                        </span>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <ul class="link-inline mb-0">
+                            <li class="list-inline-item">
+                                <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
+                            </li>
+                            <li class="list-inline-item">
+                                <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
+                            </li>
+                            <li class="list-inline-item">
+                                <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            ${task.completed == 1 ? `
+                <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
+                    <i class="ri-archive-2-line"></i> Archive
+                </button>
+            ` : ''}
+        </div>
+    `;
+}
 
     // ====== Enable column dragging ======
     function enableColumnDrag() {
