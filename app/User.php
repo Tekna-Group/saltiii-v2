@@ -49,4 +49,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(TaskActivity::class);
     }
+    public function stripeCustomer()
+    {
+        return $this->hasOne(\App\StripeCustomer::class);
+    }
 }

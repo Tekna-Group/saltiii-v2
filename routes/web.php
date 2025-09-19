@@ -14,6 +14,7 @@ Route::redirect('/', '/api/documentation');
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => ['auth', 'verified']], function () {
+Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
     
 
 Route::get('/view-profile/{id}','UserController@view');
@@ -83,6 +84,12 @@ Route::post('/edit-user/{id}','UserController@editUser')->name('edit-user');
 Route::post('/change-avatar/{id}','UserController@avatar');
 
 Route::post('task-member/{id}','TaskController@changeMember')->name('Change Password');
+
+Route::get('/', 'InvoiceController@index')->name('invoices.index');
+Route::get('/invoice/create', 'InvoiceController@createInvoice')->name('invoices.create');
+Route::get('/invoice/pay/{id}', 'InvoiceController@pay')->name('invoices.pay');
+Route::post('/invoice/pay/{id}', 'InvoiceController@processPayment')->name('invoices.processPayment');
+
 
 
 });
