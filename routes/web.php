@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::redirect('/', '/api/documentation');
+// Route::redirect('/', '/api/documentation');
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
 Route::group(['middleware' => ['auth', 'verified']], function () {

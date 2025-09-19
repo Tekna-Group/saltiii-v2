@@ -323,7 +323,8 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($task->attachments as $attachment)
+                                                   @foreach($tasks as $task)
+                                                        @foreach($task->attachments as $attachment)
                                                     <tr>
                                                         <td>
                                                             <div class="d-flex align-items-center">
@@ -353,6 +354,7 @@
                                                             </div>
                                                         </td>
                                                     </tr>
+                                                    @endforeach
                                                     @endforeach
                                                 </tbody>
                                             </table>
