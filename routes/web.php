@@ -92,6 +92,8 @@ Route::post('/invoice/pay/{id}', 'InvoiceController@processPayment')->name('invo
 
 Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
 
+Route::get('/reports','TaskController@TaskReport')->name('task.reports');
+
 });
 
 // Route::get('/api/documentation', function () {

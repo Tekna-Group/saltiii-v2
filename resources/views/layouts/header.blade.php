@@ -209,10 +209,15 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/reports')}}">
+                                <i class="ri-file-list-3-fill"></i> <span data-key="t-dashboards">Reports</span>
+                            </a>
+                        </li>
+                        {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="https://api.saltiii.com/api/documentation" target="_blank">
                                 <i class="ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
                             </a>
-                        </li>
+                        </li> --}}
                         @endif
                 
                     </ul>

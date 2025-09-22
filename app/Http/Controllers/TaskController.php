@@ -12,6 +12,7 @@ use App\TaskAttachment;
 use App\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\DB;
 class TaskController extends Controller
 {
     //
@@ -33,6 +34,58 @@ class TaskController extends Controller
                                     'projects' => $projects,
                                     'users' => $users,
                                     ]); 
+    }
+    public function TaskReport(Request $request)
+    {
+           // Main query with eager loading
+           $query = Task::with(['project', 'users', 'board'])
+                ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+                ->select('tasks.*', 'projects.name as project_name');
+
+            // Main filtered tasks
+            if ($request->filled('date_from') && $request->filled('date_to')) {
+                $query->whereBetween('tasks.due_date', [
+                    $request->date_from,
+                    $request->date_to
+                ]);
+            } elseif ($request->filled('date_from')) {
+                $query->whereDate('tasks.due_date', '>=', $request->date_from);
+            } elseif ($request->filled('date_to')) {
+                $query->whereDate('tasks.due_date', '<=', $request->date_to);
+            }
+
+            // Get main tasks filtered and ordered
+            $tasks = $query
+                ->orderBy('project_name', 'asc') // Order by project name
+                ->orderBy('tasks.due_date', 'asc')
+                ->orderBy('tasks.priority', 'desc')
+                ->get();
+
+            // Group tasks by project name
+            $tasksByProject = $tasks->groupBy(function ($task) {
+                return $task->project_name ?? 'No Project';
+            });
+
+            // ===== Previous Backlogs =====
+            $previousBacklogs = collect();
+            if ($request->filled('date_from')) {
+                $previousBacklogs = Task::with(['project', 'users', 'board'])
+                    ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
+                    ->select('tasks.*', 'projects.name as project_name')
+                    ->where('tasks.completed', 0)
+                    ->whereDate('tasks.due_date', '<', $request->date_from)
+                    ->orderBy('project_name', 'asc')
+                    ->orderBy('tasks.due_date', 'asc')
+                    ->get()
+                    ->groupBy(function ($task) {
+                        return $task->project_name ?? 'No Project';
+                    });
+            }
+            if($request->date_from == null)
+            {
+                $tasksByProject = [];
+            }
+            return view('tasks.reports', compact('tasksByProject', 'previousBacklogs'));
     }
     public function updateTitle(Request $request, $id)
     {
@@ -438,10 +491,10 @@ class TaskController extends Controller
     }
     public function storeActivityApi(Request $request, $id)
     {
-    $task = Task::findOrFail($id);
+        $task = Task::findOrFail($id);
 
-    $attachmentName = null;
-    if ($request->hasFile('proof')) {
+        $attachmentName = null;
+        if ($request->hasFile('proof')) {
         $file = $request->file('proof');
         $sizeInMB = round($file->getSize() / 1048576, 2); // MB
         $filename = time() . '.' . $file->getClientOriginalExtension();
@@ -458,49 +511,49 @@ class TaskController extends Controller
         $taskAttachment->save();
 
         $attachmentName = $taskAttachment->name;
-    }
+        }
 
-    $commentText = null;
-    if (!empty($request->comments)) {
-        $taskComment = new TaskComment();
-        $taskComment->task_id = $task->id;
-        $taskComment->project_id = $task->project_id;
-        $taskComment->user_id = auth()->id();
-        $taskComment->comment = $request->task . " - " . $request->comments;
-        $taskComment->save();
+        $commentText = null;
+        if (!empty($request->comments)) {
+            $taskComment = new TaskComment();
+            $taskComment->task_id = $task->id;
+            $taskComment->project_id = $task->project_id;
+            $taskComment->user_id = auth()->id();
+            $taskComment->comment = $request->task . " - " . $request->comments;
+            $taskComment->save();
 
-        $commentText = $taskComment->comment;
-    }
+            $commentText = $taskComment->comment;
+        }
 
-    $taskActivity = new TaskActivity();
-    $taskActivity->task_id = $task->id;
-    $taskActivity->project_id = $task->project_id;
-    $taskActivity->user_id = auth()->id();
-    $taskActivity->created_by = auth()->id();
-    $taskActivity->activity = $request->task;
-    $taskActivity->hours = $request->hours;
-    $taskActivity->date = $request->date;
-    $taskActivity->file = $attachmentName;
-    $taskActivity->comments = $commentText;
-    $taskActivity->save();
+        $taskActivity = new TaskActivity();
+        $taskActivity->task_id = $task->id;
+        $taskActivity->project_id = $task->project_id;
+        $taskActivity->user_id = auth()->id();
+        $taskActivity->created_by = auth()->id();
+        $taskActivity->activity = $request->task;
+        $taskActivity->hours = $request->hours;
+        $taskActivity->date = $request->date;
+        $taskActivity->file = $attachmentName;
+        $taskActivity->comments = $commentText;
+        $taskActivity->save();
 
-    $task->save();
+        $task->save();
 
-    return response()->json([
-        'success'    => true,
-        'activity'   => [
-            'id'         => $taskActivity->id,
-            'task'       => $taskActivity->activity,
-            'hours'      => $taskActivity->hours,
-            'date'       => date('d M, Y',strtotime($taskActivity->date)),
-            'date_old'       => $taskActivity->date,
-            'user_name'  => auth()->user()->name,
-            'user_avatar'=> auth()->user()->avatar,
-            'comments'   => $commentText,
-            'file_name'  => $attachmentName,
-        ],
-        'message'    => 'Activity created successfully',
-    ]);
+        return response()->json([
+            'success'    => true,
+            'activity'   => [
+                'id'         => $taskActivity->id,
+                'task'       => $taskActivity->activity,
+                'hours'      => $taskActivity->hours,
+                'date'       => date('d M, Y',strtotime($taskActivity->date)),
+                'date_old'       => $taskActivity->date,
+                'user_name'  => auth()->user()->name,
+                'user_avatar'=> auth()->user()->avatar,
+                'comments'   => $commentText,
+                'file_name'  => $attachmentName,
+            ],
+            'message'    => 'Activity created successfully',
+        ]);
     }   
      public function complete($id)
     {
