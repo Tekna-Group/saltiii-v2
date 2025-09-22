@@ -577,12 +577,12 @@ class TaskController extends Controller
             'old_value' => $old_board->board,
             'new_value' => $new_board->board,
         ]);
-       if (str_contains(strtolower($new_board->board), 'complete')) {
+        $task->completed = 0;
+        if (str_contains(strtolower($new_board->board), 'complete')) {
             $task->completed = 1;
         }
-        else
-        {
-             $task->completed = 0;
+        if (str_contains(strtolower($new_board->board), 'cancel')) {
+            $task->completed = 1;
         }
         $this->createTaskComment($request,$task->project_id, $task->id, 'Update Status');
         $task->save();
