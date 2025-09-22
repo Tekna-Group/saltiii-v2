@@ -37,7 +37,7 @@ class HomeController extends Controller
         ])
         ->where('completed', 0)
         ->leftJoin(DB::raw('(SELECT project_id, MAX(updated_at) as latest_comment_updated_at FROM task_comments GROUP BY project_id) as c'), 'projects.id', '=', 'c.project_id')
-        ->orderBy('c.latest_comment_updated_at', 'desc')
+        ->orderBy('name','asc')
         ->select('projects.*', 'c.latest_comment_updated_at');
         // dd($query->get());
     
