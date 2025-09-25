@@ -32,7 +32,20 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+  
     }
+    .kanban-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanban-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanban-items::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
     .kanban-items {
       flex-grow: 1;
       padding: 15px;
@@ -59,7 +72,7 @@
     .kanban-board-wrapper {
         display: flex;
         gap: 15px;
-        min-height: 80vh;
+        min-height: 40vh;
     }
     .kanban-column {
         background: #f8f9fa;
@@ -80,7 +93,13 @@
     .kanban-items {
         flex: 1;
         padding: 10px;
-        min-height: 100px;
+        /* min-height: 100px; */
+            max-height: 400px; /* Adjust height based on your layout */
+        overflow-y: auto;  /* Vertical scroll only when needed */
+        overflow-x: hidden; /* Prevent horizontal scroll */
+        padding-right: 8px; /* Space for scrollbar */
+        scrollbar-width: thin; /* For Firefox */
+        scrollbar-color: #ccc transparent; /* Scrollbar style */
     }
     .kanban-card {
         background: #fff;

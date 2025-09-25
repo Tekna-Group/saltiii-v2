@@ -589,6 +589,15 @@ class TaskController extends Controller
         Alert::success('Task updated successfully')->persistent('Dismiss');
         return back();
     }
+     public function updateDescription(Request $request,$id)
+    {
+        // dd($request->all());
+        $task = Task::findOrfail($id);
+        $task->description =  $request->description;
+        $task->save();
+        Alert::success('Task updated successfully')->persistent('Dismiss');
+        return back();
+    }
     public function updateBoard(Request $request, $id)
     {
         $request->validate([

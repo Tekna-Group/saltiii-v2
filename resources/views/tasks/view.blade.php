@@ -7,6 +7,7 @@
 
   <!-- Optional FilePond plugins -->
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" rel="stylesheet">
   <style>
     .filepond--item {
         width: calc(50% - 0.5em);
@@ -140,7 +141,9 @@
         <div class="card">
             <div class="card-body">
                 <div class="text-muted">
-                    <h6 class="mb-3 fw-semibold text-uppercase">Summary</h6>
+                    <h6 class="mb-3 fw-semibold text-uppercase">Summary <button type="button"  data-bs-toggle="modal" data-bs-target="#editTaskModal" class="btn btn-sm btn-outline-primary"  >
+                    <i class="ri-edit-line"></i> Edit
+                </button></h6>
                     <p>{!!$task->description!!}</p>
                     
                 </div>
@@ -357,6 +360,7 @@
 </div>
 @include('tasks.change_member')
 @include('tasks.add_activity')
+@include('tasks.edit_task')
 
 @endsection
 
@@ -435,6 +439,19 @@
 
 });
 </script>
-
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>
+  <script>
+    $('.summernote').summernote({
+      height: 250,
+      toolbar: [
+        ['style', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['insert', ['link','picture','video']],
+        ['view', ['codeview']]
+      ]
+    });
+    // Summernote keeps content in the textarea, so no extra sync needed.
+  </script>
 
 @endsection

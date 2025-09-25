@@ -64,6 +64,7 @@ Route::post('/tasks/update-priority/{id}', 'TaskController@updatePriority');
 Route::post('task-comment/api/{id}', 'TaskController@commentPost')->name('Task Comment');
 Route::post('tasks/{id}/update-title','TaskController@updateTitle')->name('Update Title');
 Route::post('tasks/{id}/update-description','TaskController@updateDescription')->name(' Update Description');
+Route::post('edit-task-description/{id}','TaskController@updateDescription');
 
 //Task API
 Route::post('/tasks/{id}/update-due-date','TaskController@updateDueDate')->name('Update Due Date');
