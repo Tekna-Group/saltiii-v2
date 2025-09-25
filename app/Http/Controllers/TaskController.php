@@ -5,6 +5,7 @@ use App\Task;
 use App\TaskUser;
 use App\Project;
 use App\TaskComment;
+use App\TaskCommentUserTagged;
 use App\ProjectBoard;
 use App\Events\TasksSummaryGenerated;
 use App\TaskActivity;
@@ -287,6 +288,26 @@ class TaskController extends Controller
         $TaskComment->project_id = $task->project_id;
         $TaskComment->user_id = auth()->user()->id;
         $TaskComment->save();
+
+         // Extract all mentions using regex @username
+      preg_match_all('/@([A-Za-z0-9_]+(?:\s[A-Za-z0-9_]+)*)/', $request->comment, $matches);
+
+      
+        $usernames = $matches[1] ?? [];
+
+        if (!empty($usernames)) {
+            //   dd($usernames);
+            // Find matching users by name
+            $taggedUsers = User::whereIn('name', $usernames)->get();
+
+            foreach ($taggedUsers as $user) {
+                TaskCommentUserTagged::create([
+                    'task_comment_id' => $TaskComment->id,
+                    'task_id' => $TaskComment->task_id,
+                    'user_id'         => $user->id,
+                ]);
+            }
+        }
 
         Alert::success('Successfully Posted')->persistent('Dismiss');
         return back();

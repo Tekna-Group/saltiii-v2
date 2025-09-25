@@ -12,4 +12,12 @@ class TaskComment extends Model
     {
         return $this->belongsTo(User::class);
     }
+      public function task()
+    {
+        return $this->belongsTo(Task::class);
+    }
+     public function taggedUsers()
+    {
+        return $this->hasMany(TaskCommentUserTagged::class, 'task_comment_id');
+    }
 }

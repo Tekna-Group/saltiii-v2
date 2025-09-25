@@ -95,6 +95,7 @@ Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscrib
 
 Route::get('/reports','TaskController@TaskReport')->name('task.reports');
 
+Route::get('/users/search', 'UserController@search');
 });
 
 // Route::get('/api/documentation', function () {

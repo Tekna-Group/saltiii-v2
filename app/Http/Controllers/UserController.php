@@ -141,4 +141,16 @@ class UserController extends Controller
             )
         );
     }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+
+        $users = User::where('name', 'like', '%' . $query . '%')
+            ->select('id', 'name')
+            ->limit(10)
+            ->get();
+
+        return response()->json($users);
+    }
 }

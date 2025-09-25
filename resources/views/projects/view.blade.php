@@ -131,7 +131,7 @@
                                 </div>
                                 <div class="col-md">
                                     <div>
-                                        <h4 id="editable-project-name" class="fw-bold" data-id="{{ $project->id }}">
+                                        <h4 @if(auth()->user()->role == "Admin") id="editable-project-name" @endif class="fw-bold" data-id="{{ $project->id }}">
                                             {{ $project->name }}
                                         </h4>
                                         <div class="hstack gap-3 flex-wrap">

@@ -8,6 +8,8 @@
   <!-- Optional FilePond plugins -->
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.js"></script>
   <style>
     .filepond--item {
         width: calc(50% - 0.5em);
@@ -185,7 +187,23 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <h5 class="fs-13"><a href="pages-profile.html">{{$comment->user->name}}</a> <small class="text-muted">{{date('d M, Y - H:i a',strtotime($comment->created_at))}}</small></h5>
-                                    <p class="text-muted">{!!$comment->comment!!}</p>
+                                    <p > {!! preg_replace_callback(
+                                        '/@([A-Za-z0-9_]+(?:\s[A-Za-z0-9_]+)*)\b/',
+                                        function ($matches) {
+                                            $username = trim($matches[1]);
+
+                                            // Find the user by name
+                                            $user = \App\User::where('name', $username)->first();
+
+                                            if ($user) {
+                                                $profileUrl = url('view-profile/' . $user->id);
+                                                return '<a href="' . $profileUrl . '" target="_blank" class="text-primary">@' . e($username) . '</a>';
+                                            }
+
+                                            return '@' . e($username);
+                                        },
+                                        e($comment->comment)
+                                    ) !!}</p>
                                     
                                 </div>
                             </div>
@@ -196,7 +214,7 @@
                             <div class="row g-3">
                                 <div class="col-lg-12">
                                     <label for="exampleFormControlTextarea1" class="form-label">Leave a Comments</label>
-                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1" name='comment' rows="3" placeholder="Enter comments" required></textarea>
+                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1"  name='comment' rows="3" placeholder="Type your comment and use @ to tag users" required></textarea>
                                 </div>
                                 <!--end col-->
                                 <div class="col-12 text-end">
@@ -454,4 +472,22 @@
     // Summernote keeps content in the textarea, so no extra sync needed.
   </script>
 
+<script>
+    var tribute = new Tribute({
+        values: function (text, cb) {
+            fetch("{{ url('/users/search') }}?q=" + text)
+                .then(res => res.json())
+                .then(users => {
+                    cb(users.map(user => {
+                        return { key: user.name, value: user.id };
+                    }));
+                });
+        },
+        selectTemplate: function (item) {
+            return '@' + item.original.key; // Insert @username into textarea
+        }
+    });
+
+    tribute.attach(document.getElementById('exampleFormControlTextarea1'));
+</script>
 @endsection
