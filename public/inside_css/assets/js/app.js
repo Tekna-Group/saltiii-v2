@@ -1,4 +1,5 @@
 ! function() {
+    var baseUrl = window.location.origin;
     var d = document.querySelector(".navbar-menu").innerHTML,
         M = 7,
         t = "en",
@@ -497,8 +498,9 @@
     }
 
     function H() {
+        var baseUrl = window.location.origin;
         Array.from(document.querySelectorAll("#notificationItemsTabContent .tab-pane")).forEach(function(e) {
-            0 < e.querySelectorAll(".notification-item").length ? e.querySelector(".view-all") && (e.querySelector(".view-all").style.display = "block") : (e.querySelector(".view-all") && (e.querySelector(".view-all").style.display = "none"), e.querySelector(".empty-notification-elem") || (e.innerHTML += '<div class="empty-notification-elem">\t\t\t\t\t\t\t<div class="w-25 w-sm-50 pt-3 mx-auto">\t\t\t\t\t\t\t\t<img src="assets/images/svg/bell.svg" class="img-fluid" alt="user-pic">\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t<div class="text-center pb-5 mt-2">\t\t\t\t\t\t\t\t<h6 class="fs-18 fw-semibold lh-base">Hey! You have no any notifications </h6>\t\t\t\t\t\t\t</div>\t\t\t\t\t\t</div>'))
+            0 < e.querySelectorAll(".notification-item").length ? e.querySelector(".view-all") && (e.querySelector(".view-all").style.display = "block") : (e.querySelector(".view-all") && (e.querySelector(".view-all").style.display = "none"), e.querySelector(".empty-notification-elem") || (e.innerHTML += '<div class="empty-notification-elem">\t\t\t\t\t\t\t<div class="w-25 w-sm-50 pt-3 mx-auto">\t\t\t\t\t\t\t\t<img src="'+baseUrl+'/assets/images/svg/bell.svg" class="img-fluid" alt="user-pic">\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t<div class="text-center pb-5 mt-2">\t\t\t\t\t\t\t\t<h6 class="fs-18 fw-semibold lh-base">Hey! You have no any notifications </h6>\t\t\t\t\t\t\t</div>\t\t\t\t\t\t</div>'))
         })
     }
 
