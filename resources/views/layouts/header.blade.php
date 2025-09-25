@@ -96,9 +96,9 @@
                         <i class='bx bx-bell fs-22'></i>
                         <span class="position-absolute topbar-badge fs-10 translate-middle badge rounded-pill bg-danger">3<span class="visually-hidden">unread messages</span></span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
+                    {{-- <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end p-0" aria-labelledby="page-header-notifications-dropdown">
 
-                        {{-- <div class="dropdown-head bg-primary bg-pattern rounded-top">
+                        <div class="dropdown-head bg-primary bg-pattern rounded-top">
                             <div class="p-3">
                                 <div class="row align-items-center">
                                     <div class="col">
@@ -130,7 +130,7 @@
                                 </ul>
                             </div>
 
-                        </div> --}}
+                        </div>
 
                         <div class="tab-content position-relative" id="notificationItemsTabContent">
                             <div class="tab-pane fade show active py-2 ps-2" id="all-noti-tab" role="tabpanel">
@@ -352,7 +352,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
                         <div class="dropdown ms-sm-3 header-item topbar-user">
                             <button type="button" class="btn material-shadow-none" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
