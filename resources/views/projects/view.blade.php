@@ -359,11 +359,11 @@
 
             columnDiv.innerHTML = `
                 <div class="kanban-header">
-                    <span class="fw-bold" id="status-name-${column.id}">${column.name} </span>
+                    <span class="fw-bold" id="status-name-${column.id}">${column.name} <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+</button></span>
                     
                     <div>
                         <!-- Edit button (visible to all) -->
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+</button>
+                        
                         <button class="btn btn-sm btn-outline-secondary me-1" 
                                 onclick="editStatus('${column.id}')" 
                                 data-bs-toggle="tooltip" 
@@ -410,10 +410,17 @@
                     <div class="flex-grow-1">
                         <h6 class="fs-15 mb-0 text-truncate task-title">
                             <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
-                                ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
-                                ${(task.due_date && task.due_date < today && task.completed == 0)
-                                    ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
-                                ${task.name.length > 25 ? task.name.substring(0, 25) + "..." : task.name}
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
+                                        ${(task.due_date && task.due_date < today && task.completed == 0)
+                                            ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
+                                        ${task.name.length > 20 ? task.name.substring(0, 15) + "..." : task.name}
+                                    </div>
+                                    <div class="text-muted ms-2 ">
+                                       <small>#${task.id}</small>
+                                    </div>
+                                </div>
                             </span>
                         </h6>
                     </div>
