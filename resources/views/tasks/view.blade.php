@@ -483,7 +483,7 @@
         },
         selectTemplate: function (item) {
             if (!item) return null;
-            return '@' + item.original.key + ' '; // Add space after the name
+            return '@' + item.original.key + '  '; // Add space after the name
         },
         // Prevent Tribute from merging the next word
         // autocompleteMode: true,
