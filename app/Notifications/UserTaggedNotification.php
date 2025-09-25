@@ -66,9 +66,12 @@ class UserTaggedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->subject('You were mentioned in a comment')
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line("{$this->tagger->name} mentioned you in a comment on the task: \"{$this->task->title}\".")
+            ->line("Comment: \"{$this->comment->comment}\"")
+            ->action('View Task', url('/view-project/view-task/' . $this->task->id))
+            ->line('Thank you for staying engaged and collaborating with your team!');
     }
 
     /**

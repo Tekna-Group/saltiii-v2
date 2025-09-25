@@ -156,7 +156,7 @@
             <div class="card-header">
                 <div>
                     <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
-                        <li class="nav-item">
+                        <li class="nav-item active">
                             <a class="nav-link" data-bs-toggle="tab" href="#home-1" role="tab">
                                 Comments ({{$task->comments->count()}})
                             </a>
@@ -167,7 +167,7 @@
                             </a>
                         </li>
                         <li class="nav-item ">
-                            <a class="nav-link active" data-bs-toggle="tab" href="#profile-1" role="tab" aria-selected="true">
+                            <a class="nav-link " data-bs-toggle="tab" href="#profile-1" role="tab" aria-selected="true">
                                 Time Entries ({{$task->activities->count()}})
                             </a>
                         </li>
@@ -177,7 +177,7 @@
             </div>
             <div class="card-body">
                 <div class="tab-content">
-                    <div class="tab-pane " id="home-1" role="tabpanel">
+                    <div class="tab-pane active" id="home-1" role="tabpanel">
                         <h5 class="card-title mb-4">Comments</h5>
                         <div data-simplebar style="height: 300px;" class="px-3 mx-n3 mb-2">
                             @foreach($task->comments->sortByDesc('created_at') as $comment)
@@ -277,7 +277,7 @@
                         </div>
                     </div>
                     <!--end tab-pane-->
-                    <div class="tab-pane active" id="profile-1" role="tabpanel">
+                    <div class="tab-pane " id="profile-1" role="tabpanel">
                         <h6 class="card-title mb-4 pb-2">Time Entries <button class="btn btn-success btn-sm" href="#addActivity" data-bs-toggle="modal"><i class="ri-time-line align-bottom me-1"></i> Add Activity</button></h6>
                         <div  class="table-responsive table-card">
                               <table class="table table-striped align-middle mb-0">
