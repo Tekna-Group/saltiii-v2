@@ -23,3 +23,8 @@ function hours_today()
 
     return number_format($activities,2);
 }
+function notifications()
+{
+    $notifications = auth()->user()->unreadNotifications;
+    return $notifications;
+}

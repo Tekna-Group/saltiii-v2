@@ -272,6 +272,13 @@ class TaskController extends Controller
             $query->where('user_id', auth()->id());
         })->where('completed',0)->get();
         $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
+   
+        auth()->user()
+        ->notifications()
+        ->whereRaw('JSON_EXTRACT(data, "$.task_id") = ?', [$id])
+        ->whereNull('read_at')
+        ->update(['read_at' => now()]);
+
         $boards = ProjectBoard::where('project_id',$task->project_id)->orderBy('position','asc')->get();
         // Return the view with the task data
         return view('tasks.view', ['task' => $task,

@@ -66,6 +66,7 @@ Route::post('tasks/{id}/update-title','TaskController@updateTitle')->name('Updat
 Route::post('tasks/{id}/update-description','TaskController@updateDescription')->name(' Update Description');
 Route::post('edit-task-description/{id}','TaskController@updateDescription');
 
+
 //Task API
 Route::post('/tasks/{id}/update-due-date','TaskController@updateDueDate')->name('Update Due Date');
 
