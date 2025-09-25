@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Task;
 use App\TaskUser;
+use App\Notifications\UserTaggedNotification;
 use App\Project;
 use App\TaskComment;
 use App\TaskCommentUserTagged;
@@ -303,9 +304,11 @@ class TaskController extends Controller
             foreach ($taggedUsers as $user) {
                 TaskCommentUserTagged::create([
                     'task_comment_id' => $TaskComment->id,
-                    'task_id' => $TaskComment->task_id,
+                    'task_id' =>        $id,
                     'user_id'         => $user->id,
                 ]);
+
+                $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
             }
         }
 
