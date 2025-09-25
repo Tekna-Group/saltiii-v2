@@ -427,7 +427,7 @@
     // ====== Render a single task card ======
     function renderTask(task) {
     const today = new Date().toISOString().split('T')[0];
-
+        console.log(task.users);
     return `
         <div id="task-${task.id}" class="kanban-card tasks-box task-card"
             draggable="true" ondragstart="dragTask(event)">
@@ -436,15 +436,15 @@
                     <div class="flex-grow-1">
                         <h6 class="fs-15 mb-0 text-truncate task-title">
                             <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
-                                <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex justify-content-between align-items-start ${task.users && task.users.some(user => user.id === {{ auth()->id() }}) ? 'text-warning' : ''}"">
                                     <div>
                                         ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
                                         ${(task.due_date && task.due_date < today && task.completed == 0)
                                             ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
                                         ${task.name.length > 20 ? task.name.substring(0, 15) + "..." : task.name}
                                     </div>
-                                    <div class="text-muted ms-2 ">
-                                       <small>#${task.id}</small>
+                                    <div class="text-muted ms-2 ${task.users && task.users.some(user => user.id === {{ auth()->id() }}) ? 'text-warning' : ''}">
+                                        <small>#${task.id}</small>
                                     </div>
                                 </div>
                             </span>

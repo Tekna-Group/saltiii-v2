@@ -106,6 +106,7 @@ class ProjectController extends Controller
                 'attachments' => $task->attachments->count(),
                 'hours' => $task->activities->sum('hours'),
                 'completed' => $task->completed,
+                'users' => $task->users,
                 'assignees' => $task->users->pluck('name')->toArray(),
             ];
         })
