@@ -482,8 +482,16 @@
                 });
         },
         selectTemplate: function (item) {
-            return '@' + item.original.key; // Insert @username into textarea
-        }
+            if (!item) return null;
+            return '@' + item.original.key + ' '; // Add space after the name
+        },
+        // Prevent Tribute from merging the next word
+        // autocompleteMode: true,
+
+        // Highlight in the dropdown menu
+        menuItemTemplate: function (item) {
+            return `<div class="p-1">${item.original.key}</div>`;
+        },
     });
 
     tribute.attach(document.getElementById('exampleFormControlTextarea1'));

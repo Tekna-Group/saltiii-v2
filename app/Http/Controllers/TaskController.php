@@ -301,8 +301,12 @@ class TaskController extends Controller
     
         // Step 2: Extract all mentions using @Full Name
         // Matches @ followed by letters and spaces (Full Name only)
-        $pattern = '/@([A-Z][a-z]+(?:\s[A-Z][a-z]+){0,2})(?=\s|$)/';
+        $pattern = '/@([A-Z][a-z]+(?:\s[A-Z][a-z]+){0,2})(?=\s|$|[.,!?])/';
+
+
         preg_match_all($pattern, $request->comment, $matches);
+        $rawMatches = array_map('trim', $matches[1]);
+        // dd($rawMatches);
     
         // Clean up extracted names
         $possibleTags = array_map('trim', $matches[1]);
