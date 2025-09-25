@@ -187,23 +187,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <h5 class="fs-13"><a href="pages-profile.html">{{$comment->user->name}}</a> <small class="text-muted">{{date('d M, Y - H:i a',strtotime($comment->created_at))}}</small></h5>
-                                    <p > {!! preg_replace_callback(
-                                        '/@([A-Za-z0-9_]+(?:\s[A-Za-z0-9_]+)*)\b/',
-                                        function ($matches) {
-                                            $username = trim($matches[1]);
-
-                                            // Find the user by name
-                                            $user = \App\User::where('name', $username)->first();
-
-                                            if ($user) {
-                                                $profileUrl = url('view-profile/' . $user->id);
-                                                return '<a href="' . $profileUrl . '" target="_blank" class="text-primary">@' . e($username) . '</a>';
-                                            }
-
-                                            return '@' . e($username);
-                                        },
-                                        e($comment->comment)
-                                    ) !!}</p>
+                                    <p > {!!($comment->comment)!!}</p>
                                     
                                 </div>
                             </div>
