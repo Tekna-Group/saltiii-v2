@@ -310,7 +310,7 @@ class TaskController extends Controller
     
         // Clean up extracted names
         $possibleTags = array_map('trim', $matches[1]);
-        
+        dd($possibleTags);
         if (empty($possibleTags)) {
             Alert::success('Successfully Posted')->persistent('Dismiss');
             return back();

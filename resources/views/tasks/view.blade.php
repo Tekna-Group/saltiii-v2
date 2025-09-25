@@ -490,7 +490,7 @@
 
         // Highlight in the dropdown menu
         menuItemTemplate: function (item) {
-            return `<div class="p-1">${item.original.key}</div>`;
+            return `<div class="p-1">${item.original.key}  &nbsp; </div>`;
         },
     });
 
