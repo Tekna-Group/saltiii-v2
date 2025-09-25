@@ -11,7 +11,7 @@
                         <div class="row g-3">
                                 <div class="mb-3">
                                    <div class="col-lg-12">
-                                        <label for="task-description" class="form-label">Task Description</label>
+                                        <label for="task-description" class="form-label">Task Descrwiption</label>
                                         <textarea class="form-control summernote" id="task-description" rows="3" name="description" placeholder="Task description" required>{!!$task->description!!}</textarea>
                                     </div>
                                 </div>

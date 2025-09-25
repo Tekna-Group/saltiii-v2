@@ -197,7 +197,9 @@
                         <div class="row g-2">
                             <div class="col-lg-auto">
                                 <div class="hstack gap-2">
+                                    @if(auth()->user()->role == 'Admin')
                                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createboardModal"><i class="ri-add-line align-bottom me-1"></i> Create Board</button>
+                                    @endif
                                 </div>
                             </div>
                             <!--end col-->
@@ -214,6 +216,7 @@
                                         <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
                                     </a>
                                     @endforeach
+                                     @if(auth()->user()->role == 'Admin')
                                     <a href="#addmemberModal" data-bs-toggle="modal" class="avatar-group-item material-shadow">
                                         <div class="avatar-xs">
                                             <div class="avatar-title rounded-circle">
@@ -221,6 +224,7 @@
                                             </div>
                                         </div>
                                     </a>
+                                    @endif
                                 </div>
                             </div>
                             <!--end col-->
@@ -371,18 +375,21 @@
         board.innerHTML = '';
 
         boardData.forEach(column => {
+              const isAdmin = @json(auth()->user()->role === 'Admin');
             const columnDiv = document.createElement('div');
             columnDiv.className = 'kanban-column';
+                 if (isAdmin) {
             columnDiv.setAttribute('draggable', 'true'); // allow column to be dragged
+              }
             columnDiv.dataset.id = column.id;
 
             columnDiv.innerHTML = `
                 <div class="kanban-header">
-                    <span class="fw-bold" id="status-name-${column.id}">${column.name} <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+</button></span>
+                    <span class="fw-bold" id="status-name-${column.id}">${column.name} <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+Add Task</button></span>
                     
                     <div>
                         <!-- Edit button (visible to all) -->
-                        
+                           @if(auth()->user()->role == 'Admin')
                         <button class="btn btn-sm btn-outline-secondary me-1" 
                                 onclick="editStatus('${column.id}')" 
                                 data-bs-toggle="tooltip" 
@@ -391,7 +398,7 @@
                         </button>
 
                         <!-- Delete button (only for admins) -->
-                        @if(auth()->user()->role == 'Admin')
+                     
                             <button class="btn btn-sm btn-outline-danger" 
                                     onclick="deleteStatus('${column.id}')" 
                                     data-bs-toggle="tooltip" 

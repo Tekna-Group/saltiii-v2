@@ -640,18 +640,13 @@
                                 <div class="pt-3 border-top border-top-dashed mt-4">
                                     <div class="row gy-3">
 
-                                        <div class="col-lg-6 col-sm-6">
-                                            <div>
-                                                <p class="mb-2 text-uppercase fw-medium">Created Date :</p>
-                                                <h5 class="fs-15 mb-0">{{date('M d, Y',strtotime($task->created_at))}}</h5>
-                                            </div>
-                                        </div>
-                                       <div class="col-lg-6 col-sm-6">
+                                       
+                                       <div class="col-lg-12 col-sm-12">
                                             <div>
                                                 <p class="mb-2 text-uppercase fw-medium">Due Date :</p>
                                                 <button class="btn btn-outline-primary btn-sm due-date" 
                                                     data-id="{{ $task->id }}" 
-                                                    onclick="makeDueDateEditable(this)">
+                                                    @if(auth()->user()->role == 'Admin') onclick="makeDueDateEditable(this)" @endif>
                                                 {{ date('M d, Y', strtotime($task->due_date)) }}
                                                 </button>
                                                 <span class="due-date-raw" data-id="{{ $task->id }}" style="display:none;">
