@@ -280,52 +280,47 @@ class TaskController extends Controller
         'projects' => $projects,
         ]);
     }
-    public function comment(Request $request,$id)
+    public function comment(Request $request, $id)
     {
-        $task = Task::findOrfail($id);
+        $task = Task::findOrFail($id);
+    
+        // Step 1: Save the task comment
         $TaskComment = new TaskComment();
         $TaskComment->comment = $request->comment;
         $TaskComment->task_id = $id;
         $TaskComment->project_id = $task->project_id;
         $TaskComment->user_id = auth()->user()->id;
         $TaskComment->save();
-
-         // Extract all mentions using regex @username
-         $pattern = '/@([A-Za-z][A-Za-z0-9_]*(?:\s[A-Za-z][A-Za-z0-9_]*){0,2})(?=$|\s[^\w]|$)/';
-         preg_match_all($pattern, $request->comment, $matches);
-      
-         $possibleTags = array_map('trim', $matches[1]);
-         $validTags = \App\User::whereIn('name', $possibleTags)
-                      ->pluck('name')
-                      ->toArray();
-        foreach ($validTags as $name) {
-                $user = \App\User::where('name', $name)->first();
-
-                if ($user) {
-                     TaskCommentUserTagged::create([
-                    'task_comment_id' => $TaskComment->id,
-                    'task_id' =>        $id,
-                    'user_id'         => $user->id,
-                ]);
-                   
-                    // Send notification
-                    $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
-                }
+    
+        // Step 2: Extract all mentions using @Full Name
+        // Matches @ followed by letters and spaces (Full Name only)
+        $pattern = '/@([A-Z][a-z]+(?:\s[A-Z][a-z]+){0,2})(?=\s|$)/';
+        preg_match_all($pattern, $request->comment, $matches);
+    
+        // Clean up extracted names
+        $possibleTags = array_map('trim', $matches[1]);
+        // dd($possibleTags);
+        if (empty($possibleTags)) {
+            Alert::success('Successfully Posted')->persistent('Dismiss');
+            return back();
         }
-        // if (!empty($usernames)) {
-        //       dd($usernames);
-        //     // Find matching users by name
-        //     $taggedUsers = User::whereIn('name', $usernames)->get();
-
-        //     foreach ($taggedUsers as $user) {
-        //         // dd($user);
-        //          // Create a record in task_comment_user_tagged table
-              
-
-        //         $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
-        //     }
-        // }
-
+    
+        // Step 3: Find users in ONE query
+        $taggedUsers = \App\User::whereIn('name', $possibleTags)->get();
+    
+        // Step 4: Save tags and send notifications
+        foreach ($taggedUsers as $user) {
+            TaskCommentUserTagged::create([
+                'task_comment_id' => $TaskComment->id,
+                'task_id'         => $id,
+                'user_id'         => $user->id,
+            ]);
+    
+            // Send notification
+            $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
+        }
+    
+        // Step 5: Success
         Alert::success('Successfully Posted')->persistent('Dismiss');
         return back();
     }
