@@ -157,7 +157,7 @@
                 <div>
                     <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
                         <li class="nav-item active">
-                            <a class="nav-link" data-bs-toggle="tab" href="#home-1" role="tab">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#home-1" role="tab">
                                 Comments ({{$task->comments->count()}})
                             </a>
                         </li>
