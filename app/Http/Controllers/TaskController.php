@@ -302,6 +302,8 @@ class TaskController extends Controller
             $taggedUsers = User::whereIn('name', $usernames)->get();
 
             foreach ($taggedUsers as $user) {
+                // dd($user);
+                 // Create a record in task_comment_user_tagged table
                 TaskCommentUserTagged::create([
                     'task_comment_id' => $TaskComment->id,
                     'task_id' =>        $id,
