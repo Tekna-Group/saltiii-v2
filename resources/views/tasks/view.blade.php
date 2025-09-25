@@ -188,7 +188,7 @@
                                 <div class="flex-grow-1 ms-3">
                                     <h5 class="fs-13"><a href="pages-profile.html">{{$comment->user->name}}</a> <small class="text-muted">{{date('d M, Y - H:i a',strtotime($comment->created_at))}}</small></h5>
                                     <p > {!! preg_replace_callback(
-                                        '/@([A-Za-z0-9_]+(?:\s[A-Za-z0-9_]+)*)/',
+                                        '/(?:^|\s)@([A-Za-z][A-Za-z0-9_]*(?:\s[A-Za-z][A-Za-z0-9_]*){0,2})(?=$|\s|[.,!?])/',
                                         function($matches) {
                                             $username = trim($matches[1]);
                                     

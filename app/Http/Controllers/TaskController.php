@@ -291,28 +291,40 @@ class TaskController extends Controller
         $TaskComment->save();
 
          // Extract all mentions using regex @username
-      preg_match_all('/@([A-Za-z0-9_]+(?:\s[A-Za-z0-9_]+)*)/', $request->comment, $matches);
-
+         $pattern = '/@([A-Za-z][A-Za-z0-9_]*(?:\s[A-Za-z][A-Za-z0-9_]*){0,2})(?=$|\s[^\w]|$)/';
+         preg_match_all($pattern, $request->comment, $matches);
       
-        $usernames = $matches[1] ?? [];
+         $possibleTags = array_map('trim', $matches[1]);
+         $validTags = \App\User::whereIn('name', $possibleTags)
+                      ->pluck('name')
+                      ->toArray();
+        foreach ($validTags as $name) {
+                $user = \App\User::where('name', $name)->first();
 
-        if (!empty($usernames)) {
-            //   dd($usernames);
-            // Find matching users by name
-            $taggedUsers = User::whereIn('name', $usernames)->get();
-
-            foreach ($taggedUsers as $user) {
-                // dd($user);
-                 // Create a record in task_comment_user_tagged table
-                TaskCommentUserTagged::create([
+                if ($user) {
+                     TaskCommentUserTagged::create([
                     'task_comment_id' => $TaskComment->id,
                     'task_id' =>        $id,
                     'user_id'         => $user->id,
                 ]);
-
-                $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
-            }
+                   
+                    // Send notification
+                    $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
+                }
         }
+        // if (!empty($usernames)) {
+        //       dd($usernames);
+        //     // Find matching users by name
+        //     $taggedUsers = User::whereIn('name', $usernames)->get();
+
+        //     foreach ($taggedUsers as $user) {
+        //         // dd($user);
+        //          // Create a record in task_comment_user_tagged table
+              
+
+        //         $user->notify(new UserTaggedNotification(auth()->user(), $TaskComment, $task));
+        //     }
+        // }
 
         Alert::success('Successfully Posted')->persistent('Dismiss');
         return back();
