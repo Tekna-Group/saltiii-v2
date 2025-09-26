@@ -71,8 +71,8 @@ class TaskController extends Controller
         })
         ->get();
     
-        $users = User::all();
-        $projects = Project::all();
+        $users = User::where('status','Active')->get();
+        $projects = Project::where('completed',1)->get();
     
         return view('tasks.reports', compact('tasksProgress', 'tasksAging', 'tasksCompleted', 'users', 'projects'));
     }
