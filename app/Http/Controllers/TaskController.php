@@ -38,56 +38,43 @@ class TaskController extends Controller
                                     ]); 
     }
     public function TaskReport(Request $request)
-    {
-           // Main query with eager loading
-           $query = Task::with(['project', 'users', 'board'])
-                ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-                ->select('tasks.*', 'projects.name as project_name');
+    { 
+        
+        $query = Task::with(['users', 'project']);
 
-            // Main filtered tasks
-            if ($request->filled('date_from') && $request->filled('date_to')) {
-                $query->whereBetween('tasks.due_date', [
-                    $request->date_from,
-                    $request->date_to
-                ]);
-            } elseif ($request->filled('date_from')) {
-                $query->whereDate('tasks.due_date', '>=', $request->date_from);
-            } elseif ($request->filled('date_to')) {
-                $query->whereDate('tasks.due_date', '<=', $request->date_to);
-            }
-
-            // Get main tasks filtered and ordered
-            $tasks = $query
-                ->orderBy('project_name', 'asc') // Order by project name
-                ->orderBy('tasks.due_date', 'asc')
-                ->orderBy('tasks.priority', 'desc')
-                ->get();
-
-            // Group tasks by project name
-            $tasksByProject = $tasks->groupBy(function ($task) {
-                return $task->project_name ?? 'No Project';
+        // Filters
+        if ($request->date_from) {
+            $query->whereDate('due_date', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->whereDate('due_date', '<=', $request->date_to);
+        }
+        if ($request->user_id) {
+            $query->whereHas('users', function($q) use ($request) {
+                $q->where('users.id', $request->user_id);
             });
-
-            // ===== Previous Backlogs =====
-            $previousBacklogs = collect();
-            if ($request->filled('date_from')) {
-                $previousBacklogs = Task::with(['project', 'users', 'board'])
-                    ->leftJoin('projects', 'tasks.project_id', '=', 'projects.id')
-                    ->select('tasks.*', 'projects.name as project_name')
-                    ->where('tasks.completed', 0)
-                    ->whereDate('tasks.due_date', '<', $request->date_from)
-                    ->orderBy('project_name', 'asc')
-                    ->orderBy('tasks.due_date', 'asc')
-                    ->get()
-                    ->groupBy(function ($task) {
-                        return $task->project_name ?? 'No Project';
-                    });
-            }
-            if($request->date_from == null)
-            {
-                $tasksByProject = [];
-            }
-            return view('tasks.reports', compact('tasksByProject', 'previousBacklogs'));
+        }
+        if ($request->project_id) {
+            $query->where('project_id', $request->project_id);
+        }
+    
+        // Reports
+        $tasksProgress = (clone $query)->get();
+        $tasksAging = (clone $query)->where('completed', 0)->where('due_date', '<', now())->get();
+        $tasksCompleted = (clone $query)
+        ->where('completed', 1)
+        ->when($request->date_from, function ($q) use ($request) {
+            $q->whereDate('updated_at', '>=', $request->date_from);
+        })
+        ->when($request->date_to, function ($q) use ($request) {
+            $q->whereDate('updated_at', '<=', $request->date_to);
+        })
+        ->get();
+    
+        $users = User::all();
+        $projects = Project::all();
+    
+        return view('tasks.reports', compact('tasksProgress', 'tasksAging', 'tasksCompleted', 'users', 'projects'));
     }
     public function updateTitle(Request $request, $id)
     {

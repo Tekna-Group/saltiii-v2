@@ -38,4 +38,8 @@ class Task extends Model
     {
         return $this->hasMany(TaskActivity::class);
     }
+    public function assignedUserNames()
+    {
+        return $this->users->pluck('name')->implode(', ');
+    }
 }
