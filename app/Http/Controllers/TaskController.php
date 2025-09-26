@@ -167,6 +167,19 @@ class TaskController extends Controller
         $task->due_date = $request->input('dueDate');
         $task->priority = $request->input('priority');
         $task->project_board_id = $request->input('taskColumn'); // Assuming status is the ID of the project board
+        $task->project_board_id = $request->input('taskColumn'); // Assign board ID
+
+        // Load the related board
+        $task->load('board');
+        
+            
+        // Convert the board name to lowercase
+        $boardName = $task->board ? strtolower($task->board->board) : '';
+
+        // Check if it contains "complete"
+        $task->completed = strpos($boardName, 'complete') !== false ? 1 : 0;
+        // dd($task->completed);
+        // $task->save();
         $task->user_id = auth()->user()->id; // Assuming the task is created by the authenticated user
         $task->save();
 
