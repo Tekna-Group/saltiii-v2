@@ -54,8 +54,14 @@
                                             </div>
                                             <div>
                                                 {{-- <button type="button" class="btn btn-primary btn-icon waves-effect waves-light"><i class="ri-facebook-fill fs-16"></i></button> --}}
-                                                <button type="button" class="btn btn-danger btn-icon waves-effect waves-light"><i class="ri-google-fill fs-16"></i></button>
-                                                <button type="button" class="btn btn-dark btn-icon waves-effect waves-light"><i class="ri-github-fill fs-16"></i></button>
+                                                <a href="{{ url('auth/google') }}" 
+                                                    class="btn btn-light border d-flex align-items-center justify-content-center px-4 py-2" 
+                                                    style="gap: 8px; font-weight: 500; border-radius: 8px;">
+                                                        <img src="https://developers.google.com/identity/images/g-logo.png" 
+                                                            alt="Google Logo" style="width:20px; height:20px;">
+                                                        Continue with Google
+                                                </a>
+                                                {{-- <button type="button" class="btn btn-dark btn-icon waves-effect waves-light"><i class="ri-github-fill fs-16"></i></button> --}}
                                                 {{-- <button type="button" class="btn btn-info btn-icon waves-effect waves-light"><i class="ri-twitter-fill fs-16"></i></button> --}}
                                             </div>
                                         </div>

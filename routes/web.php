@@ -20,6 +20,7 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 Route::get('/view-profile/{id}','UserController@view');
 Route::get('/my-profile','UserController@viewProfile');
 Route::get('/', 'HomeController@index')->name('Dashboard');
+Route::get('/dashboard', 'HomeController@index')->name('Dashboard');
 Route::get('/home', 'HomeController@index')->name('Dashboard');
 Route::post('new-project', 'ProjectController@store')->name('New Project');
 Route::get('/view-project/{id}','ProjectController@view')->name('View Project');
@@ -97,6 +98,9 @@ Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscrib
 Route::get('/reports','TaskController@TaskReport')->name('task.reports');
 
 Route::get('/users/search', 'UserController@search');
+
+
+
 });
 
 // Route::get('/api/documentation', function () {
@@ -104,4 +108,7 @@ Route::get('/users/search', 'UserController@search');
 // });
 
 Route::get('send-emails','TaskController@sendDailyTaskSummary');
+
+Route::get('auth/google', 'GoogleController@redirectToGoogle');
+Route::get('auth/google/callback','GoogleController@handleGoogleCallback');
 
