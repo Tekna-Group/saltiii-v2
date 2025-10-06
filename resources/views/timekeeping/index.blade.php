@@ -213,8 +213,8 @@
                                         @if ($loop->first)
                                             <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
                                         @endif
-                                        <td class="wrap-text" style="word-wrap: break-word; ">{{ $act->project->name }} - {{ $act->task->title }}</td>
-                                        <td class="wrap-text" style="word-wrap: break-word; ">{{ $act->activity }}</td>
+                                        <td class="wrap-text" style="word-wrap: break-word; ">{!! preg_replace("/\s+/", "\n", $act->project->name." - ".$act->task->title)!!}</td>
+                                        <td class="wrap-text" style="word-wrap: break-word; ">{!! preg_replace("/\s+/", "\n", $act->activity)!!}</td>
                                         <td>{{ $act->hours }} hrs</td>
                                     </tr>
                                 @endforeach
