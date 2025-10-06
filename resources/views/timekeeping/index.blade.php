@@ -8,6 +8,30 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
+
+</style>
+<style>
+    /* Ensure table cells wrap content */
+    #report th, 
+    #report td {
+        white-space: normal !important; /* allow wrapping */
+        word-wrap: break-word;
+        word-break: break-word;
+        vertical-align: middle;
+        max-width: 150px; /* optional: limit width so wrapping occurs */
+    }
+
+    /* Optional: wrap header text neatly */
+    #report th.wrap-text small {
+        display: block;
+        white-space: normal;
+        text-align: center;
+    }
+
+    /* Optional: make table responsive */
+    .table-responsive {
+        overflow-x: auto;
+    }
 </style>
 @endsection
 @section('content')
@@ -189,8 +213,8 @@
                                         @if ($loop->first)
                                             <td rowspan="{{ $rowCount }}">{{ date('M d - l',strtotime($date)) }}</td>
                                         @endif
-                                        <td>{{ $act->project->name }} - {{ $act->task->title }}</td>
-                                        <td>{{ $act->activity }}</td>
+                                        <td class="wrap-text">{{ $act->project->name }} - {{ $act->task->title }}</td>
+                                        <td class="wrap-text">{{ $act->activity }}</td>
                                         <td>{{ $act->hours }} hrs</td>
                                     </tr>
                                 @endforeach
