@@ -104,6 +104,9 @@
     <div class="modal-content bg-white rounded shadow-lg p-4" style="max-width:800px; max-height:85vh; overflow-y:auto; position:relative;">
         <button class="btn-close position-absolute top-0 end-0 m-3" onclick="closePrivacyModal()" aria-label="Close"></button>
         <h4 class="mb-3 text-center text-primary">PRIVACY POLICY</h4>
+        <div style="position:absolute; top:15px; right:20px;">
+            <img src='{{ asset("images/SaltiiiBlack.svg") }}' alt='Saltii Logo' style='height:40px; width:auto;'>
+          </div>
         <p><strong>Last Updated:</strong> October 8, 2025</p>
 
         <p>Welcome to Saltii (“we,” “our,” or “us”). We value your trust and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our workflow management, timekeeping, and payroll system (“Services”).</p>
