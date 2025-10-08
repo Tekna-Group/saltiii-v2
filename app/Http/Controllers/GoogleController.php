@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 use Socialite;
 use App\User;
+use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class GoogleController extends Controller
 {
@@ -17,23 +19,28 @@ class GoogleController extends Controller
 
     public function handleGoogleCallback()
     {
-        try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+        $googleUser = Socialite::driver('google')->user();
 
-            $user = User::updateOrCreate([
-                'email' => $googleUser->getEmail(),
-            ], [
+        $user = User::firstOrCreate(
+            ['email' => $googleUser->getEmail()],
+            [
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
-                'avatar' => $googleUser->getAvatar(),
-                'password' => bcrypt('google_dummy_password') // not used, but required
-            ]);
+                'email_verified_at' => now(), // ✅ Automatically verified
+                'password' => bcrypt(str_random(16)), // placeholder password
+            ]
+        );
 
-            Auth::login($user);
-
-            return redirect()->intended('dashboard');
-        } catch (\Exception $e) {
-            return redirect('login')->withErrors('Something went wrong!');
+        // ✅ Send welcome email only the first time they register
+        if ($user->wasRecentlyCreated) {
+  
+            Mail::to($user->email)->send(new WelcomeEmail($user));
+           
         }
+
+        Auth::login($user);
+
+  
+        return redirect('/dashboard')->with('success', 'Welcome, ' . $user->name . '!');
     }
 }
