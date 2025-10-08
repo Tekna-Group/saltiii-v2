@@ -6,6 +6,8 @@ use App\TaskActivity;
 use App\Task;
 use App\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;
 use RealRashid\SweetAlert\Facades\Alert;
 class UserController extends Controller
 {
@@ -38,7 +40,9 @@ class UserController extends Controller
         $new_account->status = "Active";
         $new_account->save();
 
-        Alert::success('Successfully Save')->persistent('Dismiss');
+        Mail::to($new_account->email)->send(new WelcomeEmail($new_account));
+
+        Alert::success('Successfully Saved', 'A welcome email has been sent.')->persistent('Dismiss');
         return back();
     }
 
