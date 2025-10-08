@@ -66,6 +66,7 @@ class HomeController extends Controller
                 return $activity->user_id == auth()->user()->id;
             });
         }
+        $users = User::get();
         $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
             $query->whereBetween('date', [$last_sunday, $saturday]);
         }])->get();
@@ -117,6 +118,7 @@ class HomeController extends Controller
                 'last_sunday' => $last_sunday,
                 'saturday' => $saturday,
                 'boards' => $boards,
+                'users' => $users,
                 // 'projects_data' => $projects_data,
                 // 'totalHours' => $projects_data->sum('hours'),
                 // 'project_this_week' => $project_this_week,
