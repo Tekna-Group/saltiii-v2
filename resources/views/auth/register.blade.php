@@ -56,7 +56,7 @@
                             <p class="mb-0 fs-12 text-muted fst-italic">
                                 By registering you agree to the Saltii 
                                 <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">
-                                    Terms of Use
+                                    Privacy Policy
                                 </a>
                             </p>
                         </div>
