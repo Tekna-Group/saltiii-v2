@@ -9,6 +9,8 @@
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.js"></script>
   <style>
     .filepond--item {
@@ -99,7 +101,14 @@
                             </tr>
                             <tr>
                                 <td class="fw-medium">Due Date</td>
+                                @if(auth()->user()->role == 'Admin')
+                                <form action="{{ url('/tasks/'. $task->id.'/update-due-date' ) }}" method="POST">
+                                    @csrf
+                                <td><input type='date' onchange="update_DueDate({{$task->id}})" data-id="{{$task->id}}" id='{{$task->id}}' name='due_date' class='form-control form-control-sm' value='{{$task->due_date}}' required></td>
+                                </form>
+                                @else
                                 <td>{{date('d M, Y',strtotime($task->due_date))}}</td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>
@@ -389,7 +398,56 @@
 <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
 <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+async function update_DueDate(id) {
+    const myInputField = document.getElementById(id);
+    const inputValue = myInputField.value;
+    // Send AJAX
+    try {
+        const response = await fetch(`{{ url('/tasks') }}/${id}/update-due-date`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ due_date: inputValue })
+        });
 
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            Toastify({
+                text: "Due date updated successfully!",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#4CAF50",
+                stopOnFocus: true
+            }).showToast();
+        } else {
+            Toastify({
+                text: data.message || "Failed to update due date",
+                duration: 3000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#FF0000",
+                stopOnFocus: true
+            }).showToast();
+        }
+    } catch (error) {
+        console.error(error);
+        Toastify({
+            text: "Network error while updating due date",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#FF0000",
+            stopOnFocus: true
+        }).showToast();
+    }
+}
+</script>
 <script>
   // Register FilePond plugins
   FilePond.registerPlugin(
