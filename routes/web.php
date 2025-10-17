@@ -13,7 +13,7 @@
 // Route::redirect('/', '/api/documentation');
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
-Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe.form');
+Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe');
 Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
 
 Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
