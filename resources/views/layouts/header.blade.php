@@ -89,7 +89,11 @@
 
                     <div class="d-flex align-items-center">
                           <div class="ms-1 header-item d-none d-sm-flex">
+                            <button id="startTourBtn" class="btn btn-soft-primary btn-sm d-flex align-items-center gap-1 m-2">
+                                <i class="bx bx-help-circle fs-18"></i> Start Tour
+                            </button>
                                  {{hours_today()}} hrs <i class=" bx bx-time-five fs-22"></i>
+                                
                         </div>
                           <div class="dropdown topbar-head-dropdown ms-1 header-item" id="notificationDropdown">
                             <button type="button" class="btn btn-icon btn-topbar material-shadow-none btn-ghost-secondary rounded-circle" id="page-header-notifications-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
@@ -396,7 +400,24 @@
     <script src="{{asset('inside_css/assets/libs/feather-icons/feather.min.js')}}"></script>
     <script src="{{asset('inside_css/assets/js/pages/plugins/lord-icon-2.1.0.js')}}"></script>
     <script src="{{asset('inside_css/assets/js/plugins.js')}}"></script>
-
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+     
+        
+            startTourBtn.addEventListener('click', () => {
+                introJs().setOptions({
+                    nextLabel: 'Next →',
+                    prevLabel: '← Back',
+                    skipLabel: 'Skip',
+                    doneLabel: 'Finish',
+                    showProgress: true,
+                    showBullets: false,
+                    overlayOpacity: 0.6,
+                    disableInteraction: false,
+                }).start();
+            });
+        });
+        </script>
     <!-- apexcharts -->
 
    @yield('js')

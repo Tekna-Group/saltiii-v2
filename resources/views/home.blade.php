@@ -14,7 +14,72 @@
 
   <!-- Optional FilePond plugins -->
   <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet"/>
+  <link href="https://unpkg.com/intro.js/minified/introjs.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+
   <style>
+    /* Fix and style Intro.js font */
+.introjs-tooltip,
+.introjs-helperLayer,
+.introjs-tooltiptext,
+.introjs-button,
+.introjs-tooltip-title {
+    /* font-family: "Poppins", "Roboto", "Segoe UI", Arial, sans-serif !important; */
+    /* font-size: 14px !important; */
+    color: #333 !important;
+}
+.introjs-tooltiptext {
+    margin: 10px !important;
+    padding: 0 !important; /* optional: also tightens spacing inside */
+    line-height: 1.5 !important; /* keep text readable */
+}
+.introjs-tooltip-header {
+    padding-bottom: 0 !important;
+    padding-top:0 !important;
+}
+/* Optional – make buttons look modern */
+.introjs-button {
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-weight: 500 !important;
+}
+
+.introjs-skipbutton {
+    color: #999 !important;
+}
+
+.introjs-nextbutton {
+    background-color: #4caf50 !important;
+    color: #fff !important;
+}
+
+.introjs-prevbutton {
+    background-color: #e0e0e0 !important;
+    color: #333 !important;
+}
+
+.introjs-tooltip-title {
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    margin-bottom: 5px !important;
+}
+.introjs-skipbutton {
+    background: transparent !important;
+    color: #6c757d !important; /* muted gray */
+    font-size: 12px !important;
+    padding: 3px 6px !important;
+    border: none !important;
+    border-radius: 4px !important;
+    line-height: 1 !important;
+    height: auto !important;
+    display: inline-block !important;
+    text-transform: none !important;
+}
+
+.introjs-skipbutton:hover {
+    color: #000 !important;
+    background-color: rgba(0,0,0,0.05) !important;
+}
     /* Mobile adjustments */
     @media (max-width: 768px) {
         .project-slide {
@@ -39,14 +104,14 @@
 <div class="row project-wrapper">
     <div class="col-xxl-9">
         
-        <div class='row'>
+        <div class='row' id="projectSection" data-intro="Here you can view all ongoing projects. Each card shows total hours, comments, attachments, and task progress." data-step="1">
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
                         <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  
                             {{-- @if(auth()->user()->role == 'Admin') --}}
                         
-                                    <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
+                                    <a data-bs-toggle="modal" data-intro="Click here to create a new project and assign users or teams to it." data-step="2" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
                                 
                             {{-- @endif  --}}
                         </h5>
@@ -56,7 +121,7 @@
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
                                 <!-- Search Bar -->
                                 <div class="w-100 w-md-50">
-                                    <input type="text" id="projectSearch" class="form-control" placeholder="Search projects...">
+                                    <input type="text" id="projectSearch" data-intro="Easily find any project by typing its name here." data-step="3" class="form-control" placeholder="Search projects...">
                                 </div>
 
                                 <!-- Navigation Buttons -->
@@ -75,7 +140,7 @@
                             </div>
 
                             <!-- Swiper Wrapper -->
-                            <div class="swiper-wrapper">
+                            <div class="swiper-wrapper" data-step='4' data-intro="Click a project card to open its detailed dashboard — track tasks, comments, and activity logs.">
                                 @foreach($projects as $project)
                                     <div class="swiper-slide project-slide">
                                         <a href="{{ url('view-project/'.$project->id) }}" class="text-decoration-none">
@@ -142,7 +207,7 @@
                 </div><!-- end card -->
             </div>
         </div>
-        <div class='row g-3'>
+        <div class='row g-3' data-intro="This section categorizes your tasks into Delayed, Due Today, and Upcoming Tasks for better management." data-step="5">
             @php
             $sections = [
                 'Delayed' => [
@@ -173,7 +238,7 @@
                               <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
                           </h4>
                           <div class="flex-shrink-0 ms-3">
-                              <input type="text" 
+                              <input type="text"   data-intro="Easily search within {{$sectionTitle}} by typing keywords here." data-step="6"
                                      class="form-control form-control-sm" 
                                      placeholder="Search tasks..." 
                                      id="searchTasks{{$key}}">
@@ -182,7 +247,7 @@
                       <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
                       <div class="card-body">
                          <div class="pt-2 pb-2">
-                            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()">+ Add Task</button>
+                            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()" data-intro="Click here to <b>add a new task</b> to your project. You can assign users, set deadlines, and track progress easily." data-step="7">+ Add Task</button>
                         </div>
                           @forelse($sectionData['tasks'] as $task)
                               <div  id="taskCard{{$task->id}}" class="text-decoration-none task-item">
