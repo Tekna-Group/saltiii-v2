@@ -4,13 +4,13 @@
 @endsection
 @section('content')
 <div class="row g-4 mb-3">
-    @if(auth()->user()->role == 'Admin')
+    {{-- @if(auth()->user()->role == 'Admin') --}}
     <div class="col-sm-auto">
         <div>
             <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-soft-secondary"><i class="ri-add-line align-bottom me-1"></i> Add New</a>
         </div>
     </div>
-    @endif
+    {{-- @endif --}}
     <div class="col-sm">
         <div class="d-flex justify-content-sm-end gap-2">
             <div class="search-box ms-2">

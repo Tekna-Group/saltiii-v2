@@ -43,11 +43,13 @@
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  @if(auth()->user()->role == 'Admin')
+                        <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  
+                            {{-- @if(auth()->user()->role == 'Admin') --}}
                         
                                     <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
                                 
-                            @endif </h5>
+                            {{-- @endif  --}}
+                        </h5>
                         <!-- Swiper -->
                        <div class="swiper project-swiper">
     <!-- Top Controls -->
