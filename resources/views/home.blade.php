@@ -492,11 +492,11 @@
     </div>
     <div class="col-xxl-3">
         
-        <div class="row">
+        <div class="row" >
             <div class="col-lg-12">
-                <div class="card card-height">
+                <div class="card card-height" data-intro="This timesheet allows you to log and view your daily work hours for the current week." data-step="8">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet  <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet   <button data-step="9" data-intro="<b>Add Time</b><br>Use this to log the hours you’ve worked for a specific task. Each entry helps calculate your total time spent." class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
                             <i class="ri-add-line align-bottom"></i>
                         </button></h4>
                         
@@ -594,7 +594,7 @@
                         </div>
                     </div><!-- end card body -->
                 </div><!-- end card -->
-                <div class="card">
+                <div class="card" data-intro="This section displays your most recent activities, allowing you to quickly review and track your work history." data-step="10">
                     <div class="card-header align-items-center d-flex">
                         <h4 class="card-title mb-0 me-2">Recent Activity</h4>
                         <div class="flex-shrink-0 ms-auto"></div>
