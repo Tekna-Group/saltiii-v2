@@ -33,6 +33,15 @@ class Kernel extends ConsoleKernel
         ->twiceDaily(20, 22)
         ->timezone('Asia/Manila')
         ->withoutOverlapping();
+        $schedule->call(function () {
+            $subs = \App\StripeCustomer::where('status', 'active')->get();
+    
+            foreach ($subs as $sub) {
+                if (Carbon::parse($sub->next_billing_date)->lt(Carbon::now())) {
+                    $sub->update(['status' => 'inactive']);
+                }
+            }
+        })->daily();
     }
 
     /**

@@ -13,10 +13,12 @@
 // Route::redirect('/', '/api/documentation');
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
-Route::group(['middleware' => ['auth', 'verified']], function () {
+Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe.form');
+Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
 
-    
+Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
 
+ 
 Route::get('/view-profile/{id}','UserController@view');
 Route::get('/my-profile','UserController@viewProfile');
 Route::get('/', 'HomeController@index')->name('Dashboard');
@@ -93,7 +95,7 @@ Route::get('/invoice/create', 'InvoiceController@createInvoice')->name('invoices
 Route::get('/invoice/pay/{id}', 'InvoiceController@pay')->name('invoices.pay');
 Route::post('/invoice/pay/{id}', 'InvoiceController@processPayment')->name('invoices.processPayment');
 
-Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
+// Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
 
 Route::get('/reports','TaskController@TaskReport')->name('task.reports');
 

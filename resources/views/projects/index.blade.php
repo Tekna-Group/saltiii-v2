@@ -102,7 +102,7 @@
               <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member' required>
                 {{-- <option value="">Select Team Member</option> --}}
                 @foreach($users as $user)
-                  <option value="{{$user->id}}">{{$user->name}}</option>
+                  <option value="{{$user->id}}" @if($user->id == auth()->user()->id) selected @endif>{{$user->name}}</option>
                 @endforeach
               </select>
             </div>

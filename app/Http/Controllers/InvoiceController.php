@@ -50,7 +50,7 @@ class InvoiceController extends Controller
         try {
             $charge = Charge::create([
                 'amount' => $invoice->amount * 100, // Stripe amount in cents
-                'currency' => 'php',
+                'currency' => 'usd',
                 'description' => $invoice->description,
                 'source' => $request->stripeToken,
             ]);

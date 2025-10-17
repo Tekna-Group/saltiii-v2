@@ -50,7 +50,9 @@ class HomeController extends Controller
                 });
         }
         
-        $projects = $query->get();
+        $projects = Project::whereHas('users', function ($query) {
+            $query->where('user_id', auth()->id());
+        })->orderBy('name','asc')->where('completed','!=',1)->get();
         $tasks = Task::where('completed',0)->orderBy('due_date','asc')->get();
         // if(auth()->user()->role != 'Admin') {
             $tasks = $tasks->filter(function ($task) {
@@ -66,7 +68,11 @@ class HomeController extends Controller
                 return $activity->user_id == auth()->user()->id;
             });
         }
-        $users = User::get();
+        if (auth()->user()->role === 'Admin') {
+            $users = User::all();
+        } else {
+            $users = User::where('id', auth()->id())->get();
+        }
         $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
             $query->whereBetween('date', [$last_sunday, $saturday]);
         }])->get();
