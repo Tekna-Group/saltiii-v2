@@ -25,6 +25,7 @@
     <link href="{{asset('inside_css/assets/css/custom.min.css')}}" rel="stylesheet" type="text/css" />
  
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
+    
     <style>
         .loader {
             position: fixed;
@@ -39,6 +40,7 @@
         }
       
     </style>
+    @yield('css')
     <!-- LogIN CSS -->
   
 

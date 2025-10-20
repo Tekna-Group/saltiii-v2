@@ -1,19 +1,46 @@
 @extends('layouts.app')
+@section('css')
+<style>
+  .form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
 
+  .form-group label {
+    position: absolute;
+    top: -8px;
+    left: 12px;
+    background-color: #fff;
+    font-size: 12px;
+    color: #6c757d;
+    padding: 0 4px;
+  }
+
+  .form-group .form-control {
+    padding: 10px;
+    font-size: 14px;
+  }
+</style>
+@endsection
 @section('content')
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6 col-xl-5">
         <div class="card mt-4 card-bg-fill">
             <div class="card-body p-4">
                 <div class="text-center mt-2">
-                    <h5 class="text-primary">Create New Account</h5>
-                    <p class="text-muted">Sign up to continue to {{ config('app.name', 'Laravel') }}</p>
+                    <h5 class="text-primary">Create your Saltiii account</h5>
+                    {{-- <p class="text-muted">Sign up to continue to {{ config('app.name', 'Laravel') }}</p> --}}
                 </div>
 
                 <div class="p-2 mt-4">
                     <form method="POST" action="{{ route('register') }}" onsubmit='show();'>
                         @csrf
-                        <div class="mb-3">
+                         @if($errors->any())
+                            <div class="mt-3 form-group alert alert-danger alert-dismissable">
+                                <strong>{{$errors->first()}}</strong>
+                            </div>
+                        @endif
+                        <div class="mb-3 form-group">
                             <label for="name" class="form-label">Name<span class="text-danger">*</span></label>
                             <input id="name" type="text" class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" 
                                    name="name" value="{{ old('name') }}" placeholder="Name" required autofocus>
@@ -24,16 +51,16 @@
                             @endif
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-group">
                             <label for="email" class="form-label">Email Address<span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" placeholder="Enter email address" 
                                    value="{{ old('email') }}" name="email" required>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-group">
                             <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
-                            <div class="position-relative auth-pass-inputgroup">
-                                <input type="password" name="password" class="form-control pe-5 password-input{{ $errors->has('password') ? ' is-invalid' : '' }}" 
+                            <div class=" auth-pass-inputgroup">
+                                <input type="password" name="password" class="form-control  password-input{{ $errors->has('password') ? ' is-invalid' : '' }}" 
                                        placeholder="Enter password" id="password" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
@@ -41,10 +68,10 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 form-group">
                             <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
-                            <div class="position-relative auth-pass-inputgroup">
-                                <input type="password" name="password_confirmation" class="form-control pe-5 password-input" 
+                            <div class="auth-pass-inputgroup    ">
+                                <input type="password" name="password_confirmation" class="form-control  " 
                                        placeholder="Confirm password" id="password-confirm" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
@@ -52,31 +79,16 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <p class="mb-0 fs-12 text-muted fst-italic">
-                                By registering, you agree to the Saltiii
-                                <a href="#" onclick="openTermsModal()" class="text-primary text-decoration-underline fw-medium">
-                                    Terms & Conditions
-                                </a> and <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">
-                                    Privacy Policy 
-                                </a>
-                            </p>
-                        </div>
+                     
 
-                        @if($errors->any())
-                            <div class="mt-3 form-group alert alert-danger alert-dismissable">
-                                <strong>{{$errors->first()}}</strong>
-                            </div>
-                        @endif
+                       
 
                         <div class="mt-4">
                             <button class="btn btn-success w-100" type="submit">Sign Up</button>
                         </div>
 
-                        <div class="mt-4 text-center">
-                            <div class="signin-other-title">
-                                <h5 class="fs-13 mb-4 text-muted">Create account with</h5>
-                            </div>
+                        <div class="mt-2 text-center">
+                            
                             <div>
                                 <a href="{{ url('auth/google') }}" 
                                    class="btn btn-light border d-flex align-items-center justify-content-center px-4 py-2" 
@@ -86,6 +98,16 @@
                                     Continue with Google
                                 </a>
                             </div>
+                        </div>
+                           <div class="mb-4">
+                            <p class="mb-0 fs-12 text-muted fst-italic">
+                                By singing up, you accept pur
+                                <a href="#" onclick="openTermsModal()" class="text-primary text-decoration-underline fw-medium">
+                                    Terms 
+                                </a> and <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">
+                                    Privacy Policy 
+                                </a>
+                            </p>
                         </div>
                     </form>
                 </div>
