@@ -222,7 +222,7 @@
                             <div class="row g-3">
                                 <div class="col-lg-12">
                                     <label for="exampleFormControlTextarea1" class="form-label">Leave a Comments</label>
-                                    <textarea class="form-control bg-light border-light summernote" id="exampleFormControlTextarea1"  name='comment' rows="3" placeholder="Type your comment and use @ to tag users" required></textarea>
+                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1"  name='comment' rows="3" placeholder="Type your comment and use @ to tag users" required></textarea>
                                 </div>
                                 <!--end col-->
                                 <div class="col-12 text-end">
@@ -516,8 +516,20 @@ async function update_DueDate(id) {
 </script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>
+  <script>
+    $('.summernote').summernote({
+      height: 250,
+      toolbar: [
+        ['style', ['bold', 'italic', 'underline', 'clear']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['insert', ['link','picture','video']],
+        ['view', ['codeview']]
+      ]
+    });
+    // Summernote keeps content in the textarea, so no extra sync needed.
+  </script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function() {
     // Initialize Summernote
     $('#exampleFormControlTextarea1').summernote({
         placeholder: 'Type your comment and use @ to tag users',
@@ -552,7 +564,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
-});
+    });
 </script>
  
 @endsection
