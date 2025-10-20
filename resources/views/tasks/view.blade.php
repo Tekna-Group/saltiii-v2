@@ -12,6 +12,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tributejs/5.1.3/tribute.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" rel="stylesheet">
   <style>
     .filepond--item {
         width: calc(50% - 0.5em);
@@ -221,7 +222,7 @@
                             <div class="row g-3">
                                 <div class="col-lg-12">
                                     <label for="exampleFormControlTextarea1" class="form-label">Leave a Comments</label>
-                                    <textarea class="form-control bg-light border-light" id="exampleFormControlTextarea1"  name='comment' rows="3" placeholder="Type your comment and use @ to tag users" required></textarea>
+                                    <textarea class="form-control bg-light border-light summernote" id="exampleFormControlTextarea1"  name='comment' rows="3" placeholder="Type your comment and use @ to tag users" required></textarea>
                                 </div>
                                 <!--end col-->
                                 <div class="col-12 text-end">
@@ -515,43 +516,43 @@ async function update_DueDate(id) {
 </script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>
-  <script>
-    $('.summernote').summernote({
-      height: 250,
-      toolbar: [
-        ['style', ['bold', 'italic', 'underline', 'clear']],
-        ['para', ['ul', 'ol', 'paragraph']],
-        ['insert', ['link','picture','video']],
-        ['view', ['codeview']]
-      ]
-    });
-    // Summernote keeps content in the textarea, so no extra sync needed.
-  </script>
-
 <script>
-    var tribute = new Tribute({
-        values: function (text, cb) {
-            fetch("{{ url('/users/search') }}?q=" + text)
-                .then(res => res.json())
-                .then(users => {
-                    cb(users.map(user => {
-                        return { key: user.name, value: user.id };
-                    }));
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize Summernote
+    $('#exampleFormControlTextarea1').summernote({
+        placeholder: 'Type your comment and use @ to tag users',
+        tabsize: 2,
+        height: 120,
+        callbacks: {
+            onInit: function() {
+                // Attach Tribute to Summernote editable div
+                var tribute = new Tribute({
+                    values: function (text, cb) {
+                        fetch("{{ url('/users/search') }}?q=" + text)
+                            .then(res => res.json())
+                            .then(users => {
+                                cb(users.map(user => ({
+                                    key: user.name,
+                                    value: user.id
+                                })));
+                            });
+                    },
+                    selectTemplate: function (item) {
+                        if (!item) return null;
+                        // Insert plain text tag
+                        return '@' + item.original.key + ' ';
+                    },
+                    menuItemTemplate: function (item) {
+                        return `<div class="p-1">${item.original.key}</div>`;
+                    }
                 });
-        },
-        selectTemplate: function (item) {
-            if (!item) return null;
-            return '@' + item.original.key + '  '; // Add space after the name
-        },
-        // Prevent Tribute from merging the next word
-        // autocompleteMode: true,
 
-        // Highlight in the dropdown menu
-        menuItemTemplate: function (item) {
-            return `<div class="p-1">${item.original.key}  &nbsp; </div>`;
-        },
+                // Attach to Summernote editable area
+                tribute.attach(document.querySelector('.note-editable'));
+            }
+        }
     });
-
-    tribute.attach(document.getElementById('exampleFormControlTextarea1'));
+});
 </script>
+ 
 @endsection
