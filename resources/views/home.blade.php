@@ -104,14 +104,14 @@
 <div class="row project-wrapper">
     <div class="col-xxl-9">
         
-        <div class='row' id="projectSection" data-intro="Here you can view all ongoing projects. Each card shows total hours, comments, attachments, and task progress." data-step="1">
+        <div class='row' id="projectSection" data-intro="You can view all ongoing projects here with each card displaying details like total hours, comments, attachments, and task progress." data-step="1">
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
                         <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  
                             {{-- @if(auth()->user()->role == 'Admin') --}}
                         
-                                    <a data-bs-toggle="modal" data-intro="Click here to create a new project and assign users or teams to it." data-step="2" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
+                                    <a data-bs-toggle="modal" data-intro="Click here to create a new project and assign users or teams." data-step="2" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
                                 
                             {{-- @endif  --}}
                         </h5>
@@ -238,7 +238,7 @@
                               <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
                           </h4>
                           <div class="flex-shrink-0 ms-3">
-                              <input type="text"   data-intro="Easily search within {{$sectionTitle}} by typing keywords here." data-step="6"
+                              <input type="text"   data-intro="Search within {{$sectionTitle}} by typing keywords here." data-step="6"
                                      class="form-control form-control-sm" 
                                      placeholder="Search tasks..." 
                                      id="searchTasks{{$key}}">
@@ -496,7 +496,7 @@
             <div class="col-lg-12">
                 <div class="card card-height" data-intro="This timesheet allows you to log and view your daily work hours for the current week." data-step="8">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet   <button data-step="9" data-intro="<b>Add Time</b><br>Use this to log the hours you’ve worked for a specific task. Each entry helps calculate your total time spent." class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet   <button data-step="9" data-intro="Log the hours you’ve worked per specific task to calculate your total time spent." class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
                             <i class="ri-add-line align-bottom"></i>
                         </button></h4>
                         
