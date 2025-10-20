@@ -43,7 +43,7 @@
                         <div class="mb-3 form-group">
                             <label for="name" class="form-label">Name<span class="text-danger">*</span></label>
                             <input id="name" type="text" class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" 
-                                   name="name" value="{{ old('name') }}" placeholder="Name" required autofocus>
+                                   name="name" value="{{ old('name') }}" placeholder="" required autofocus>
                             @if ($errors->has('name'))
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $errors->first('name') }}</strong>
@@ -53,7 +53,7 @@
 
                         <div class="mb-3 form-group">
                             <label for="email" class="form-label">Email Address<span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter email address" 
+                            <input type="email" class="form-control" id="email" placeholder="" 
                                    value="{{ old('email') }}" name="email" required>
                         </div>
 
@@ -61,7 +61,7 @@
                             <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
                             <div class=" auth-pass-inputgroup">
                                 <input type="password" name="password" class="form-control  password-input{{ $errors->has('password') ? ' is-invalid' : '' }}" 
-                                       placeholder="Enter password" id="password" required>
+                                       placeholder="" id="password" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
@@ -72,7 +72,7 @@
                             <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
                             <div class="auth-pass-inputgroup    ">
                                 <input type="password" name="password_confirmation" class="form-control  " 
-                                       placeholder="Confirm password" id="password-confirm" required>
+                                       placeholder="" id="password-confirm" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
