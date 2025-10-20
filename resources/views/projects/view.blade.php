@@ -245,7 +245,7 @@
                       <div class="modal-content">
                         <div class="modal-header">
                           <h5 class="modal-title">Status</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          <button type="button" class="btn-close" data-dismiss="modal"></button>
                         </div>
                         <form id="editBoardForm" method="POST" action="{{ url('project/edit-board') }}" enctype="multipart/form-data">
                             @csrf

@@ -3,7 +3,7 @@
         <div class="modal-content border-0">
             <div class="modal-header p-3 bg-info-subtle">
                 <h5 class="modal-title" id="creatertaskModalLabel">Create New Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-dismiss="modal"  aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form method='POST' action='{{url('new-task/'.$project->id)}}' onsubmit="show();"   enctype="multipart/form-data">
@@ -52,7 +52,7 @@
                         <!--end col-->
                         <div class="mt-4">
                             <div class="hstack gap-2 justify-content-end">
-                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
                                 <button type="submit" class="btn btn-success">Add Task</button>
                             </div>
                         </div>
