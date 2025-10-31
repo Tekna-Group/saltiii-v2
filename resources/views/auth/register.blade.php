@@ -101,7 +101,7 @@
                         </div>
                            <div class="mb-4">
                             <p class="mb-0 fs-12 text-muted fst-italic">
-                                By singing up, you accept pur
+                                By signing up, you accept our
                                 <a href="#" onclick="openTermsModal()" class="text-primary text-decoration-underline fw-medium">
                                     Terms 
                                 </a> and <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">
