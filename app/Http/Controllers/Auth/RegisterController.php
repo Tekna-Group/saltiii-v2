@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
-
+use App\Services\GHLService;
 class RegisterController extends Controller
 {
     /*
@@ -63,10 +63,22 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+        try {
+            // dd('renz');
+            $ghl = new GHLService();
+            $ghl->createContact([
+                'firstName' => $user->name,
+                'email' => $user->email,
+                'tags' => ['Saltiii Registration'],
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('GHL API Error: ' . $e->getMessage());
+        }
+        return $user;
     }
 }
