@@ -26,6 +26,7 @@ class GoogleController extends Controller
             [
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
+                'avatar' => $googleUser->getAvatar(),
                 'email_verified_at' => now(), // ✅ Automatically verified
                 'password' => bcrypt(str_random(16)), // placeholder password
             ]
@@ -41,6 +42,6 @@ class GoogleController extends Controller
         Auth::login($user);
 
   
-        return redirect('/dashboard')->with('success', 'Welcome, ' . $user->name . '!');
+        return redirect('/')->with('success', 'Welcome, ' . $user->name . '!');
     }
 }
