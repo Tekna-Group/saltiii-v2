@@ -17,7 +17,7 @@
         <div class="form-group mt-3">
             <label>Select Plan:</label>
             <select name="plan_id" id="plan_id" class="form-control">
-                <option value="price_1SJFKKRthqNI30RMUcyMwRi3" data-amount="6.99">
+                <option value="price_1SJFKKRthqNI30RMUcyMwRo3" data-amount="6.99">
                     Basic - $6.99/month
                 </option>
             </select>
