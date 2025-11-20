@@ -15,6 +15,7 @@ use App\User;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\Discord;
 class TaskController extends Controller
 {
     //
@@ -779,8 +780,24 @@ class TaskController extends Controller
         $comment->task_id = $taskId;
         $comment->user_id = auth()->id();
         $comment->comment = $remarks;
-        $comment->save();
+         $comment->save();
 
+        // Build message
+        $task    = Task::findOrFail($taskId);
+        $project = Project::findOrFail($projectId);
+        if (!empty(env('DISCORD_WEBHOOK'))) {
+            Discord::send([
+                'action'    => $action,
+                'user'      => auth()->user()->name,
+                'project'   => $project->name,
+                'task'      => $task->title,
+                'old_value' => $request->old_value,
+                'new_value' => $request->new_value,
+                'remarks'   => $request->remarks ?? null,
+                'file'      => !empty($file_name) ? url($file_name) : null,
+                'link'      => url("view-project/view-task/{$taskId}")
+            ]);
+        }
         return true;
     }
     public function destroyApi(Request $request,$id)
