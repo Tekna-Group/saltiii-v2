@@ -104,7 +104,11 @@ Route::get('/users/search', 'UserController@search');
 
 
 });
+Route::group(['middleware' => ['auth', 'verified']], function () {
 
+    
+Route::get('/dashboard-admin', 'HomeController@adminDashboard')->name('admin.dashboard');
+});
 // Route::get('/api/documentation', function () {
 //     return view('l5-swagger::index');
 // });
@@ -114,5 +118,4 @@ Route::get('send-emails','TaskController@sendDailyTaskSummary');
 Route::get('auth/google', 'GoogleController@redirectToGoogle');
 Route::get('auth/google/callback','GoogleController@handleGoogleCallback');
 
-Route::get('/dashboard-admin', 'HomeController@adminDashboard')->name('admin.dashboard');
 
