@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Project;
 use App\ProjectBoard;
+use App\Invoice;
 use App\Task;
 use App\TaskActivity;
 use App\User;
@@ -131,5 +132,45 @@ class HomeController extends Controller
 
             )
         );
+    }
+    public function adminDashboard()
+    {
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+      $paidInvoices = collect(\Stripe\Invoice::all()->data);
+    //   dd($paidInvoices);
+        $users = User::get();
+        $activeUsers = User::whereHas('stripeCustomer', function ($query) {
+            $query->where('status', 'active');
+        })->get();
+        foreach ($activeUsers as $user) {
+            $totalPaidCents = 0;
+
+            // Fetch paid invoices for this user
+            $invoices = \Stripe\Invoice::all([
+                'customer' => $user->stripeCustomer->stripe_customer_id, // stripe customer ID
+                'status' => 'paid',
+            ])->data;
+            // dd($invoices);
+            foreach ($invoices as $invoice) {
+                $totalPaidCents += $invoice->amount_paid; // Stripe stores in cents
+            }
+            $user->total_paid = $totalPaidCents / 100;
+        }
+
+        $inactiveUsersCount = User::where(function ($query) {
+            $query->whereDoesntHave('stripeCustomer')
+                ->orWhereHas('stripeCustomer', function ($q) {
+                    $q->where('status', '!=', 'active');
+                });
+        })->count();
+        return view('admin.dashboard',
+        array(
+            'users' => $users,
+            'activeUsers' => $activeUsers,
+            'inactiveUsersCount' => $inactiveUsersCount,
+            'paidInvoices' => $paidInvoices,
+        ));
+
     }
 }

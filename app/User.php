@@ -53,4 +53,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(\App\StripeCustomer::class);
     }
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

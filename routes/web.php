@@ -101,7 +101,7 @@ Route::get('/reports','TaskController@TaskReport')->name('task.reports');
 
 Route::get('/users/search', 'UserController@search');
 
-
+Route::get('/dashboard-admin', 'HomeController@adminDashboard')->name('admin.dashboard');
 
 });
 
