@@ -126,7 +126,7 @@
                         <tr>
                             <td><strong>{{ $invoice->number ?? $invoice->id }}</strong></td>
                             <td>{{ $invoice->customer_name ?? $invoice->customer }}</td>
-                            <td>₱{{ number_format($invoice->amount_paid / 100, 2) }}</td>
+                            <td>$ {{ number_format($invoice->amount_paid / 100, 2) }}</td>
                             <td>
                                 @if($invoice->status == 'paid')
                                     <span class="badge bg-success">Paid</span>
