@@ -108,6 +108,14 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
     
 Route::get('/dashboard-admin', 'HomeController@adminDashboard')->name('admin.dashboard');
+
+Route::prefix('workflow')->group(function () {
+    Route::get('/', 'WorkflowController@index');
+    Route::get('/boards/{project}', 'WorkflowController@boards');
+    Route::get('/config/{board}', 'WorkflowController@configure');
+    Route::post('/transition/save', 'WorkflowController@saveTransition')->name('workflow.transition.save');
+    Route::post('/assign/save', 'WorkflowController@saveAssignees')->name('workflow.transition.save');
+});
 });
 // Route::get('/api/documentation', function () {
 //     return view('l5-swagger::index');
@@ -119,3 +127,4 @@ Route::get('auth/google', 'GoogleController@redirectToGoogle');
 Route::get('auth/google/callback','GoogleController@handleGoogleCallback');
 
 
+Route::get('project/view-public/{id}','ProjectController@viewPublic')->name('public.project.view');

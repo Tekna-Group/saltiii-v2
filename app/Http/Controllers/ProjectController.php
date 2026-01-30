@@ -139,6 +139,67 @@ class ProjectController extends Controller
                 )
             );
     }
+     public function viewPublic(Request $request,$id)
+    {
+
+       $project = Project::with([
+            'users',
+            // Sort statuses by position ASC when eager loading
+            'statuses' => function ($query) {
+                $query->orderBy('position', 'asc');
+            },
+            'tasks',
+            'tasks.comments',
+            'tasks.attachments',
+            'tasks.activities', // Prevent N+1
+            'tasks.users'       // Prevent N+1
+        ])->findOrFail($id);
+        $boardData = [];
+        
+        foreach ($project->statuses as $status) {
+            $tasks = $project->tasks->where('archived', '!=',1)
+        ->where('project_board_id', $status->id)
+        ->map(function ($task) {
+            return [
+                'id' => $task->id,
+                'name' => $task->title,
+                'description' => $task->description,
+                'due_date' => $task->due_date ? $task->due_date : null,
+                'priority' => $task->priority,
+                'comments' => $task->comments->count(),
+                'attachments' => $task->attachments->count(),
+                'hours' => $task->activities->sum('hours'),
+                'completed' => $task->completed,
+                'users' => $task->users,
+                'assignees' => $task->users->pluck('name')->toArray(),
+            ];
+        })
+        ->sortBy(function ($task) {
+            return [
+                $task['completed'],           // 0 first, then 1
+                $task['due_date'] ?? '9999-12-31', // Nulls go last
+            ];
+        })
+        ->values(); // Re-index the collection
+            
+                $boardData[] = [
+                    'id' => $status->id, // e.g. "To Do" -> "todo"
+                    'name' => $status->board,
+                    'tasks' => $tasks
+                ];
+            }
+            // Return the view with the projects data
+        
+            $users = User::get();
+            return view('projects.view-public',
+                array(
+                    'project' => $project,
+                    'users' => $users,
+                    'boardData' => $boardData,
+                )
+            );
+    }
+
 
     public function teamMember(Request $request,$id)
     {
