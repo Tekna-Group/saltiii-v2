@@ -265,6 +265,12 @@
                                 <i class="ri-list-check"></i> <span data-key="t-dashboards">Projects</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/stores')}}">
+                                <i class="ri-database-2-line"></i> 
+                                <span data-key="t-process-store">Process Library</span>
+                            </a>
+                        </li>
                         {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
                                 <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span>
@@ -282,6 +288,11 @@
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-timekeeping')}}">
                                 <i class="ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{url('/workflow')}}">
+                                <i class="ri-task-line"></i> <span data-key="t-dashboards">Workflow</span>
                             </a>
                         </li>
                 

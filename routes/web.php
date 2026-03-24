@@ -116,12 +116,22 @@ Route::prefix('workflow')->group(function () {
     Route::post('/transition/save', 'WorkflowController@saveTransition')->name('workflow.transition.save');
     Route::post('/assign/save', 'WorkflowController@saveAssignees')->name('workflow.transition.save');
 });
+
+Route::get('/project/{project}/diagrams', 'ProjectDiagramController@index');
+Route::post('/diagram/store', 'ProjectDiagramController@store');
+
+Route::get('/diagram/editor/{id}', 'ProjectDiagramController@editor');
+Route::post('/diagram/save/{id}', 'ProjectDiagramController@save');
+Route::get('/diagram/editor/view/{id}', 'ProjectDiagramController@view');
 });
 // Route::get('/api/documentation', function () {
 //     return view('l5-swagger::index');
 // });
-
+Route::get('stores','ProjectDiagramController@lists')->name('Process Library');
 Route::get('send-emails','TaskController@sendDailyTaskSummary');
+
+Route::post('/projects/{id}/replicate', 'ProjectController@replicate')
+    ->name('projects.replicate');
 
 Route::get('auth/google', 'GoogleController@redirectToGoogle');
 Route::get('auth/google/callback','GoogleController@handleGoogleCallback');

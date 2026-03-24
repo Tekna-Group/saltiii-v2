@@ -70,10 +70,20 @@
             </div>
 
             <div class="card-footer bg-transparent border-top-dashed py-2">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center justify-content-between">
+
+                    <!-- Left: Date -->
                     <div class="text-muted">
-                        <i class="ri-calendar-event-fill me-1 align-bottom"></i> {{ date('d M, Y', strtotime($project->created_at)) }}
+                        <i class="ri-calendar-event-fill me-1 align-bottom"></i>
+                        {{ date('d M, Y', strtotime($project->created_at)) }}
                     </div>
+
+                    <!-- Right: Workflow Button -->
+                    <a href="{{ url('/project/'.$project->id.'/diagrams') }}" 
+                    class="btn btn-sm btn-primary">
+                        <i class="ri-flow-chart"></i> Workflow
+                    </a>
+
                 </div>
             </div>
 
