@@ -62,7 +62,7 @@
                                     <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="17">
+                                    <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="45">
                                 </span>
                             </a>
 
@@ -71,7 +71,7 @@
                                     <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                                 </span>
                                 <span class="logo-lg">
-                                    <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="17">
+                                    <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="45">
                                 </span>
                             </a>
                         </div>
@@ -231,7 +231,7 @@
                         <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="17">
+                        <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="45">
                     </span>
                 </a>
                 <!-- Light Logo-->
@@ -240,7 +240,7 @@
                         <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                     </span>
                     <span class="logo-lg">
-                        <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="17">
+                        <img src="{{asset('images/Saltiii-Logo-White.svg')}}" alt="" height="45">
                     </span>
                 </a>
                 <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
@@ -265,12 +265,12 @@
                                 <i class="ri-list-check"></i> <span data-key="t-dashboards">Projects</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/stores')}}">
                                 <i class="ri-database-2-line"></i> 
                                 <span data-key="t-process-store">Process Library</span>
                             </a>
-                        </li>
+                        </li> --}}
                         {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
                                 <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span>
@@ -290,12 +290,12 @@
                                 <i class="ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
                             </a>
                         </li>
-                        <li class="nav-item">
+                        {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/workflow')}}">
                                 <i class="ri-task-line"></i> <span data-key="t-dashboards">Workflow</span>
                             </a>
                         </li>
-                
+                 --}}
                         {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/payslips')}}">
                                 <i class="ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
