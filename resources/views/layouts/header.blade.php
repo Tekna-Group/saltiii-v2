@@ -43,6 +43,7 @@
             opacity: .8;
             background-size: 120px 120px;
         }   
+
         </style>
 
 </head>
@@ -252,8 +253,8 @@
             <div id="scrollbar">
                 <div class="container-fluid">
                     <div id="two-column-menu"></div>
-                    <ul class="navbar-nav" id="navbar-nav">
-                        <li class="menu-title"><span data-key="t-menu">Menu</span></li>
+                    <ul class="navbar-nav text-center" id="navbar-nav">
+                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Menu</span></li>
                 
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/')}}">
@@ -282,7 +283,7 @@
                             <a class="nav-link menu-link" href="{{url('/tasks')}}">
                                 <i class="ri-check-line"></i> 
                                 <span data-key="t-dashboards">Tasks</span>
-                                <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
+                                {{-- <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span> --}}
                             </a>
                         </li>
                         <li class="nav-item">
@@ -303,16 +304,16 @@
                         </li> --}}
                 
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
-                        <li class="menu-title"><span data-key="t-menu">Timekeeper</span></li>
+                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Timekeeper</span></li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
-                                <i class="ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
+                                <i class="ri-time-line"></i> <span data-key="t-dashboards" >Timekeeping</span>
                             </a>
                         </li>
                         @endif
                 
                         @if(auth()->user()->role == "Admin")
-                        <li class="menu-title"><span data-key="t-menu">Admin</span></li>
+                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Admin</span></li>
                         <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/users')}}">
                                 <i class="ri-team-fill"></i> <span data-key="t-dashboards">Users</span>

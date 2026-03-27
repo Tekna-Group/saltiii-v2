@@ -78,11 +78,11 @@
                         {{ date('d M, Y', strtotime($project->created_at)) }}
                     </div>
 
-                    <!-- Right: Workflow Button -->
+                    {{-- <!-- Right: Workflow Button -->
                     <a href="{{ url('/project/'.$project->id.'/diagrams') }}" 
                     class="btn btn-sm btn-primary">
                         <i class="ri-flow-chart"></i> Workflow
-                    </a>
+                    </a> --}}
 
                 </div>
             </div>
