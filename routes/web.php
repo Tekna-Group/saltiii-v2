@@ -117,6 +117,8 @@ Route::prefix('workflow')->group(function () {
     Route::post('/assign/save', 'WorkflowController@saveAssignees')->name('workflow.transition.save');
 });
 
+Route::get('/subscription-plan', 'SubscriptionController@showPlan')->name('subscription.plan');
+
 Route::get('/project/{project}/diagrams', 'ProjectDiagramController@index');
 Route::post('/diagram/store', 'ProjectDiagramController@store');
 

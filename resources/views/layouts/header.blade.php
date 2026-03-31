@@ -291,6 +291,12 @@
                                 <i class="ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link" href="{{ url('/subscription-plan') }}">
+                                <i class="ri-vip-crown-line"></i> 
+                                <span data-key="t-subscription">Subscription Plan</span>
+                            </a>
+                        </li>
                         {{-- <li class="nav-item">
                             <a class="nav-link menu-link" href="{{url('/workflow')}}">
                                 <i class="ri-task-line"></i> <span data-key="t-dashboards">Workflow</span>

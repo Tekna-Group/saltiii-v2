@@ -81,4 +81,9 @@ class SubscriptionController extends Controller
         Alert::success('Subscription successful! You now have full access to the system.')->persistent('Dismiss');
         return redirect('/dashboard');
     }
+
+    public function showPlan()
+    {
+        return view('subscription_plan');
+    }
 }
