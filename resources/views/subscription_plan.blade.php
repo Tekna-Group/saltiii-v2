@@ -18,7 +18,7 @@
 
                 <!-- BASIC PLAN -->
                 <div class="col-lg-4">
-                    <div class="card pricing-box border-success shadow">
+                    <div class="card pricing-box border border-danger shadow border-danger">
                         <div class="card-body p-4 m-2">
 
                             <div class="text-center">
