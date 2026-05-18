@@ -58,7 +58,7 @@
                                 <tr>
                                     <td>{{$user->name}}</td>
                                     @foreach($date_ranges as $date)
-                                    <td scope="col">{{$activities->where('user_id',$user->id)->where('date',$date)->sum('hours')}}</td>
+                                    <td scope="col">{{$activities->where('user_id',$user->id)->where('timekeeping_date',$date)->sum('hours')}}</td>
                                     @endforeach
                                     <td>{{$activities->where('user_id',$user->id)->sum('hours')}}</td>
 
@@ -99,7 +99,7 @@
                        <tbody>
                             @for ($date = $last_sunday; $date <= $saturday; $date = date('Y-m-d', strtotime($date . ' +1 day')))
                                 @php
-                                    $dayActivities = $activities->where('date', $date);
+                                    $dayActivities = $activities->where('timekeeping_date', $date);
                                     $rowCount = $dayActivities->count();
                                 @endphp
 

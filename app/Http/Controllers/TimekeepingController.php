@@ -29,14 +29,18 @@ class TimekeepingController extends Controller
         $users = collect();
 
         if ($request->date_from && $request->date_to) {
-            $activityQuery = TaskActivity::whereBetween('date', [$date_from, $date_to]);
+            $activityQuery = TaskActivity::with(['project', 'task', 'user.salary'])
+                ->whereBetween('date', [$date_from, $date_to]);
             if ($request->members && $request->members !== 'ALL') {
                 $activityQuery->where('user_id', $request->members);
             }
-            $TaskActivity = $activityQuery->get();
+            $TaskActivity = $this->normalizeActivityDates($activityQuery->get());
             $date_ranges = $this->dateRange($date_from, $date_to);
-            $projects = Project::whereHas('activities', function ($query) use ($date_from, $date_to) {
+            $projects = Project::whereHas('activities', function ($query) use ($date_from, $date_to, $request) {
                 $query->whereBetween('date', [$date_from, $date_to]);
+                if ($request->members && $request->members !== 'ALL') {
+                    $query->where('user_id', $request->members);
+                }
             })->orderBy('name','asc')->get();
             $users = User::whereHas('activities', function ($query) use ($date_from, $date_to, $request) {
                 $query->whereBetween('date', [$date_from, $date_to]);
@@ -68,9 +72,11 @@ class TimekeepingController extends Controller
         $last_sunday = $date_from;
         $saturday = $date_to;
         if ($request->date_from && $request->date_to) {
-            $TaskActivity = TaskActivity::where('user_id', auth()->user()->id)
+            $TaskActivity = TaskActivity::with(['project', 'task', 'user.salary'])
+                ->where('user_id', auth()->user()->id)
                 ->whereBetween('date', [$date_from, $date_to])
                 ->get();
+            $TaskActivity = $this->normalizeActivityDates($TaskActivity);
             $date_ranges = $this->dateRange($date_from, $date_to);
         }
         $users = User::where('id', auth()->user()->id)->with('salary')->get();
@@ -565,5 +571,20 @@ class TimekeepingController extends Controller
     }
 
         return $dates;
+    }
+
+    private function normalizeActivityDates($activities)
+    {
+        return $activities->map(function ($activity) {
+            if (!$activity->date) {
+                $activity->timekeeping_date = null;
+            } elseif (method_exists($activity->date, 'format')) {
+                $activity->timekeeping_date = $activity->date->format('Y-m-d');
+            } else {
+                $activity->timekeeping_date = date('Y-m-d', strtotime($activity->date));
+            }
+
+            return $activity;
+        });
     }
 }

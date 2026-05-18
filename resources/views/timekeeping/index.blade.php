@@ -176,9 +176,9 @@
                                         $totalHours = 0;
                                     @endphp
                                     @foreach($date_ranges as $date)
-                                    <td scope="col">{{$activities->where('user_id',$user->id)->where('date',$date)->sum('hours')}}</td>
+                                    <td scope="col">{{$activities->where('user_id',$user->id)->where('timekeeping_date',$date)->sum('hours')}}</td>
                                     @php
-                                        $totalHours = $totalHours + $activities->where('user_id',$user->id)->where('date',$date)->sum('hours');
+                                        $totalHours = $totalHours + $activities->where('user_id',$user->id)->where('timekeeping_date',$date)->sum('hours');
                                     @endphp
                                     @endforeach
                                     <td>{{$totalHours}}</td>
@@ -225,7 +225,7 @@
                        <tbody>
                             @for ($date = $last_sunday; $date <= $saturday; $date = date('Y-m-d', strtotime($date . ' +1 day')))
                                 @php
-                                    $dayActivities = $activities->where('user_id',$user->id)->where('date', $date);
+                                    $dayActivities = $activities->where('user_id',$user->id)->where('timekeeping_date', $date);
                                     $totalHours = $totalHours + $dayActivities->sum('hours');
                                     $rowCount = $dayActivities->count();
                                 @endphp
