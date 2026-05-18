@@ -401,7 +401,7 @@
                                                                 data-date="{{ $activity->date }}">
                                                             <i class="ri-edit-line"></i>
                                                         </button>
-                                                        @if(auth()->user()->id == $activity->user_id)
+                                                        @if(auth()->user()->id == $activity->user_id && !$activity->timekeeping_from)
                                                         <button class="btn btn-sm btn-danger deleteActivityBtn" data-id="{{$activity->id}}">
                                                             <i class="ri-delete-bin-line"></i>
                                                         </button>

@@ -43,17 +43,23 @@
             </div>
             <form onsubmit="show();"   enctype="multipart/form-data">
                 <div class='card-body'>
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
                     <div class="row">
                         <div class="col-xl-2 col-md-2">
                             <label for="members" class="form-label">Members</label>
                             <select class='form-control select2' id='members' name='members' required>
-                                <option value='ALL'>ALL</option>
+                                <option value='ALL' @if(request('members') == 'ALL' || !request('members')) selected @endif>ALL</option>
+                                @foreach($members as $member)
+                                    <option value='{{ $member->id }}' @if(request('members') == $member->id) selected @endif>{{ $member->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-xl-2 col-md-2">
                             <label for="boardName" class="form-label">Date From</label>
                             <input type='date' name='date_from' value='{{$date_from}}' class='form-control form-control-sm' required>
-                            
+                        
                         </div>
                         <div class="col-xl-2 col-md-2">
                             <label for="boardName" class="form-label">Date To</label>
@@ -62,11 +68,24 @@
                         </div>
                         <div class="col-xl-2 col-md-2">
                             <label for="boardName" class="form-label">&nbsp;</label><br>
-                            <button type="submit" class="btn btn-success" >Generate</button>
-                            
+                            <button type="submit" class="btn btn-success">Generate</button>
+                        </div>
+                        <div class="col-xl-2 col-md-2">
+                            <label for="boardName" class="form-label">&nbsp;</label><br>
+                            <button type="button" class="btn btn-primary" onclick="document.getElementById('post-timekeeping-form').submit();">Post Timekeeping</button>
+                        </div>
+                        <div class="col-xl-2 col-md-2">
+                            <label for="boardName" class="form-label">&nbsp;</label><br>
+                            <a href="{{ route('Timekeeping.posted', ['members' => request('members', 'ALL'), 'date_from' => request('date_from'), 'date_to' => request('date_to')]) }}" class="btn btn-info">Posted Report</a>
                         </div>
                     </div>
                 </div>
+            </form>
+            <form id="post-timekeeping-form" method="POST" action="{{ route('Timekeeping.post') }}">
+                @csrf
+                <input type="hidden" name="date_from" value="{{ $date_from }}">
+                <input type="hidden" name="date_to" value="{{ $date_to }}">
+                <input type="hidden" name="members" value="{{ request('members', 'ALL') }}">
             </form>
         </div>
     </div>
@@ -143,6 +162,8 @@
                                  <th scope="col">{{date('d M, Y',strtotime($date))}}</th>
                                 @endforeach
                                  <th>Total</th>
+                                 <th>Hourly Rate</th>
+                                 <th>Amount</th>
                             </tr><!-- end tr -->
                         </thead><!-- thead -->
 
@@ -157,10 +178,12 @@
                                     @foreach($date_ranges as $date)
                                     <td scope="col">{{$activities->where('user_id',$user->id)->where('date',$date)->sum('hours')}}</td>
                                     @php
-                                        $totalHours = $totalHours+$activities->where('user_id',$user->id)->where('date',$date)->sum('hours');
+                                        $totalHours = $totalHours + $activities->where('user_id',$user->id)->where('date',$date)->sum('hours');
                                     @endphp
                                     @endforeach
                                     <td>{{$totalHours}}</td>
+                                    <td>{{ number_format(optional($user->salary)->salary ?? 0, 2) }}</td>
+                                    <td>{{ number_format($totalHours * (optional($user->salary)->salary ?? 0), 2) }}</td>
 
                                 </tr>
                             @endforeach

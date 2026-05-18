@@ -80,6 +80,7 @@
                 
             </div><!-- end card header -->
             <div class="card-body">
+                @php $hourlyRate = optional($users->first()->salary)->salary ?? 0; @endphp
                 <div class="table-responsive table-card" id='table-container'>
                     <table  class="table table-bordered table-nowrap table-centered align-middle mb-0">
                         <thead class="table-light">
@@ -111,6 +112,8 @@
                                         <td>{{ $act->project->name }} - {{ $act->task->title }}</td>
                                         <td>{{ $act->activity }}</td>
                                         <td>{{ $act->hours }} hrs</td>
+                                        <td>{{ number_format($hourlyRate,2) }}</td>
+                                        <td>{{ number_format($act->hours * $hourlyRate,2) }}</td>
                                     </tr>
                                  @endforeach
                                 @else
@@ -122,8 +125,10 @@
                             @endfor
                             <tr>
                                 <td colspan='2'></td>
-                            <td class="text-right">Total</td>
+                                <td class="text-right">Total</td>
                                 <td>{{$activities->sum('hours')}} hrs</td>
+                                <td></td>
+                                <td>{{ number_format($activities->sum('hours') * $hourlyRate,2) }}</td>
                             </tr>
                         </tbody>
                     </table><!-- end table -->

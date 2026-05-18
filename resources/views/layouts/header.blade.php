@@ -261,84 +261,70 @@
                         <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Menu</span></li>
                 
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/')}}">
+                            <a class="nav-link menu-link {{ request()->is('/') || request()->is('dashboard') || request()->is('home') ? 'active' : '' }}" href="{{url('/')}}">
                                 <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboard</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/projects')}}">
+                            <a class="nav-link menu-link {{ request()->is('projects') ? 'active' : '' }}" href="{{url('/projects')}}">
                                 <i class="ri-list-check"></i> <span data-key="t-dashboards">Projects</span>
                             </a>
                         </li>
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/stores')}}">
-                                <i class="ri-database-2-line"></i> 
-                                <span data-key="t-process-store">Process Library</span>
-                            </a>
-                        </li> --}}
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/my-tasks')}}">
-                                <i class="ri-check-line"></i> <span data-key="t-dashboards">Tasks</span>
-                                <span class="badge badge-pill bg-warning" data-key="t-hot">BETA</span>
-                                <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span>
-                            </a>
-                        </li> --}}
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/tasks')}}">
-                                <i class="ri-check-line"></i> 
+                            <a class="nav-link menu-link {{ request()->is('tasks') ? 'active' : '' }}" href="{{url('/tasks')}}">
+                                <i class="ri-check-line"></i>
                                 <span data-key="t-dashboards">Tasks</span>
-                                {{-- <span class="badge badge-pill bg-danger" data-key="t-hot">{{taskDue()}}</span> --}}
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/my-timekeeping')}}">
+                            <a class="nav-link menu-link {{ request()->is('my-timekeeping') ? 'active' : '' }}" href="{{url('/my-timekeeping')}}">
                                 <i class="ri-time-line"></i> <span data-key="t-dashboards">Timesheet</span>
                             </a>
                         </li>
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{ url('/subscription-plan') }}">
-                                <i class="ri-vip-crown-line"></i> 
-                                <span data-key="t-subscription">Subscription Plan</span>
-                            </a>
-                        </li> --}}
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/workflow')}}">
-                                <i class="ri-task-line"></i> <span data-key="t-dashboards">Workflow</span>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('my-payslips') ? 'active' : '' }}" href="{{url('/my-payslips')}}">
+                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-my-payslips">My Payslips</span>
                             </a>
                         </li>
-                 --}}
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/payslips')}}">
-                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-dashboards">Payslips</span>
-                            </a>
-                        </li> --}}
                 
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
                         <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Timekeeper</span></li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/timekeeping')}}">
-                                <i class="ri-time-line"></i> <span data-key="t-dashboards" >Timekeeping</span>
+                            <a class="nav-link menu-link {{ request()->is('timekeeping') ? 'active' : '' }}" href="{{url('/timekeeping')}}">
+                                <i class="ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('timekeeping/posted') ? 'active' : '' }}" href="{{url('/timekeeping/posted')}}">
+                                <i class="ri-file-list-3-line"></i> <span data-key="t-dashboards">Posted Report</span>
+                            </a>
+                        </li>
+
+                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Payroll</span></li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('payslips') || request()->is('payslips/*') ? 'active' : '' }}" href="{{url('/payslips')}}">
+                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-payslips">Payslips</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('token-transfer') ? 'active' : '' }}" href="{{url('/token-transfer')}}">
+                                <i class="ri-exchange-dollar-line"></i> <span data-key="t-token-transfer">Token Transfer</span>
                             </a>
                         </li>
                         @endif
-                
+
                         @if(auth()->user()->role == "Admin")
                         <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Admin</span></li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/users')}}">
+                            <a class="nav-link menu-link {{ request()->is('users') ? 'active' : '' }}" href="{{url('/users')}}">
                                 <i class="ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link" href="{{url('/reports')}}">
+                            <a class="nav-link menu-link {{ request()->is('reports') ? 'active' : '' }}" href="{{url('/reports')}}">
                                 <i class="ri-file-list-3-fill"></i> <span data-key="t-dashboards">Reports</span>
                             </a>
                         </li>
-                        {{-- <li class="nav-item">
-                            <a class="nav-link menu-link" href="https://api.saltiii.com/api/documentation" target="_blank">
-                                <i class="ri-shield-keyhole-line"></i> <span data-key="t-dashboards">API</span>
-                            </a>
-                        </li> --}}
                         @endif
                 
                     </ul>

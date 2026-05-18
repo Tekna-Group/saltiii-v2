@@ -16,7 +16,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','email_verified_at','google_id'
+        'name', 'email', 'password', 'email_verified_at', 'google_id', 'wallet_address', 'wallet_network'
     ];
 
     /**
@@ -48,6 +48,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function activities()
     {
         return $this->hasMany(TaskActivity::class);
+    }
+    public function salary()
+    {
+        return $this->hasOne(UserSalary::class);
+    }
+    public function hourlySalary()
+    {
+        return $this->hasOne(UserSalary::class)->where('type', 'hourly');
     }
     public function stripeCustomer()
     {

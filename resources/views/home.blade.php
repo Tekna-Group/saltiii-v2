@@ -518,7 +518,9 @@
                                         @php
                                             $dailyActivities = $activities
                                                 ->where('user_id', auth()->user()->id)
-                                                ->where('date', date('Y-m-d', strtotime($date)));
+                                                ->filter(function($activity) use ($date) {
+                                                    return optional($activity->date)->format('Y-m-d') === $date;
+                                                });
                                             $dailyHours = $dailyActivities->sum('hours');
                                             $tot_hours += $dailyHours;
                                         @endphp
@@ -944,7 +946,7 @@
                                                                 data-date="{{ $activity->date }}">
                                                             <i class="ri-edit-line"></i>
                                                         </button>
-                                                        @if(auth()->user()->id == $activity->user_id)
+                                                        @if(auth()->user()->id == $activity->user_id && !$activity->timekeeping_from)
                                                         <button class="btn btn-sm btn-danger deleteActivityBtn" data-id="{{$activity->id}}">
                                                             <i class="ri-delete-bin-line"></i>
                                                         </button>
@@ -1031,7 +1033,12 @@
                     form.reset();
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addActivity' + {{ $task->id }}));
                     modal.hide();
-    
+
+                    // Refresh the timesheet row for the activity's date
+                    if (typeof window.updateTimesheetDay === 'function') {
+                        window.updateTimesheetDay(data.activity.date_old);
+                    }
+
                     Toastify({
                         text: "Activity added successfully!",
                         duration: 3000,
@@ -2026,6 +2033,9 @@ document.addEventListener('click', async function(e) {
 
         // totalHoursElement.textContent = `${total.toFixed(2)} Hrs`;
     }
+
+    // Expose to global scope so per-task AJAX handlers can call it
+    window.updateTimesheetDay = updateDayAndTotal;
     });
 </script>
 {{-- <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script> --}}

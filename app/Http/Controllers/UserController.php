@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\User;
+use App\UserSalary;
 use App\TaskActivity;
 use App\Task;
 use App\Project;
@@ -29,8 +30,10 @@ class UserController extends Controller
             'name' => 'required|min:3|max:50',
             'email' => 'email|unique:users',
             'password' => 'required|confirmed|min:6',
+            'hourly_rate' => 'required|numeric|min:0',
+            'wallet_address' => 'nullable|string|max:255',
+            'wallet_network' => 'nullable|string|max:100',
         ]);
-
 
         $new_account = new User;
         $new_account->name = $request->name;
@@ -38,7 +41,14 @@ class UserController extends Controller
         $new_account->role = $request->role;
         $new_account->password = bcrypt($request->password);
         $new_account->status = "Active";
+        $new_account->wallet_address = $request->wallet_address;
+        $new_account->wallet_network = $request->wallet_network;
         $new_account->save();
+
+        UserSalary::updateOrCreate(
+            ['user_id' => $new_account->id, 'type' => 'hourly'],
+            ['salary' => $request->hourly_rate]
+        );
 
         Mail::to($new_account->email)->send(new WelcomeEmail($new_account));
 
@@ -51,14 +61,23 @@ class UserController extends Controller
         // dd($request->all());
         $this->validate($request, [
             'email' => 'unique:users,email,' . $id,
+            'hourly_rate' => 'nullable|numeric|min:0',
+            'wallet_address' => 'nullable|string|max:255',
+            'wallet_network' => 'nullable|string|max:100',
         ]);
 
         $account = User::where('id', $id)->first();
         $account->name = $request->name;
         $account->email = $request->email;
         $account->role = $request->role;
+        $account->wallet_address = $request->wallet_address;
+        $account->wallet_network = $request->wallet_network;
         $account->save();
 
+        UserSalary::updateOrCreate(
+            ['user_id' => $account->id, 'type' => 'hourly'],
+            ['salary' => $request->hourly_rate ?: 0]
+        );
 
         Alert::success('Successfully Updated')->persistent('Dismiss');
         return back();

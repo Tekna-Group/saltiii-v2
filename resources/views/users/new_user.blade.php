@@ -23,6 +23,24 @@
                         </div>
                         <div class="col-xxl-12">
                             <div>
+                                <label for="hourly_rate" class="form-label">Hourly Rate</label>
+                                <input type="number" step="0.01" class="form-control" id="hourly_rate" name="hourly_rate" placeholder="00.00" value="{{ old('hourly_rate') }}" required>
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
+                                <label for="wallet_address" class="form-label">Wallet Address</label>
+                                <input type="text" class="form-control" id="wallet_address" name="wallet_address" placeholder="Solana wallet address" value="{{ old('wallet_address') }}">
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
+                                <label for="wallet_network" class="form-label">Wallet Network</label>
+                                <input type="text" class="form-control" id="wallet_network" name="wallet_network" placeholder="Solana" value="{{ old('wallet_network', 'Solana') }}">
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
                                 <label for="position" class="form-label">Position</label>
                                 <input type="text" class="form-control" id="position" name='position'  placeholder="position" Required>
                             </div>

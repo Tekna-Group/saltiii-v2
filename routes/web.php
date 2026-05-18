@@ -79,8 +79,17 @@ Route::get('my-tasks','TaskController@myTasks');
 Route::get('/view-project/view-task/{id}', 'TaskController@view')->name('View Task');   
 
 Route::get('timekeeping','TimekeepingController@index')->name('Timekeeping');
+Route::post('timekeeping/post','TimekeepingController@postTimekeeping')->name('Timekeeping.post');
+Route::get('timekeeping/posted','TimekeepingController@postedReport')->name('Timekeeping.posted');
+Route::post('timekeeping/approve/{userId}','TimekeepingController@approvePayment')->name('Timekeeping.approvePayment');
+Route::post('timekeeping/prepare-transfer/{userId}','TimekeepingController@prepareTransfer')->name('Timekeeping.prepareTransfer');
+Route::post('timekeeping/process-usdc-transfer','TimekeepingController@processUsdcTransfer')->name('Timekeeping.processUsdcTransfer');
 Route::get('my-timekeeping','TimekeepingController@myTimekeeping')->name('My Timekeeping');
 Route::get('payslips','PayrollController@index')->name('Payslip');
+Route::get('payslips/{id}','PayrollController@payslip')->name('Payslip.view');
+Route::post('payslips/{id}/adjustment','PayrollController@storeAdjustment')->name('Payslip.adjustment.store');
+Route::post('payslips/adjustment/{id}/delete','PayrollController@destroyAdjustment')->name('Payslip.adjustment.destroy');
+Route::get('my-payslips','PayrollController@myPayslips')->name('My Payslips');
 
 
 Route::get('users','UserController@index')->name('users');
@@ -101,7 +110,11 @@ Route::get('/reports','TaskController@TaskReport')->name('task.reports');
 
 Route::get('/users/search', 'UserController@search');
 
-
+// Token Transfer Routes
+Route::get('/token-transfer', 'TokenTransferController@showForm')->name('token-transfer.form');
+Route::post('/token-transfer', 'TokenTransferController@transfer')->name('token-transfer.submit');
+Route::get('/token-transfer/wallet-info', 'TokenTransferController@getWalletInfo')->name('token-transfer.wallet-info');
+Route::get('/token-transfer/balance', 'TokenTransferController@getBalance')->name('token-transfer.balance');
 
 });
 Route::group(['middleware' => ['auth', 'verified']], function () {
