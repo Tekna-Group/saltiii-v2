@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\Api;
+use App\User;
+use App\Services\GHLService;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +25,13 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password),
         ]);
+
+        try {
+            $ghl = new GHLService();
+            $ghl->sendSignupWebhook($user, 'api');
+        } catch (\Exception $e) {
+            \Log::error('GHL Signup Webhook Error: ' . $e->getMessage());
+        }
 
         $token = $user->createToken('Personal Access Token')->accessToken;
 

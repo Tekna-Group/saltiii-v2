@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Socialite;
 use App\User;
 use App\Mail\WelcomeEmail;
+use App\Services\GHLService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -36,6 +37,12 @@ class GoogleController extends Controller
         if ($user->wasRecentlyCreated) {
   
             Mail::to($user->email)->send(new WelcomeEmail($user));
+            try {
+                $ghl = new GHLService();
+                $ghl->sendSignupWebhook($user, 'google');
+            } catch (\Exception $e) {
+                \Log::error('GHL Signup Webhook Error: ' . $e->getMessage());
+            }
            
         }
 

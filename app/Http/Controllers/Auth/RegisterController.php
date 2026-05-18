@@ -76,6 +76,7 @@ class RegisterController extends Controller
                 'email' => $user->email,
                 'tags' => ['Saltiii Registration'],
             ]);
+            $ghl->sendSignupWebhook($user, 'email');
         } catch (\Exception $e) {
             \Log::error('GHL API Error: ' . $e->getMessage());
         }

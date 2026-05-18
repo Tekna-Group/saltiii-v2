@@ -45,8 +45,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT'),
     ],
     'ghl' => [
-        'url' => env('GHL_API_URL', 'https://rest.gohighlevel.com/v1'),
+        'url' => env('GHL_API_URL', 'https://services.leadconnectorhq.com/'),
         'key' => env('GHL_API_KEY'),
+        'location_id' => env('GHL_LOCATION_ID'),
+        'signup_webhook_url' => env('GHL_SIGNUP_WEBHOOK_URL'),
+        'signup_event_name' => env('GHL_SIGNUP_EVENT_NAME', 'real_signup'),
+        'signup_trial_status' => env('GHL_SIGNUP_TRIAL_STATUS', 'not_started'),
     ],
 
 ];
