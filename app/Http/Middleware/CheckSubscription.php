@@ -22,8 +22,8 @@ class CheckSubscription
 
         if (
             !$sub ||
-            $sub->status != 'active' ||
-            Carbon::parse($sub->next_billing_date)->lt(Carbon::now())
+            $sub->status != 'active' 
+            // ||Carbon::parse($sub->next_billing_date)->lt(Carbon::now())
         ) {
             return redirect('/subscribe')
                 ->with('error', 'Your subscription is inactive or expired. Please subscribe to continue.');
