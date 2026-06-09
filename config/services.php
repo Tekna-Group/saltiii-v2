@@ -56,7 +56,7 @@ return [
             'trial_limit_reached' => env('GHL_WEBHOOK_TRIAL_LIMIT_REACHED', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/82589410-457a-43a5-bd7e-2ccd62799d97'),
             'reactivated_after_cancellation' => env('GHL_WEBHOOK_REACTIVATED_AFTER_CANCELLATION', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/8449efbb-ae41-4415-8684-4592dd8d0fa9'),
             'renewed_past_first_billing_cycle' => env('GHL_WEBHOOK_RENEWED_PAST_FIRST_BILLING_CYCLE', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/bbcca379-0e02-4496-aae2-94356de5e48c'),
-            'completes_onboarding' => env('GHL_WEBHOOK_COMPLETES_ONBOARDING'),
+            'completes_onboarding' => env('GHL_WEBHOOK_COMPLETES_ONBOARDING', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/ce5b89cb-5075-4a11-953d-1b1c97e9146f'),
         ],
         'signup_event_name' => env('GHL_SIGNUP_EVENT_NAME', 'real_signup'),
         'signup_trial_status' => env('GHL_SIGNUP_TRIAL_STATUS', 'active'),

@@ -17,7 +17,7 @@ class WebhookTestController extends Controller
         'trial_limit_reached' => 'Trial Limit Reached / End Date',
         'reactivated_after_cancellation' => 'Reactivated After Cancellation',
         'renewed_past_first_billing_cycle' => 'Renewed Past First Billing Cycle',
-        'completes_onboarding' => 'Completes Onboarding',
+        'completes_onboarding' => 'Onboarding Completed',
     ];
 
     public function index()
