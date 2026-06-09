@@ -53,7 +53,7 @@ return [
             'paid_subscriber' => env('GHL_WEBHOOK_PAID_SUBSCRIBER', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/6GJfKTn7n8M8ENlO0qag'),
             'subscription_cancelled' => env('GHL_WEBHOOK_SUBSCRIPTION_CANCELLED', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/vNXjpb1j3KsCiH4nMCCB'),
             'returned_within_3_days' => env('GHL_WEBHOOK_RETURNED_WITHIN_3_DAYS', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/6594000d-235a-42fd-9d7e-434e4df24543'),
-            'trial_limit_reached' => env('GHL_WEBHOOK_TRIAL_LIMIT_REACHED', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/82589410-457a-43a5-bd7e-2ccd62799d97'),
+            'trial_limit_reached' => env('GHL_WEBHOOK_TRIAL_LIMIT_REACHED', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/ea5e0ef4-1ddd-43a2-ba6a-800df7ac79ba'),
             'reactivated_after_cancellation' => env('GHL_WEBHOOK_REACTIVATED_AFTER_CANCELLATION', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/8449efbb-ae41-4415-8684-4592dd8d0fa9'),
             'renewed_past_first_billing_cycle' => env('GHL_WEBHOOK_RENEWED_PAST_FIRST_BILLING_CYCLE', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/bbcca379-0e02-4496-aae2-94356de5e48c'),
             'completes_onboarding' => env('GHL_WEBHOOK_COMPLETES_ONBOARDING', 'https://services.leadconnectorhq.com/hooks/gMZGLZKBh9UHdhSJMjT3/webhook-trigger/ce5b89cb-5075-4a11-953d-1b1c97e9146f'),
