@@ -70,6 +70,27 @@
                 </form>
             @endforeach
         </div>
+
+        @if($latestEvent)
+            <div class="mt-4 border rounded p-3 bg-light">
+                <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                    <div>
+                        <h5 class="mb-1">Last Submitted Payload</h5>
+                        <div class="text-muted">
+                            <code>{{ $latestEvent->event_name }}</code>
+                            <span class="ms-2">Status: {{ ucfirst($latestEvent->status) }}</span>
+                            @if($latestEvent->response_status)
+                                <span class="ms-2">HTTP: {{ $latestEvent->response_status }}</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="text-muted">
+                        {{ optional($latestEvent->created_at)->format('Y-m-d H:i:s') }}
+                    </div>
+                </div>
+                <pre class="mb-0 p-3 bg-white border rounded" style="white-space: pre-wrap; word-break: break-word;">{{ json_encode($latestEvent->payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</pre>
+            </div>
+        @endif
     </div>
 
     <div class="webhook-card p-4 mt-4">

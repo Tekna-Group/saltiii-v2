@@ -22,9 +22,14 @@ class WebhookTestController extends Controller
 
     public function index()
     {
+        $latestEvent = session('latest_webhook_event_id')
+            ? BillingWebhookEvent::find(session('latest_webhook_event_id'))
+            : null;
+
         return view('webhook-buttons', [
             'events' => $this->events,
             'webhooks' => config('services.ghl.billing_webhooks', []),
+            'latestEvent' => $latestEvent,
             'logs' => BillingWebhookEvent::latest()->limit(20)->get(),
         ]);
     }
@@ -52,6 +57,7 @@ class WebhookTestController extends Controller
 
         return redirect()
             ->route('webhook.buttons')
+            ->with('latest_webhook_event_id', $event->id)
             ->with($event->status === 'sent' ? 'success' : 'warning', $message);
     }
 
