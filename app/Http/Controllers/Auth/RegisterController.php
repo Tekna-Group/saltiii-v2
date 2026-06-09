@@ -71,6 +71,7 @@ class RegisterController extends Controller
         try {
             // dd('renz');
             $ghl = new GHLService();
+            $ghl->startFreeTrial($user);
             $ghl->createContact([
                 'firstName' => $user->name,
                 'email' => $user->email,

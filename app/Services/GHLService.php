@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\BillingWebhookEvent;
+use App\StripeCustomer;
 use App\User;
+use Carbon\Carbon;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
@@ -102,18 +105,144 @@ class GHLService
         }
     }
 
+    public function sendBillingEvent($eventName, User $user, StripeCustomer $subscription = null, array $extra = [])
+    {
+        $webhookUrl = config("services.ghl.billing_webhooks.{$eventName}");
+
+        if (!$webhookUrl) {
+            return BillingWebhookEvent::create([
+                'user_id' => $user->id,
+                'stripe_customer_id' => $subscription ? $subscription->stripe_customer_id : null,
+                'subscription_id' => $subscription ? $subscription->subscription_id : null,
+                'event_name' => $eventName,
+                'status' => 'skipped',
+                'error_message' => 'GHL billing webhook URL is not configured.',
+                'payload' => $this->buildBillingPayload($eventName, $user, $subscription, $extra),
+            ]);
+        }
+
+        $payload = $this->buildBillingPayload($eventName, $user, $subscription, $extra);
+        $event = BillingWebhookEvent::create([
+            'user_id' => $user->id,
+            'stripe_customer_id' => $subscription ? $subscription->stripe_customer_id : null,
+            'subscription_id' => $subscription ? $subscription->subscription_id : null,
+            'event_name' => $eventName,
+            'status' => 'pending',
+            'webhook_url' => $webhookUrl,
+            'payload' => $payload,
+        ]);
+
+        try {
+            $response = $this->client->post($webhookUrl, [
+                'json' => $payload,
+                'timeout' => 10,
+            ]);
+
+            $event->update([
+                'status' => 'sent',
+                'response_status' => $response->getStatusCode(),
+                'response_body' => (string) $response->getBody(),
+                'sent_at' => Carbon::now(),
+            ]);
+        } catch (RequestException $e) {
+            $event->update([
+                'status' => 'failed',
+                'response_status' => $e->hasResponse() ? $e->getResponse()->getStatusCode() : 500,
+                'error_message' => is_array($this->getExceptionMessage($e))
+                    ? json_encode($this->getExceptionMessage($e))
+                    : $this->getExceptionMessage($e),
+            ]);
+
+            \Log::warning('GHL Billing Webhook Error', [
+                'event_name' => $eventName,
+                'user_id' => $user->id,
+                'status' => $event->response_status,
+                'message' => $event->error_message,
+            ]);
+        }
+
+        return $event;
+    }
+
+    public function hasSentBillingEvent(User $user, $eventName, $subscriptionId = null)
+    {
+        $query = BillingWebhookEvent::where('user_id', $user->id)
+            ->where('event_name', $eventName)
+            ->where('status', 'sent');
+
+        if ($subscriptionId) {
+            $query->where('subscription_id', $subscriptionId);
+        }
+
+        return $query->exists();
+    }
+
+    public function startFreeTrial(User $user, $days = null)
+    {
+        $days = $days ?: config('services.ghl.free_trial_days', 30);
+        $trialEndsAt = Carbon::now()->addDays($days);
+
+        $subscription = StripeCustomer::firstOrNew([
+            'user_id' => $user->id,
+        ]);
+
+        if (
+            $subscription->exists &&
+            $subscription->status === 'active' &&
+            $subscription->next_billing_date &&
+            Carbon::parse($subscription->next_billing_date)->gte(Carbon::now())
+        ) {
+            return $subscription;
+        }
+
+        $subscription->fill([
+            'plan_id' => config('services.ghl.free_trial_plan_id', 'free_trial_30_days'),
+            'status' => 'active',
+            'next_billing_date' => $trialEndsAt,
+        ]);
+
+        $subscription->save();
+
+        return $subscription;
+    }
+
     protected function buildSignupPayload(User $user, $signupMethod)
     {
         list($firstName, $lastName) = $this->splitName($user->name);
+        $trialEndsAt = Carbon::now()->addDays(config('services.ghl.free_trial_days', 30));
 
         return [
             'email' => $user->email,
             'first_name' => $firstName,
             'last_name' => $lastName,
             'event_name' => config('services.ghl.signup_event_name', 'real_signup'),
-            'trial_status' => config('services.ghl.signup_trial_status', 'not_started'),
+            'trial_status' => config('services.ghl.signup_trial_status', 'active'),
             'signup_method' => $signupMethod,
+            'trial_days' => config('services.ghl.free_trial_days', 30),
+            'trial_starts_at' => Carbon::now()->toDateTimeString(),
+            'trial_ends_at' => $trialEndsAt->toDateTimeString(),
         ];
+    }
+
+    protected function buildBillingPayload($eventName, User $user, StripeCustomer $subscription = null, array $extra = [])
+    {
+        list($firstName, $lastName) = $this->splitName($user->name);
+
+        return array_merge([
+            'email' => $user->email,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'event_name' => $eventName,
+            'status' => $subscription ? $subscription->status : null,
+            'stripe_customer_id' => $subscription ? $subscription->stripe_customer_id : null,
+            'subscription_id' => $subscription ? $subscription->subscription_id : null,
+            'plan_id' => $subscription ? $subscription->plan_id : null,
+            'next_billing_date' => $subscription && $subscription->next_billing_date
+                ? Carbon::parse($subscription->next_billing_date)->toDateTimeString()
+                : null,
+            'sent_from' => config('app.name', 'Saltiii'),
+            'sent_at' => Carbon::now()->toDateTimeString(),
+        ], $extra);
     }
 
     protected function splitName($name)

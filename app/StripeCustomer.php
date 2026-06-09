@@ -16,4 +16,9 @@ class StripeCustomer extends Model
         'status',
         'next_billing_date',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(\App\User::class);
+    }
 }

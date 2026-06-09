@@ -28,6 +28,7 @@ class AuthController extends Controller
 
         try {
             $ghl = new GHLService();
+            $ghl->startFreeTrial($user);
             $ghl->sendSignupWebhook($user, 'api');
         } catch (\Exception $e) {
             \Log::error('GHL Signup Webhook Error: ' . $e->getMessage());

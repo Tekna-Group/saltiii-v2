@@ -15,6 +15,7 @@ Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
 Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe');
 Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
+Route::post('/stripe/webhook', 'StripeWebhookController@handle')->name('stripe.webhook');
 
 Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
 
@@ -37,6 +38,7 @@ Route::post('/project/edit/{id}','ProjectController@updateTitle')->name('project
 
 
 Route::get('/api-keys','ApiKeyController@index')->name('API Keys');
+Route::view('/ai-workflow-diagram', 'diagrams.ai-generator')->name('AI Diagram Test');
 Route::get('/tasks','TaskController@index')->name('Tasks');
 Route::post('/tasks/transfer/{id}','TaskController@transfer')->name('Tasks');
 Route::post('new-task/{project_id}', 'TaskController@store')->name('New Task');

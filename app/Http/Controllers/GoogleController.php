@@ -36,13 +36,15 @@ class GoogleController extends Controller
         // ✅ Send welcome email only the first time they register
         if ($user->wasRecentlyCreated) {
   
-            Mail::to($user->email)->send(new WelcomeEmail($user));
             try {
                 $ghl = new GHLService();
+                $ghl->startFreeTrial($user);
                 $ghl->sendSignupWebhook($user, 'google');
             } catch (\Exception $e) {
                 \Log::error('GHL Signup Webhook Error: ' . $e->getMessage());
             }
+
+            Mail::to($user->email)->send(new WelcomeEmail($user));
            
         }
 

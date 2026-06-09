@@ -271,6 +271,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('ai-workflow-diagram') ? 'active' : '' }}" href="{{url('/ai-workflow-diagram')}}">
+                                <i class="ri-flow-chart"></i> <span data-key="t-ai-diagram">AI Diagram Test</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link menu-link {{ request()->is('tasks') ? 'active' : '' }}" href="{{url('/tasks')}}">
                                 <i class="ri-check-line"></i>
                                 <span data-key="t-dashboards">Tasks</span>

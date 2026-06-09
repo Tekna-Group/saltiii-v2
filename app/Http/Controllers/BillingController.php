@@ -9,6 +9,8 @@ use Stripe\Subscription;
 use App\User;
 use App\StripeCustomer;
 use App\Invoice;
+use App\Services\GHLService;
+use Carbon\Carbon;
 
 class BillingController extends Controller
 {
@@ -21,7 +23,13 @@ class BillingController extends Controller
 
         try {
             // 1. Create Stripe customer if not existing
-            if (!$user->stripeCustomer) {
+            $previousStatus = $user->stripeCustomer ? $user->stripeCustomer->status : null;
+            $returnedWithinThreeDays = $user->stripeCustomer
+                && in_array($previousStatus, ['inactive', 'cancelled', 'canceled'])
+                && $user->stripeCustomer->updated_at
+                && Carbon::parse($user->stripeCustomer->updated_at)->diffInDays(Carbon::now()) <= 3;
+
+            if (!$user->stripeCustomer || !$user->stripeCustomer->stripe_customer_id) {
                 $customer = Customer::create([
                     'email' => $user->email,
                     'name'  => $user->name,
@@ -31,11 +39,15 @@ class BillingController extends Controller
                     ]
                 ]);
 
-                $stripeCustomer = new StripeCustomer();
-                $stripeCustomer->user_id = $user->id;
-                $stripeCustomer->stripe_customer_id = $customer->id;
-                $stripeCustomer->stripe_payment_method_id = $request->payment_method_id;
-                $stripeCustomer->save();
+                $stripeCustomer = StripeCustomer::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'stripe_customer_id' => $customer->id,
+                        'stripe_payment_method_id' => $request->payment_method_id,
+                    ]
+                );
+
+                $user->setRelation('stripeCustomer', $stripeCustomer);
             } else {
                 $customer = Customer::retrieve($user->stripeCustomer->stripe_customer_id);
             }
@@ -53,6 +65,7 @@ class BillingController extends Controller
             $user->stripeCustomer->subscription_id = $subscription->id;
             $user->stripeCustomer->plan_id = 'price_12345';
             $user->stripeCustomer->status = $subscription->status;
+            $user->stripeCustomer->next_billing_date = Carbon::now()->addMonth();
             $user->stripeCustomer->save();
 
             // Create local invoice
@@ -67,6 +80,29 @@ class BillingController extends Controller
             $invoice->payment_description = $subscription->id;
             $invoice->paid_on = now();
             $invoice->save();
+
+            $ghl = app(GHLService::class);
+
+            if (!$ghl->hasSentBillingEvent($user, 'paid_subscriber', $user->stripeCustomer->subscription_id)) {
+                $ghl->sendBillingEvent('paid_subscriber', $user, $user->stripeCustomer, [
+                    'amount' => $invoice->amount,
+                    'source' => 'billing_controller',
+                ]);
+            }
+
+            if ($previousStatus && in_array($previousStatus, ['inactive', 'cancelled', 'canceled'])) {
+                $ghl->sendBillingEvent('reactivated_after_cancellation', $user, $user->stripeCustomer, [
+                    'previous_status' => $previousStatus,
+                    'source' => 'billing_controller',
+                ]);
+            }
+
+            if ($returnedWithinThreeDays) {
+                $ghl->sendBillingEvent('returned_within_3_days', $user, $user->stripeCustomer, [
+                    'previous_status' => $previousStatus,
+                    'source' => 'billing_controller',
+                ]);
+            }
 
             return response()->json([
                 'status' => 'success',

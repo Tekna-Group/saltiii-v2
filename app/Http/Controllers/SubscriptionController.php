@@ -8,6 +8,7 @@ use Stripe\Customer;
 use Stripe\Subscription;
 use App\StripeCustomer;
 use App\Invoice;
+use App\Services\GHLService;
 use Carbon\Carbon;
 use RealRashid\SweetAlert\Facades\Alert;
 class SubscriptionController extends Controller
@@ -34,7 +35,13 @@ class SubscriptionController extends Controller
 
         // 1️⃣ Create or fetch Stripe Customer
         $existing = StripeCustomer::where('user_id', $request->user_id)->first();
-        if (!$existing) {
+        $previousStatus = $existing ? $existing->status : null;
+        $returnedWithinThreeDays = $existing
+            && in_array($previousStatus, ['inactive', 'cancelled', 'canceled'])
+            && $existing->updated_at
+            && Carbon::parse($existing->updated_at)->diffInDays(Carbon::now()) <= 3;
+
+        if (!$existing || !$existing->stripe_customer_id) {
             $customer = Customer::create([
                 'email' => $request->email,
                 'name' => $request->name,
@@ -42,11 +49,12 @@ class SubscriptionController extends Controller
                 'invoice_settings' => ['default_payment_method' => $request->payment_method]
             ]);
 
-            $existing = StripeCustomer::create([
-                'user_id' => $request->user_id,
-                'stripe_customer_id' => $customer->id,
-                'status' => 'inactive'
-            ]);
+            $existing = StripeCustomer::updateOrCreate(
+                ['user_id' => $request->user_id],
+                [
+                    'stripe_customer_id' => $customer->id,
+                ]
+            );
         }
 
         // 2️⃣ Create subscription in Stripe
@@ -77,6 +85,30 @@ class SubscriptionController extends Controller
             'payment_description' => $subscription->latest_invoice->id,
             'paid_on' => Carbon::now(),
         ]);
+
+        $existing->load('user');
+        $ghl = app(GHLService::class);
+
+        if (!$ghl->hasSentBillingEvent($existing->user, 'paid_subscriber', $existing->subscription_id)) {
+            $ghl->sendBillingEvent('paid_subscriber', $existing->user, $existing, [
+                'amount' => $request->amount,
+                'source' => 'subscription_controller',
+            ]);
+        }
+
+        if ($previousStatus && in_array($previousStatus, ['inactive', 'cancelled', 'canceled'])) {
+            $ghl->sendBillingEvent('reactivated_after_cancellation', $existing->user, $existing, [
+                'previous_status' => $previousStatus,
+                'source' => 'subscription_controller',
+            ]);
+        }
+
+        if ($returnedWithinThreeDays) {
+            $ghl->sendBillingEvent('returned_within_3_days', $existing->user, $existing, [
+                'previous_status' => $previousStatus,
+                'source' => 'subscription_controller',
+            ]);
+        }
 
         Alert::success('Subscription successful! You now have full access to the system.')->persistent('Dismiss');
         return redirect('/dashboard');
