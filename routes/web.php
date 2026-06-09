@@ -123,6 +123,8 @@ Route::group(['middleware' => ['auth', 'verified']], function () {
 
     
 Route::get('/dashboard-admin', 'HomeController@adminDashboard')->name('admin.dashboard');
+Route::get('/buttons', 'WebhookTestController@index')->name('webhook.buttons');
+Route::post('/buttons/trigger', 'WebhookTestController@trigger')->name('webhook.buttons.trigger');
 
 Route::prefix('workflow')->group(function () {
     Route::get('/', 'WorkflowController@index');
