@@ -15,6 +15,8 @@ class WebhookTestController extends Controller
         'subscription_cancelled' => 'Cancelled Subscription',
         'returned_within_3_days' => 'Returns Within 3 Days',
         'trial_limit_reached' => 'Trial Limit Reached / End Date',
+        'trial_ends_no_subscription' => 'Trial Ends No Subscription',
+        'no_login_7_days_during_trial' => 'No Login for 7+ Days During Trial',
         'reactivated_after_cancellation' => 'Reactivated After Cancellation',
         'renewed_past_first_billing_cycle' => 'Renewed Past First Billing Cycle',
         'completes_onboarding' => 'Onboarding Completed',
@@ -63,7 +65,7 @@ class WebhookTestController extends Controller
 
     protected function sampleSubscription($user, $eventName)
     {
-        $status = in_array($eventName, ['subscription_cancelled', 'trial_limit_reached'])
+        $status = in_array($eventName, ['subscription_cancelled', 'trial_limit_reached', 'trial_ends_no_subscription'])
             ? 'inactive'
             : 'active';
 
