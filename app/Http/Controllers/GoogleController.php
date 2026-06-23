@@ -35,6 +35,7 @@ class GoogleController extends Controller
 
         // ✅ Send welcome email only the first time they register
         if ($user->wasRecentlyCreated) {
+            session()->flash('fb_start_trial', true);
   
             try {
                 $ghl = new GHLService();

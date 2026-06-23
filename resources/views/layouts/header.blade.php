@@ -56,6 +56,13 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '4242328826038076');
 fbq('track', 'PageView');
+@if(session()->pull('fb_start_trial'))
+fbq('track', 'StartTrial', {
+    value: '0.00',
+    currency: 'USD',
+    predicted_ltv: '0.00'
+});
+@endif
 </script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=4242328826038076&ev=PageView&noscript=1"

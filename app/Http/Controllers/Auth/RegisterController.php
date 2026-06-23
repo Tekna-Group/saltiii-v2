@@ -83,4 +83,9 @@ class RegisterController extends Controller
         }
         return $user;
     }
+
+    protected function registered($request, $user)
+    {
+        session()->flash('fb_start_trial', true);
+    }
 }
