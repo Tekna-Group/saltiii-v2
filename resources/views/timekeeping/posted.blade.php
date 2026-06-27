@@ -55,7 +55,7 @@
                     <button type="button" class="btn btn-warning btn-sm me-2" id="select-all-btn" style="display: none;">
                         <i class="fas fa-check-square me-1"></i>Select All
                     </button>
-                    <button type="button" class="btn btn-info btn-sm" id="bulk-transfer-btn" style="display: none;" data-bs-toggle="modal" data-bs-target="#bulkUsdcTransferModal">
+                    <button type="button" class="btn btn-info btn-sm" id="bulk-transfer-btn" style="display: none;">
                         <i class="fas fa-exchange-alt me-1"></i>Transfer Selected (<span id="selected-count">0</span>)
                     </button>
                 </div>
@@ -379,9 +379,11 @@
         });
 
         // Bulk transfer button
-        bulkTransferBtn?.addEventListener('click', function() {
+        bulkTransferBtn?.addEventListener('click', function(event) {
+            event.preventDefault();
+
             const selectedUsers = Array.from(userCheckboxes)
-                .filter(cb => cb.checked)
+                .filter(cb => cb.checked && !cb.disabled)
                 .map(cb => {
                     const row = cb.closest('.user-row');
                     return {
@@ -398,6 +400,11 @@
             if (selectedUsers.length > 0) {
                 window.bulkTransferUsers = selectedUsers;
                 displayBulkTransferSummary(selectedUsers);
+
+                const bulkModalEl = document.getElementById('bulkUsdcTransferModal');
+                if (bulkModalEl && window.bootstrap) {
+                    bootstrap.Modal.getOrCreateInstance(bulkModalEl).show();
+                }
             }
         });
 
