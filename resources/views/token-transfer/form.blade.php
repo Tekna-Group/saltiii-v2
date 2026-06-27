@@ -316,7 +316,13 @@
         if (solana && solana.isPhantom) {
             phantomProvider = solana;
             console.log("Phantom Wallet detected");
-            await checkWalletConnection();
+            if (phantomProvider.publicKey) {
+                userWallet = phantomProvider.publicKey.toString();
+                updateWalletUI(userWallet);
+                await loadWalletBalance();
+            } else {
+                updateWalletUI(null);
+            }
         } else {
             showAlert("Phantom Wallet not found", "Please install Phantom Wallet extension to continue.", "warning");
             document.getElementById('connect-wallet-btn').disabled = false;
@@ -325,15 +331,14 @@
 
     // Check wallet connection status
     async function checkWalletConnection() {
-        try {
-            const response = await phantomProvider.connect({ onlyIfTrusted: true });
-            userWallet = response.publicKey.toString();
+        if (phantomProvider?.publicKey) {
+            userWallet = phantomProvider.publicKey.toString();
             updateWalletUI(userWallet);
             await loadWalletBalance();
-        } catch (err) {
-            console.log("Wallet not connected:", err);
-            updateWalletUI(null);
+            return;
         }
+
+        updateWalletUI(null);
     }
 
     // Connect wallet on button click

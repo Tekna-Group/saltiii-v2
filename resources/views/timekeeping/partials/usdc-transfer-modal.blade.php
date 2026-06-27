@@ -268,9 +268,11 @@
             return userWallet;
         }
 
-        const response = forcePrompt
-            ? await phantomProvider.connect()
-            : await phantomProvider.connect({ onlyIfTrusted: true });
+        if (!forcePrompt) {
+            throw new Error('Phantom wallet is not connected');
+        }
+
+        const response = await phantomProvider.connect();
 
         syncConnectedWallet(response.publicKey.toString());
         return userWallet;
@@ -360,7 +362,10 @@
         phantomProvider.on?.('disconnect', () => {
             syncConnectedWallet(null);
         });
-        ensurePhantomConnected(false).catch(() => {});
+
+        if (phantomProvider.publicKey) {
+            syncConnectedWallet(phantomProvider.publicKey.toString());
+        }
     }
 
     window.ensurePayrollPhantomConnected = ensurePhantomConnected;
