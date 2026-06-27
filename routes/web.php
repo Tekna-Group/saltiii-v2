@@ -86,6 +86,7 @@ Route::get('timekeeping/posted','TimekeepingController@postedReport')->name('Tim
 Route::post('timekeeping/approve/{userId}','TimekeepingController@approvePayment')->name('Timekeeping.approvePayment');
 Route::post('timekeeping/prepare-transfer/{userId}','TimekeepingController@prepareTransfer')->name('Timekeeping.prepareTransfer');
 Route::post('timekeeping/process-usdc-transfer','TimekeepingController@processUsdcTransfer')->name('Timekeeping.processUsdcTransfer');
+Route::post('timekeeping/solana-rpc','TimekeepingController@solanaRpc')->name('Timekeeping.solanaRpc');
 Route::get('my-timekeeping','TimekeepingController@myTimekeeping')->name('My Timekeeping');
 Route::get('payslips','PayrollController@index')->name('Payslip');
 Route::get('payslips/{id}','PayrollController@payslip')->name('Payslip.view');

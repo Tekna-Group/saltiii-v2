@@ -174,7 +174,7 @@
 </style>
 
 <script>
-    let bulkTransferState = {
+    window.bulkTransferState = window.bulkTransferState || {
         currentStep: 'summary',
         phantomConnected: false,
         userWallet: null,
@@ -183,6 +183,7 @@
         totalPhp: 0,
         exchangeRate: 0.018
     };
+    let bulkTransferState = window.bulkTransferState;
 
     // Initialize bulk transfer modal
     const bulkModal = document.getElementById('bulkUsdcTransferModal');
@@ -244,36 +245,41 @@
         document.getElementById('confirm-total-usdc').textContent = bulkTransferState.totalUsdc.toFixed(2) + ' USDC';
         document.getElementById('confirm-total-php').textContent = '₱' + bulkTransferState.totalPhp.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        showBulkStep('phantom');
+        window.ensurePayrollPhantomConnected(false)
+            .then((wallet) => {
+                bulkTransferState.userWallet = wallet;
+                bulkTransferState.phantomConnected = true;
+                showBulkStep('confirmation');
+            })
+            .catch(() => {
+                showBulkStep('phantom');
+            });
     });
 
     // Connect Phantom
     document.getElementById('bulk-connect-phantom-btn')?.addEventListener('click', async function() {
         try {
-            const { solana } = window;
-            if (solana && solana.isPhantom) {
-                const response = await solana.connect();
-                bulkTransferState.userWallet = response.publicKey.toString();
-                bulkTransferState.phantomConnected = true;
-                showBulkStep('confirmation');
-                showBulkAlert('Success', 'Phantom wallet connected!', 'success');
-            } else {
-                showBulkAlert('Error', 'Phantom wallet is not installed', 'error');
-            }
+            bulkTransferState.userWallet = await window.ensurePayrollPhantomConnected(true);
+            bulkTransferState.phantomConnected = true;
+            showBulkStep('confirmation');
+            showBulkAlert('Success', 'Phantom wallet connected!', 'success');
         } catch (error) {
-            showBulkAlert('Error', 'Failed to connect Phantom wallet', 'error');
+            showBulkAlert('Error', error.message || 'Failed to connect Phantom wallet', 'error');
             console.error(error);
         }
     });
 
     // Confirm button
-    document.getElementById('bulk-modal-confirm-btn')?.addEventListener('click', function() {
+    document.getElementById('bulk-modal-confirm-btn')?.addEventListener('click', async function() {
         if (!document.getElementById('bulk-confirm-agreement').checked) {
             showBulkAlert('Error', 'Please confirm the agreement before proceeding', 'warning');
             return;
         }
 
-        if (!bulkTransferState.phantomConnected || !bulkTransferState.userWallet) {
+        try {
+            bulkTransferState.userWallet = await window.ensurePayrollPhantomConnected(false);
+            bulkTransferState.phantomConnected = true;
+        } catch (error) {
             showBulkAlert('Error', 'Phantom wallet is not connected', 'error');
             return;
         }
@@ -293,22 +299,42 @@
         document.getElementById('processing-progress').innerHTML = progressHtml;
 
         let successCount = 0;
+        const batchSize = 8;
 
-        for (const user of bulkTransferState.selectedUsers) {
-            const progressElement = document.getElementById(`progress-${user.user_id}`);
-            try {
-                const usdc = parseFloat(user.total_amount) * bulkTransferState.exchangeRate;
-                const signature = await sendBulkUsdcViaPhantom(user.wallet_address, usdc);
-                await submitBulkTransferToServer(user, usdc, signature);
-                successCount++;
+        for (let i = 0; i < bulkTransferState.selectedUsers.length; i += batchSize) {
+            const batch = bulkTransferState.selectedUsers.slice(i, i + batchSize);
 
+            batch.forEach((user) => {
+                const progressElement = document.getElementById(`progress-${user.user_id}`);
                 if (progressElement) {
-                    progressElement.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i> ${user.user_name}`;
+                    progressElement.innerHTML = `<i class="fas fa-wallet text-info me-2"></i> ${user.user_name} (waiting for Phantom approval)`;
+                }
+            });
+
+            try {
+                const transfers = batch.map((user) => ({
+                    user,
+                    recipientWalletAddress: user.wallet_address,
+                    usdcAmount: parseFloat(user.total_amount) * bulkTransferState.exchangeRate
+                }));
+                const signature = await sendBulkUsdcBatchViaPhantom(transfers);
+
+                for (const transfer of transfers) {
+                    const progressElement = document.getElementById(`progress-${transfer.user.user_id}`);
+                    await submitBulkTransferToServer(transfer.user, transfer.usdcAmount, signature);
+                    successCount++;
+
+                    if (progressElement) {
+                        progressElement.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i> ${transfer.user.user_name}`;
+                    }
                 }
             } catch (error) {
-                if (progressElement) {
-                    progressElement.innerHTML = `<i class="fas fa-times-circle text-danger me-2"></i> ${user.user_name} (${error.message || 'Error'})`;
-                }
+                batch.forEach((user) => {
+                    const progressElement = document.getElementById(`progress-${user.user_id}`);
+                    if (progressElement) {
+                        progressElement.innerHTML = `<i class="fas fa-times-circle text-danger me-2"></i> ${user.user_name} (${error.message || 'Error'})`;
+                    }
+                });
                 showBulkAlert('Error', error.message || 'Bulk transfer failed. No remaining users were processed.', 'error');
                 showBulkStep('confirmation');
                 return;
@@ -323,7 +349,7 @@
         }, 3000);
     }
 
-    async function sendBulkUsdcViaPhantom(recipientWalletAddress, usdcAmount) {
+    async function sendBulkUsdcBatchViaPhantom(transfers) {
         if (!window.solanaWeb3) {
             throw new Error('Solana Web3 library failed to load. Please refresh the page and try again.');
         }
@@ -336,10 +362,9 @@
         const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bJs');
         const SYSVAR_RENT_PUBKEY          = new PublicKey('SysvarRent111111111111111111111111111111111');
 
-        const connection         = new Connection(solanaRpcUrl, 'confirmed');
+        const connection         = window.getPayrollSolanaConnection();
         const usdcMint           = new PublicKey(usdcMintAddress);
         const senderPublicKey    = new PublicKey(bulkTransferState.userWallet);
-        const recipientPublicKey = new PublicKey(recipientWalletAddress);
 
         function deriveATA(owner, mint) {
             const [address] = PublicKey.findProgramAddressSync(
@@ -350,50 +375,54 @@
         }
 
         const senderATA    = deriveATA(senderPublicKey, usdcMint);
-        const recipientATA = deriveATA(recipientPublicKey, usdcMint);
-        const rawAmount    = BigInt(Math.round(usdcAmount * 1_000_000));
         const transaction  = new Transaction();
 
-        let recipientAccountInfo;
-        try {
-            recipientAccountInfo = await connection.getAccountInfo(recipientATA);
-        } catch (rpcError) {
-            throw normalizeSolanaRpcError(rpcError, 'check the recipient token account');
-        }
+        for (const transfer of transfers) {
+            const recipientPublicKey = new PublicKey(transfer.recipientWalletAddress);
+            const recipientATA = deriveATA(recipientPublicKey, usdcMint);
+            const rawAmount = BigInt(Math.round(transfer.usdcAmount * 1_000_000));
 
-        if (!recipientAccountInfo) {
+            let recipientAccountInfo;
+            try {
+                recipientAccountInfo = await connection.getAccountInfo(recipientATA);
+            } catch (rpcError) {
+                throw normalizeSolanaRpcError(rpcError, 'check the recipient token account');
+            }
+
+            if (!recipientAccountInfo) {
+                transaction.add(new TransactionInstruction({
+                    keys: [
+                        { pubkey: senderPublicKey,         isSigner: true,  isWritable: true  },
+                        { pubkey: recipientATA,            isSigner: false, isWritable: true  },
+                        { pubkey: recipientPublicKey,      isSigner: false, isWritable: false },
+                        { pubkey: usdcMint,                isSigner: false, isWritable: false },
+                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                        { pubkey: TOKEN_PROGRAM_ID,        isSigner: false, isWritable: false },
+                        { pubkey: SYSVAR_RENT_PUBKEY,      isSigner: false, isWritable: false },
+                    ],
+                    programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+                    data: new Uint8Array(0),
+                }));
+            }
+
+            const transferData = new Uint8Array(9);
+            transferData[0] = 3;
+            let rem = rawAmount;
+            for (let i = 1; i <= 8; i++) {
+                transferData[i] = Number(rem & BigInt(0xFF));
+                rem >>= BigInt(8);
+            }
+
             transaction.add(new TransactionInstruction({
                 keys: [
-                    { pubkey: senderPublicKey,         isSigner: true,  isWritable: true  },
-                    { pubkey: recipientATA,            isSigner: false, isWritable: true  },
-                    { pubkey: recipientPublicKey,      isSigner: false, isWritable: false },
-                    { pubkey: usdcMint,                isSigner: false, isWritable: false },
-                    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
-                    { pubkey: TOKEN_PROGRAM_ID,        isSigner: false, isWritable: false },
-                    { pubkey: SYSVAR_RENT_PUBKEY,      isSigner: false, isWritable: false },
+                    { pubkey: senderATA,         isSigner: false, isWritable: true  },
+                    { pubkey: recipientATA,      isSigner: false, isWritable: true  },
+                    { pubkey: senderPublicKey,   isSigner: true,  isWritable: false },
                 ],
-                programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-                data: new Uint8Array(0),
+                programId: TOKEN_PROGRAM_ID,
+                data: transferData,
             }));
         }
-
-        const transferData = new Uint8Array(9);
-        transferData[0] = 3;
-        let rem = rawAmount;
-        for (let i = 1; i <= 8; i++) {
-            transferData[i] = Number(rem & BigInt(0xFF));
-            rem >>= BigInt(8);
-        }
-
-        transaction.add(new TransactionInstruction({
-            keys: [
-                { pubkey: senderATA,         isSigner: false, isWritable: true  },
-                { pubkey: recipientATA,      isSigner: false, isWritable: true  },
-                { pubkey: senderPublicKey,   isSigner: true,  isWritable: false },
-            ],
-            programId: TOKEN_PROGRAM_ID,
-            data: transferData,
-        }));
 
         let blockhash;
         try {
@@ -469,8 +498,8 @@
 
     function resetBulkTransferFlow() {
         bulkTransferState.currentStep = 'summary';
-        bulkTransferState.phantomConnected = false;
-        bulkTransferState.userWallet = null;
+        bulkTransferState.phantomConnected = Boolean(window.solana?.publicKey);
+        bulkTransferState.userWallet = window.solana?.publicKey ? window.solana.publicKey.toString() : bulkTransferState.userWallet;
         bulkTransferState.selectedUsers = window.bulkTransferUsers || [];
         bulkTransferState.totalUsdc = 0;
         bulkTransferState.totalPhp = 0;

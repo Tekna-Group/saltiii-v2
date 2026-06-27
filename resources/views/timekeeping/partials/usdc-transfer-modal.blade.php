@@ -228,12 +228,144 @@
     // Network config injected from .env via Blade
     const solanaNetwork   = @json(env('SOLANA_NETWORK', 'mainnet-beta'));
     const solanaRpcUrl    = @json(rtrim(env('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com'), '/'));
+    const solanaRpcProxyUrl = @json(route('Timekeeping.solanaRpc'));
     const usdcMintAddress = @json(env('USDC_MINT_ADDRESS', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'));
 
     let usdcTransferData = {};
     let currentStep = 'details';
     let phantomConnected = false;
     let userWallet = null;
+    let phantomProvider = null;
+    let solanaConnection = null;
+
+    function getPhantomProvider() {
+        const { solana } = window;
+        return solana && solana.isPhantom ? solana : null;
+    }
+
+    function syncConnectedWallet(wallet) {
+        userWallet = wallet;
+        phantomConnected = Boolean(wallet);
+
+        if (window.bulkTransferState) {
+            window.bulkTransferState.userWallet = wallet;
+            window.bulkTransferState.phantomConnected = Boolean(wallet);
+        }
+    }
+
+    async function ensurePhantomConnected(forcePrompt = false) {
+        phantomProvider = getPhantomProvider();
+
+        if (!phantomProvider) {
+            throw new Error('Phantom wallet is not installed');
+        }
+
+        if (!forcePrompt && phantomConnected && userWallet) {
+            return userWallet;
+        }
+
+        if (!forcePrompt && phantomProvider.publicKey) {
+            syncConnectedWallet(phantomProvider.publicKey.toString());
+            return userWallet;
+        }
+
+        const response = forcePrompt
+            ? await phantomProvider.connect()
+            : await phantomProvider.connect({ onlyIfTrusted: true });
+
+        syncConnectedWallet(response.publicKey.toString());
+        return userWallet;
+    }
+
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+            || document.querySelector('input[name="_token"]')?.value
+            || '';
+    }
+
+    async function callSolanaRpc(method, params = []) {
+        const response = await axios.post(solanaRpcProxyUrl, {
+            method,
+            params,
+            _token: getCsrfToken()
+        }, {
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        });
+
+        if (response.data?.error) {
+            throw new Error(response.data.error.message || `Unable to call ${method}.`);
+        }
+
+        return response.data?.result;
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function getSolanaConnection() {
+        if (!solanaConnection) {
+            solanaConnection = {
+                async getAccountInfo(publicKey) {
+                    const result = await callSolanaRpc('getAccountInfo', [
+                        publicKey.toString(),
+                        { encoding: 'base64', commitment: 'confirmed' }
+                    ]);
+
+                    return result?.value || null;
+                },
+                async getLatestBlockhash() {
+                    const result = await callSolanaRpc('getLatestBlockhash', [
+                        { commitment: 'confirmed' }
+                    ]);
+
+                    return {
+                        blockhash: result?.value?.blockhash,
+                        lastValidBlockHeight: result?.value?.lastValidBlockHeight
+                    };
+                },
+                async confirmTransaction(signature) {
+                    for (let attempt = 0; attempt < 30; attempt++) {
+                        const result = await callSolanaRpc('getSignatureStatuses', [
+                            [signature],
+                            { searchTransactionHistory: true }
+                        ]);
+                        const status = result?.value?.[0];
+
+                        if (status?.err) {
+                            throw new Error('Solana transaction failed during confirmation.');
+                        }
+
+                        if (status && ['confirmed', 'finalized'].includes(status.confirmationStatus)) {
+                            return status;
+                        }
+
+                        await sleep(1000);
+                    }
+
+                    throw new Error('Timed out while waiting for Solana confirmation.');
+                }
+            };
+        }
+
+        return solanaConnection;
+    }
+
+    phantomProvider = getPhantomProvider();
+    if (phantomProvider) {
+        phantomProvider.on?.('accountChanged', (publicKey) => {
+            syncConnectedWallet(publicKey ? publicKey.toString() : null);
+        });
+        phantomProvider.on?.('disconnect', () => {
+            syncConnectedWallet(null);
+        });
+        ensurePhantomConnected(false).catch(() => {});
+    }
+
+    window.ensurePayrollPhantomConnected = ensurePhantomConnected;
+    window.getPayrollSolanaConnection = getSolanaConnection;
 
     // Initialize modal
     const usdcModal = document.getElementById('usdcTransferModal');
@@ -351,7 +483,7 @@
     }
 
     // Next button
-    document.getElementById('modal-next-btn').addEventListener('click', function () {
+    document.getElementById('modal-next-btn').addEventListener('click', async function () {
         if (!usdcTransferData.wallet_address) {
             showAlert('Error', 'Wallet address is not set for this user', 'error');
             return;
@@ -367,36 +499,36 @@
             return;
         }
 
-        showStep('phantom');
+        try {
+            await ensurePhantomConnected(false);
+            showStep('confirmation');
+        } catch (error) {
+            showStep('phantom');
+        }
     });
 
     // Connect Phantom
     document.getElementById('connect-phantom-btn').addEventListener('click', async function () {
         try {
-            const { solana } = window;
-            if (solana && solana.isPhantom) {
-                const response = await solana.connect();
-                userWallet = response.publicKey.toString();
-                phantomConnected = true;
-                showStep('confirmation');
-                showAlert('Success', 'Phantom wallet connected!', 'success');
-            } else {
-                showAlert('Error', 'Phantom wallet is not installed', 'error');
-            }
+            await ensurePhantomConnected(true);
+            showStep('confirmation');
+            showAlert('Success', 'Phantom wallet connected!', 'success');
         } catch (error) {
-            showAlert('Error', 'Failed to connect Phantom wallet', 'error');
+            showAlert('Error', error.message || 'Failed to connect Phantom wallet', 'error');
             console.error(error);
         }
     });
 
     // Confirm button
-    document.getElementById('modal-confirm-btn').addEventListener('click', function () {
+    document.getElementById('modal-confirm-btn').addEventListener('click', async function () {
         if (!document.getElementById('confirm-agreement').checked) {
             showAlert('Error', 'Please confirm the agreement before proceeding', 'warning');
             return;
         }
 
-        if (!phantomConnected || !userWallet) {
+        try {
+            await ensurePhantomConnected(false);
+        } catch (error) {
             showAlert('Error', 'Phantom wallet is not connected', 'error');
             return;
         }
@@ -420,7 +552,7 @@
             const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bJs');
             const SYSVAR_RENT_PUBKEY          = new PublicKey('SysvarRent111111111111111111111111111111111');
 
-            const connection         = new Connection(solanaRpcUrl, 'confirmed');
+            const connection         = getSolanaConnection();
             const usdcMint           = new PublicKey(usdcMintAddress);
             const senderPublicKey    = new PublicKey(userWallet);
             const recipientPublicKey = new PublicKey(usdcTransferData.wallet_address);

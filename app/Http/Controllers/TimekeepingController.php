@@ -418,8 +418,11 @@ class TimekeepingController extends Controller
                 ], 422);
             }
 
-            // Check if transaction signature already exists (prevent replay attacks)
-            if (TokenTransfer::where('transaction_signature', $validated['transaction_signature'])->exists()) {
+            // A bulk Solana transaction can pay multiple employees under one signature.
+            // Block duplicate processing for the same employee/signature pair only.
+            if (TokenTransfer::where('transaction_signature', $validated['transaction_signature'])
+                ->where('user_id', $validated['user_id'])
+                ->exists()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'This transaction has already been processed.',
@@ -573,6 +576,44 @@ class TimekeepingController extends Controller
                 'message' => 'Transfer processing failed: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function solanaRpc(Request $request)
+    {
+        $validated = $request->validate([
+            'method' => 'required|string',
+            'params' => 'array',
+        ]);
+
+        $allowedMethods = [
+            'getAccountInfo',
+            'getLatestBlockhash',
+            'getSignatureStatuses',
+        ];
+
+        if (!in_array($validated['method'], $allowedMethods, true)) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Solana RPC method is not allowed.',
+                ],
+            ], 422);
+        }
+
+        $solanaService = new SolanaTokenService();
+        $response = $solanaService->makeRpcCall(
+            $validated['method'],
+            $validated['params'] ?? []
+        );
+
+        if (!$response) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Solana RPC request failed.',
+                ],
+            ], 502);
+        }
+
+        return response()->json($response);
     }
 
     public function dateRange( $first, $last, $step = '+1 day', $format = 'Y-m-d' ) {
