@@ -446,15 +446,6 @@ class TimekeepingController extends Controller
                 ], 404);
             }
 
-            // Check if any activities have already been paid
-            $alreadyPaid = $activities->where('paid_at', '!=', null)->count();
-            if ($alreadyPaid > 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Some activities in this date range have already been paid. Please select unpaid activities only.',
-                ], 422);
-            }
-
             // Check for existing posting
             $existingPayment = PaymentPosting::where('user_id', $validated['user_id'])
                 ->where('date_from', $validated['date_from'])
@@ -465,6 +456,16 @@ class TimekeepingController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'A payment has already been completed for this date range.',
+                ], 422);
+            }
+
+            // Some legacy Approved postings already have paid_at stamped; only block paid
+            // activities when there is no open posting to complete.
+            $alreadyPaid = $activities->where('paid_at', '!=', null)->count();
+            if ($alreadyPaid > 0 && !$existingPayment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Some activities in this date range have already been paid. Please select unpaid activities only.',
                 ], 422);
             }
 

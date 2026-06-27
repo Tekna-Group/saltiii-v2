@@ -94,7 +94,8 @@
                                     $postedFrom = $rows->min('timekeeping_from');
                                     $postedTo = $rows->max('timekeeping_to');
                                     $totalHours = 0;
-                                    $paymentStatus = $rows->every(function($activity){ return !empty($activity->payment_reference); }) ? 'Approved' : 'Pending';
+                                    $posting  = $paymentPostings->get($userId);
+                                    $paymentStatus = $posting ? $posting->status : 'Pending';
 
                                     foreach($date_ranges as $date) {
                                         $dayHours = $rows->filter(function ($activity) use ($date) {
@@ -104,14 +105,13 @@
                                     }
 
                                     $grossPay = $totalHours * $hourlyRate;
-                                    $posting  = $paymentPostings->get($userId);
                                     $adjAdds    = $posting ? $posting->adjustments->where('type','add')->sum('amount') : 0;
                                     $adjDeducts = $posting ? $posting->adjustments->where('type','deduct')->sum('amount') : 0;
                                     $netPay   = $grossPay + $adjAdds - $adjDeducts;
                                 @endphp
-                                <tr class="user-row" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-hourly-rate="{{ $hourlyRate }}" data-date-from="{{ $postedFrom }}" data-date-to="{{ $postedTo }}" data-total-hours="{{ $totalHours }}" data-total-amount="{{ $grossPay }}">
+                                <tr class="user-row" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-hourly-rate="{{ $hourlyRate }}" data-date-from="{{ $postedFrom }}" data-date-to="{{ $postedTo }}" data-total-hours="{{ $totalHours }}" data-total-amount="{{ $netPay }}">
                                     <td>
-                                        <input type="checkbox" class="form-check-input user-checkbox" value="{{ $user->id }}" @if($paymentStatus === 'Approved') disabled @endif>
+                                        <input type="checkbox" class="form-check-input user-checkbox" value="{{ $user->id }}" @if($paymentStatus === 'Completed') disabled @endif>
                                     </td>
                                     <td>{{ optional($user)->name }}</td>
                                     <td>{{ number_format($hourlyRate, 2) }}</td>
@@ -128,15 +128,24 @@
                                     <td>{{ number_format($totalHours, 2) }}</td>
                                     <td>{{ number_format($grossPay, 2) }}</td>
                                     <td>
-                                        @if($paymentStatus === 'Approved')
+                                        @if($paymentStatus === 'Completed')
+                                            <span class="badge bg-success-subtle text-success">Paid</span>
+                                        @elseif($paymentStatus === 'Approved')
+                                            <span class="badge bg-info-subtle text-info">Approved</span>
+                                        @else
+                                            <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($posting)
                                             <span class="text-success small d-block">+₱{{ number_format($adjAdds, 2) }}</span>
                                             <span class="text-danger small d-block">-₱{{ number_format($adjDeducts, 2) }}</span>
                                         @else
                                             <span class="text-muted small">—</span>
                                         @endif
                                     </td>
-                                    <td class="fw-semibold {{ $paymentStatus === 'Approved' ? 'text-primary' : '' }}">
-                                        {{ $paymentStatus === 'Approved' ? '₱ '.number_format($netPay, 2) : '—' }}
+                                    <td class="fw-semibold {{ $posting ? 'text-primary' : '' }}">
+                                        {{ $posting ? '₱ '.number_format($netPay, 2) : '—' }}
                                     </td>
                                     <td style="white-space:nowrap;">
                                         @if($posting && $posting->status === 'Completed')
@@ -172,16 +181,17 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ 4 + count($date_ranges) + 4 }}" class="text-center">No posted timekeeping found.</td>
+                                    <td colspan="{{ 11 + count($date_ranges) }}" class="text-center">No posted timekeeping found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                         @if($groupedActivities->count())
                         <tfoot>
                             <tr>
-                                <td colspan="{{ 4 + count($date_ranges) }}" class="text-end fw-semibold">Totals</td>
+                                <td colspan="{{ 5 + count($date_ranges) }}" class="text-end fw-semibold">Totals</td>
                                 <td class="fw-semibold">{{ number_format($activities->sum('hours'), 2) }}</td>
                                 <td class="fw-semibold">{{ number_format($activities->sum(function($activity){ return $activity->hours * (optional($activity->user->salary)->salary ?? 0); }), 2) }}</td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -346,13 +356,19 @@
         const selectAllBtn = document.getElementById('select-all-btn');
         const bulkTransferBtn = document.getElementById('bulk-transfer-btn');
         const selectedCountSpan = document.getElementById('selected-count');
+        const selectableCheckboxes = () => Array.from(userCheckboxes).filter(cb => !cb.disabled);
 
         // Select All checkbox
         selectAllCheckbox?.addEventListener('change', function() {
-            userCheckboxes.forEach(checkbox => {
-                if (!checkbox.disabled) {
-                    checkbox.checked = this.checked;
-                }
+            selectableCheckboxes().forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActionButtons();
+        });
+
+        selectAllBtn?.addEventListener('click', function() {
+            selectableCheckboxes().forEach(checkbox => {
+                checkbox.checked = true;
             });
             updateBulkActionButtons();
         });
@@ -386,7 +402,8 @@
         });
 
         function updateBulkActionButtons() {
-            const checkedCount = Array.from(userCheckboxes).filter(cb => cb.checked).length;
+            const availableCheckboxes = selectableCheckboxes();
+            const checkedCount = availableCheckboxes.filter(cb => cb.checked).length;
             selectedCountSpan.textContent = checkedCount;
             
             if (checkedCount > 0) {
@@ -398,10 +415,16 @@
             }
 
             // Update select all checkbox state
-            const allChecked = userCheckboxes.length > 0 && 
-                Array.from(userCheckboxes).every(cb => !cb.disabled && cb.checked);
-            selectAllCheckbox.checked = allChecked;
+            const allChecked = availableCheckboxes.length > 0 &&
+                availableCheckboxes.every(cb => cb.checked);
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = checkedCount > 0 && !allChecked;
+                selectAllCheckbox.disabled = availableCheckboxes.length === 0;
+            }
         }
+
+        updateBulkActionButtons();
     }
 
     function displayBulkTransferSummary(selectedUsers) {
