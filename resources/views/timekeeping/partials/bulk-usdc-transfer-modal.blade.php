@@ -240,15 +240,7 @@
         document.getElementById('confirm-total-usdc').textContent = bulkTransferState.totalUsdc.toFixed(2) + ' USDC';
         document.getElementById('confirm-total-php').textContent = '₱' + bulkTransferState.totalPhp.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        window.ensurePayrollPhantomConnected(false)
-            .then((wallet) => {
-                bulkTransferState.userWallet = wallet;
-                bulkTransferState.phantomConnected = true;
-                showBulkStep('confirmation');
-            })
-            .catch(() => {
-                showBulkStep('phantom');
-            });
+        showBulkStep('phantom');
     });
 
     // Connect Phantom
@@ -271,10 +263,7 @@
             return;
         }
 
-        try {
-            bulkTransferState.userWallet = await window.ensurePayrollPhantomConnected(false);
-            bulkTransferState.phantomConnected = true;
-        } catch (error) {
+        if (!bulkTransferState.phantomConnected || !bulkTransferState.userWallet) {
             showBulkAlert('Error', 'Phantom wallet is not connected', 'error');
             return;
         }

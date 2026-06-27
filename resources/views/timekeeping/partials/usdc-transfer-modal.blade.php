@@ -498,12 +498,7 @@
             return;
         }
 
-        try {
-            await ensurePhantomConnected(false);
-            showStep('confirmation');
-        } catch (error) {
-            showStep('phantom');
-        }
+        showStep('phantom');
     });
 
     // Connect Phantom
@@ -525,9 +520,7 @@
             return;
         }
 
-        try {
-            await ensurePhantomConnected(false);
-        } catch (error) {
+        if (!phantomConnected || !userWallet) {
             showAlert('Error', 'Phantom wallet is not connected', 'error');
             return;
         }
