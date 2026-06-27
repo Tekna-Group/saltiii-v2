@@ -355,7 +355,7 @@ src="https://www.facebook.com/tr?id=4242328826038076&ev=PageView&noscript=1"
                         @endif
                 
                     </ul>
-                    <div class="helpdesk-link-wrapper mt-auto">
+                    {{-- <div class="helpdesk-link-wrapper mt-auto">
                         <ul class="navbar-nav">
                             <li class="nav-item">
                                 <a class="nav-link menu-link bg-white" href="https://saltiii.freshdesk.com/support/home" target="_blank">
@@ -364,7 +364,7 @@ src="https://www.facebook.com/tr?id=4242328826038076&ev=PageView&noscript=1"
                                 </a>
                             </li>
                         </ul>
-                    </div>
+                    </div> --}}
                 </div>
                 
                 <!-- Sidebar -->
