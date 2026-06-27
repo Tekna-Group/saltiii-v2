@@ -227,7 +227,6 @@
 <script>
     // Network config injected from .env via Blade
     const solanaNetwork   = @json(env('SOLANA_NETWORK', 'mainnet-beta'));
-    const solanaRpcUrl    = @json(rtrim(env('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com'), '/'));
     const solanaRpcProxyUrl = @json(route('Timekeeping.solanaRpc'));
     const usdcMintAddress = @json(env('USDC_MINT_ADDRESS', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'));
 
@@ -494,11 +493,6 @@
             return;
         }
 
-        if (!solanaRpcUrl) {
-            showAlert('Error', 'Solana RPC URL is not configured.', 'error');
-            return;
-        }
-
         try {
             await ensurePhantomConnected(false);
             showStep('confirmation');
@@ -666,7 +660,7 @@
         if (isForbidden) {
             return new Error(
                 `Solana RPC rejected the request while trying to ${action}. ` +
-                `Check SOLANA_RPC_URL for ${solanaNetwork}; public Solana endpoints can block browser requests, so use an RPC provider URL/API key that allows this app's domain.`
+                `Check the server SOLANA_RPC_URL/API key for ${solanaNetwork}.`
             );
         }
 

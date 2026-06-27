@@ -216,11 +216,6 @@
             return;
         }
 
-        if (!solanaRpcUrl) {
-            showBulkAlert('Error', 'Solana RPC URL is not configured.', 'error');
-            return;
-        }
-
         // Calculate total amounts
         const autoConvert = document.getElementById('auto-convert-rate').checked;
         const fixedRate = autoConvert ? 0.018 : parseFloat(document.getElementById('fixed-exchange-rate').value);
