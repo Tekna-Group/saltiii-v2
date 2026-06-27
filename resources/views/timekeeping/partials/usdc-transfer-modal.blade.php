@@ -226,8 +226,9 @@
 
 <script>
     // Network config injected from .env via Blade
-    const solanaRpcUrl    = '{{ env("SOLANA_RPC_URL",    "https://api.mainnet-beta.solana.com") }}';
-    const usdcMintAddress = '{{ env("USDC_MINT_ADDRESS", "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v") }}';
+    const solanaNetwork   = @json(env('SOLANA_NETWORK', 'mainnet-beta'));
+    const solanaRpcUrl    = @json(rtrim(env('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com'), '/'));
+    const usdcMintAddress = @json(env('USDC_MINT_ADDRESS', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'));
 
     let usdcTransferData = {};
     let currentStep = 'details';
@@ -355,6 +356,17 @@
             showAlert('Error', 'Wallet address is not set for this user', 'error');
             return;
         }
+
+        if (!isValidSolanaPublicKey(usdcTransferData.wallet_address)) {
+            showAlert('Error', 'The recipient wallet address is not a valid Solana address.', 'error');
+            return;
+        }
+
+        if (!solanaRpcUrl) {
+            showAlert('Error', 'Solana RPC URL is not configured.', 'error');
+            return;
+        }
+
         showStep('phantom');
     });
 
@@ -396,6 +408,10 @@
     // Process real USDC transfer via Phantom wallet + Solana Web3.js
     async function processTransferViaPhantom() {
         try {
+            if (!window.solanaWeb3) {
+                throw new Error('Solana Web3 library failed to load. Please refresh the page and try again.');
+            }
+
             const {
                 Connection, PublicKey, Transaction, TransactionInstruction, SystemProgram
             } = solanaWeb3;
@@ -427,7 +443,13 @@
             const transaction = new Transaction();
 
             // Create recipient ATA if it doesn't exist (payer = sender)
-            const recipientAccountInfo = await connection.getAccountInfo(recipientATA);
+            let recipientAccountInfo;
+            try {
+                recipientAccountInfo = await connection.getAccountInfo(recipientATA);
+            } catch (rpcError) {
+                throw normalizeSolanaRpcError(rpcError, 'check the recipient token account');
+            }
+
             if (!recipientAccountInfo) {
                 transaction.add(new TransactionInstruction({
                     keys: [
@@ -463,7 +485,13 @@
                 data: transferData,
             }));
 
-            const { blockhash } = await connection.getLatestBlockhash();
+            let blockhash;
+            try {
+                ({ blockhash } = await connection.getLatestBlockhash());
+            } catch (rpcError) {
+                throw normalizeSolanaRpcError(rpcError, 'fetch the latest blockhash');
+            }
+
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = senderPublicKey;
 
@@ -471,7 +499,11 @@
             const { signature } = await window.solana.signAndSendTransaction(transaction);
 
             // Wait for on-chain confirmation before saving
-            await connection.confirmTransaction(signature, 'confirmed');
+            try {
+                await connection.confirmTransaction(signature, 'confirmed');
+            } catch (rpcError) {
+                throw normalizeSolanaRpcError(rpcError, 'confirm the transaction');
+            }
 
             submitTransferToServer(signature);
 
@@ -480,6 +512,33 @@
             showAlert('Error', error.message || 'Transfer failed. Check console for details.', 'error');
             showStep('confirmation');
         }
+    }
+
+    function isValidSolanaPublicKey(address) {
+        try {
+            if (!window.solanaWeb3 || !address) {
+                return false;
+            }
+
+            new solanaWeb3.PublicKey(address);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function normalizeSolanaRpcError(error, action) {
+        const message = String(error?.message || error || '');
+        const isForbidden = message.includes('403') || message.toLowerCase().includes('access forbidden');
+
+        if (isForbidden) {
+            return new Error(
+                `Solana RPC rejected the request while trying to ${action}. ` +
+                `Check SOLANA_RPC_URL for ${solanaNetwork}; public Solana endpoints can block browser requests, so use an RPC provider URL/API key that allows this app's domain.`
+            );
+        }
+
+        return error instanceof Error ? error : new Error(message || `Unable to ${action}.`);
     }
 
     // Submit transfer to server
@@ -517,11 +576,13 @@
         const alertContainer = document.getElementById('transfer-alert-container');
         const alertClass = `alert-${type === 'error' ? 'danger' : type}`;
         const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+        const safeTitle = escapeHtml(title);
+        const safeMessage = escapeHtml(message);
         
         const alertHTML = `
             <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
                 <i class="fas fa-${icon} me-2"></i>
-                <strong>${title}:</strong> ${message}
+                <strong>${safeTitle}:</strong> ${safeMessage}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
@@ -534,5 +595,11 @@
                 alert.remove();
             }
         }, 5000);
+    }
+
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.textContent = value == null ? '' : String(value);
+        return div.innerHTML;
     }
 </script>
