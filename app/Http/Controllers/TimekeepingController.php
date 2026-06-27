@@ -8,6 +8,7 @@ use App\PaymentPosting;
 use App\PayrollAdjustment;
 use App\TokenTransfer;
 use App\Services\ExchangeRateService;
+use App\Services\SolanaTokenService;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
@@ -422,6 +423,20 @@ class TimekeepingController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'This transaction has already been processed.',
+                ], 422);
+            }
+
+            $solanaService = new SolanaTokenService();
+            $transaction = $solanaService->getTransaction($validated['transaction_signature']);
+            if (
+                !$transaction ||
+                isset($transaction['error']) ||
+                empty($transaction['result']) ||
+                !empty($transaction['result']['meta']['err'])
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction could not be verified on Solana. Payment was not marked as paid.',
                 ], 422);
             }
 

@@ -209,6 +209,17 @@
             return;
         }
 
+        const invalidWalletUsers = bulkTransferState.selectedUsers.filter(user => !isValidSolanaPublicKey(user.wallet_address));
+        if (invalidWalletUsers.length > 0) {
+            showBulkAlert('Error', 'Missing or invalid wallet address for: ' + invalidWalletUsers.map(user => user.user_name).join(', '), 'error');
+            return;
+        }
+
+        if (!solanaRpcUrl) {
+            showBulkAlert('Error', 'Solana RPC URL is not configured.', 'error');
+            return;
+        }
+
         // Calculate total amounts
         const autoConvert = document.getElementById('auto-convert-rate').checked;
         const fixedRate = autoConvert ? 0.018 : parseFloat(document.getElementById('fixed-exchange-rate').value);
@@ -271,9 +282,8 @@
         processBulkTransfers();
     });
 
-    function processBulkTransfers() {
+    async function processBulkTransfers() {
         document.getElementById('processing-count').textContent = bulkTransferState.selectedUsers.length;
-        let processed = 0;
         let progressHtml = '';
 
         bulkTransferState.selectedUsers.forEach((user, index) => {
@@ -282,34 +292,132 @@
 
         document.getElementById('processing-progress').innerHTML = progressHtml;
 
-        // Process each transfer
-        bulkTransferState.selectedUsers.forEach((user, index) => {
-            setTimeout(() => {
+        let successCount = 0;
+
+        for (const user of bulkTransferState.selectedUsers) {
+            const progressElement = document.getElementById(`progress-${user.user_id}`);
+            try {
                 const usdc = parseFloat(user.total_amount) * bulkTransferState.exchangeRate;
-                const base58Chars = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-                let mockSignature = '';
-                for (let i = 0; i < 88; i++) {
-                    mockSignature += base58Chars.charAt(Math.floor(Math.random() * base58Chars.length));
+                const signature = await sendBulkUsdcViaPhantom(user.wallet_address, usdc);
+                await submitBulkTransferToServer(user, usdc, signature);
+                successCount++;
+
+                if (progressElement) {
+                    progressElement.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i> ${user.user_name}`;
                 }
+            } catch (error) {
+                if (progressElement) {
+                    progressElement.innerHTML = `<i class="fas fa-times-circle text-danger me-2"></i> ${user.user_name} (${error.message || 'Error'})`;
+                }
+                showBulkAlert('Error', error.message || 'Bulk transfer failed. No remaining users were processed.', 'error');
+                showBulkStep('confirmation');
+                return;
+            }
+        }
 
-                submitBulkTransferToServer(user, usdc, mockSignature, index);
-            }, index * 1000);
-        });
+        document.getElementById('success-count').textContent = successCount;
+        showBulkStep('success');
 
-        // Show success after all transfers
         setTimeout(() => {
-            document.getElementById('success-count').textContent = bulkTransferState.selectedUsers.length;
-            showBulkStep('success');
-            
-            // Reset checkboxes and reload after 3 seconds
-            setTimeout(() => {
-                location.reload();
-            }, 3000);
-        }, bulkTransferState.selectedUsers.length * 1000 + 1000);
+            location.reload();
+        }, 3000);
     }
 
-    function submitBulkTransferToServer(user, usdc, transactionSignature, index) {
-        axios.post("{{ route('Timekeeping.processUsdcTransfer') }}", {
+    async function sendBulkUsdcViaPhantom(recipientWalletAddress, usdcAmount) {
+        if (!window.solanaWeb3) {
+            throw new Error('Solana Web3 library failed to load. Please refresh the page and try again.');
+        }
+
+        const {
+            Connection, PublicKey, Transaction, TransactionInstruction, SystemProgram
+        } = solanaWeb3;
+
+        const TOKEN_PROGRAM_ID            = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
+        const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1bJs');
+        const SYSVAR_RENT_PUBKEY          = new PublicKey('SysvarRent111111111111111111111111111111111');
+
+        const connection         = new Connection(solanaRpcUrl, 'confirmed');
+        const usdcMint           = new PublicKey(usdcMintAddress);
+        const senderPublicKey    = new PublicKey(bulkTransferState.userWallet);
+        const recipientPublicKey = new PublicKey(recipientWalletAddress);
+
+        function deriveATA(owner, mint) {
+            const [address] = PublicKey.findProgramAddressSync(
+                [owner.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+                ASSOCIATED_TOKEN_PROGRAM_ID
+            );
+            return address;
+        }
+
+        const senderATA    = deriveATA(senderPublicKey, usdcMint);
+        const recipientATA = deriveATA(recipientPublicKey, usdcMint);
+        const rawAmount    = BigInt(Math.round(usdcAmount * 1_000_000));
+        const transaction  = new Transaction();
+
+        let recipientAccountInfo;
+        try {
+            recipientAccountInfo = await connection.getAccountInfo(recipientATA);
+        } catch (rpcError) {
+            throw normalizeSolanaRpcError(rpcError, 'check the recipient token account');
+        }
+
+        if (!recipientAccountInfo) {
+            transaction.add(new TransactionInstruction({
+                keys: [
+                    { pubkey: senderPublicKey,         isSigner: true,  isWritable: true  },
+                    { pubkey: recipientATA,            isSigner: false, isWritable: true  },
+                    { pubkey: recipientPublicKey,      isSigner: false, isWritable: false },
+                    { pubkey: usdcMint,                isSigner: false, isWritable: false },
+                    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                    { pubkey: TOKEN_PROGRAM_ID,        isSigner: false, isWritable: false },
+                    { pubkey: SYSVAR_RENT_PUBKEY,      isSigner: false, isWritable: false },
+                ],
+                programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+                data: new Uint8Array(0),
+            }));
+        }
+
+        const transferData = new Uint8Array(9);
+        transferData[0] = 3;
+        let rem = rawAmount;
+        for (let i = 1; i <= 8; i++) {
+            transferData[i] = Number(rem & BigInt(0xFF));
+            rem >>= BigInt(8);
+        }
+
+        transaction.add(new TransactionInstruction({
+            keys: [
+                { pubkey: senderATA,         isSigner: false, isWritable: true  },
+                { pubkey: recipientATA,      isSigner: false, isWritable: true  },
+                { pubkey: senderPublicKey,   isSigner: true,  isWritable: false },
+            ],
+            programId: TOKEN_PROGRAM_ID,
+            data: transferData,
+        }));
+
+        let blockhash;
+        try {
+            ({ blockhash } = await connection.getLatestBlockhash());
+        } catch (rpcError) {
+            throw normalizeSolanaRpcError(rpcError, 'fetch the latest blockhash');
+        }
+
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = senderPublicKey;
+
+        const { signature } = await window.solana.signAndSendTransaction(transaction);
+
+        try {
+            await connection.confirmTransaction(signature, 'confirmed');
+        } catch (rpcError) {
+            throw normalizeSolanaRpcError(rpcError, 'confirm the transaction');
+        }
+
+        return signature;
+    }
+
+    function submitBulkTransferToServer(user, usdc, transactionSignature) {
+        return axios.post("{{ route('Timekeeping.processUsdcTransfer') }}", {
             user_id: user.user_id,
             transaction_signature: transactionSignature,
             usdc_amount: usdc,
@@ -318,20 +426,9 @@
             date_to: user.date_to,
             _token: document.querySelector('input[name="_token"]').value
         })
-        .then(response => {
-            if (response.data.success) {
-                const progressElement = document.getElementById(`progress-${user.user_id}`);
-                if (progressElement) {
-                    progressElement.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i> ${user.user_name}`;
-                }
-            }
-        })
         .catch(error => {
-            const progressElement = document.getElementById(`progress-${user.user_id}`);
-            if (progressElement) {
-                progressElement.innerHTML = `<i class="fas fa-times-circle text-danger me-2"></i> ${user.user_name} (Error)`;
-            }
             console.error(error);
+            throw new Error(error.response?.data?.message || 'Failed to save transfer record.');
         });
     }
 

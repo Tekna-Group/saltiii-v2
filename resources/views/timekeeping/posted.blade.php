@@ -109,7 +109,7 @@
                                     $adjDeducts = $posting ? $posting->adjustments->where('type','deduct')->sum('amount') : 0;
                                     $netPay   = $grossPay + $adjAdds - $adjDeducts;
                                 @endphp
-                                <tr class="user-row" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-hourly-rate="{{ $hourlyRate }}" data-date-from="{{ $postedFrom }}" data-date-to="{{ $postedTo }}" data-total-hours="{{ $totalHours }}" data-total-amount="{{ $netPay }}">
+                                <tr class="user-row" data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}" data-wallet-address="{{ optional($user)->wallet_address }}" data-hourly-rate="{{ $hourlyRate }}" data-date-from="{{ $postedFrom }}" data-date-to="{{ $postedTo }}" data-total-hours="{{ $totalHours }}" data-total-amount="{{ $netPay }}">
                                     <td>
                                         <input type="checkbox" class="form-check-input user-checkbox" value="{{ $user->id }}" @if($paymentStatus === 'Completed') disabled @endif>
                                     </td>
@@ -389,6 +389,7 @@
                     return {
                         user_id: row.dataset.userId,
                         user_name: row.dataset.userName,
+                        wallet_address: row.dataset.walletAddress,
                         hourly_rate: row.dataset.hourlyRate,
                         date_from: row.dataset.dateFrom,
                         date_to: row.dataset.dateTo,
