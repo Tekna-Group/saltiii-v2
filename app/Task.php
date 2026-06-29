@@ -29,6 +29,11 @@ class Task extends Model
         return $this->hasMany(TaskComment::class);
     }
 
+    public function feedbackLoops()
+    {
+        return $this->hasMany(TaskFeedbackLoop::class);
+    }
+
     // One-to-many relation: Task has many attachments
     public function attachments()
     {

@@ -45,6 +45,8 @@ Route::post('new-task/{project_id}', 'TaskController@store')->name('New Task');
 Route::post('new-task-home', 'TaskController@storeNew')->name('New Task');
 Route::get('/view-task/{id}', 'TaskController@view')->name('View Task');
 Route::post('task-comment/{id}', 'TaskController@comment')->name('Task Comment');
+Route::post('tasks/{id}/feedback', 'TaskController@storeFeedback')->name('tasks.feedback.store');
+Route::post('tasks/{id}/feedback/{feedbackId}/resolve', 'TaskController@resolveFeedback')->name('tasks.feedback.resolve');
 Route::post('task-attachment/{id}', 'TaskController@attachment')->name('Task Attachment');    
 Route::post('task-activity/{id}','TaskController@activity')->name('Activity');
 Route::post('activity','TaskController@Newactivity')->name('Activity');

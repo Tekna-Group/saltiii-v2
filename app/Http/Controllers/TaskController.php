@@ -7,6 +7,7 @@ use App\Notifications\UserTaggedNotification;
 use App\Project;
 use App\TaskComment;
 use App\TaskCommentUserTagged;
+use App\TaskFeedbackLoop;
 use App\ProjectBoard;
 use App\Events\TasksSummaryGenerated;
 use App\TaskActivity;
@@ -22,7 +23,7 @@ class TaskController extends Controller
     public function index()
     {
         // Fetch all tasks from the database
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })
@@ -126,7 +127,7 @@ class TaskController extends Controller
     public function myTasks(Request $request)
     {
         $boards = ProjectBoard::get();
-         $tasks = Task::with(['users', 'project', 'comments', 'attachments'])
+         $tasks = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })
@@ -274,7 +275,7 @@ class TaskController extends Controller
         $projects = Project::whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->where('completed',0)->get();
-        $task = Task::with(['users', 'project', 'comments', 'attachments'])->findOrFail($id);
+        $task = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])->findOrFail($id);
    
         auth()->user()
         ->notifications()
@@ -393,6 +394,51 @@ class TaskController extends Controller
                 'user_avatar' => auth()->user()->avatar ?? url('images/Favicon.png'),
             ]
         ]);
+    }
+
+    public function storeFeedback(Request $request, $taskId)
+    {
+        $request->validate([
+            'feedback' => 'required|string|max:5000',
+        ]);
+
+        $task = Task::findOrFail($taskId);
+
+        TaskFeedbackLoop::create([
+            'task_id' => $task->id,
+            'project_id' => $task->project_id,
+            'user_id' => auth()->id(),
+            'feedback' => $request->feedback,
+            'status' => 'Open',
+        ]);
+
+        $request->merge([
+            'new_value' => $request->feedback,
+        ]);
+        $this->createTaskComment($request, $task->project_id, $task->id, 'Feedback Loop Added');
+
+        Alert::success('Feedback added to the loop.')->persistent('Dismiss');
+        return back();
+    }
+
+    public function resolveFeedback(Request $request, $taskId, $feedbackId)
+    {
+        $task = Task::findOrFail($taskId);
+        $feedback = TaskFeedbackLoop::where('task_id', $task->id)->findOrFail($feedbackId);
+
+        $feedback->status = 'Resolved';
+        $feedback->resolved_by = auth()->id();
+        $feedback->resolved_at = now();
+        $feedback->save();
+
+        $request->merge([
+            'old_value' => 'Open',
+            'new_value' => 'Resolved',
+        ]);
+        $this->createTaskComment($request, $task->project_id, $task->id, 'Feedback Loop Resolved');
+
+        Alert::success('Feedback marked as resolved.')->persistent('Dismiss');
+        return back();
     }
 
     public function attachment(Request $request,$id)

@@ -31,6 +31,8 @@ class HomeController extends Controller
     {
         $boards = ProjectBoard::get();
         $query = Project::with([
+            'parent',
+            'children.tasks',
             'activities',
             'comments' => function($q) {
                 $q->orderBy('updated_at', 'desc');
@@ -51,10 +53,14 @@ class HomeController extends Controller
                 });
         }
         
-        $projects = Project::whereHas('users', function ($query) {
+        $projects = Project::with(['parent', 'children.tasks', 'tasks', 'activities', 'comments', 'attachments'])
+        ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('name','asc')->where('completed','!=',1)->get();
-        $tasks = Task::where('completed',0)->orderBy('due_date','asc')->get();
+        $tasks = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
+            ->where('completed',0)
+            ->orderBy('due_date','asc')
+            ->get();
         // if(auth()->user()->role != 'Admin') {
             $tasks = $tasks->filter(function ($task) {
                 return $task->users->contains(auth()->user()->id);

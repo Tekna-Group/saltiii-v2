@@ -14,6 +14,17 @@
                 <input type="text" class="form-control" name='name' id="projectName" required>
             </div>
             <div class="mb-3">
+                <label>Parent Project</label>
+                <select class="form-select select2" name="parent_id" id="parentProject">
+                    <option value="">No parent project</option>
+                    @foreach($projects as $parentProject)
+                        <option value="{{ $parentProject->id }}">
+                            {{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3">
                 <label>Team Member</label>
                 <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member' required>
                 {{-- <option value="">Select Team Member</option> --}}

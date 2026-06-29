@@ -152,6 +152,19 @@
                                                             <h5 class="fs-14 text-truncate mb-1 project-name">
                                                                 <span class="text-body">{{ $project->name }}</span>
                                                             </h5>
+                                                            @if($project->parent)
+                                                                <div class="mb-1">
+                                                                    <span class="badge bg-info-subtle text-info">
+                                                                        Under {{ $project->parent->name }}
+                                                                    </span>
+                                                                </div>
+                                                            @elseif($project->children->count())
+                                                                <div class="mb-1">
+                                                                    <span class="badge bg-primary-subtle text-primary">
+                                                                        {{ $project->children->count() }} Subproject{{ $project->children->count() > 1 ? 's' : '' }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif
                                                             <small class="fs-12 text-muted">
                                                                 <i class="ri-calendar-event-fill"></i> 
                                                                 Last Updated: 
@@ -768,6 +781,11 @@
                                         </a>
                                     </li>
                                     <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#feedback-{{$task->id}}" role="tab">
+                                            Feedback Loop ({{$task->feedbackLoops->count()}})
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
                                         <a class="nav-link" data-bs-toggle="tab" href="#attachments-{{$task->id}}" role="tab">
                                             Attachments({{$task->attachments->count()}})
                                         </a>
@@ -845,6 +863,64 @@
                                         </div>
                                     </form>
                                     @include('tasks.saveComment')
+                                </div>
+
+                                <!--end tab-pane-->
+                                <div class="tab-pane" id="feedback-{{$task->id}}" role="tabpanel">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title mb-0">Feedback Loop</h5>
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            {{$task->feedbackLoops->where('status', 'Open')->count()}} Open
+                                        </span>
+                                    </div>
+
+                                    <div style="max-height: 220px; overflow-y: auto;" class="px-1 mb-3">
+                                        @forelse($task->feedbackLoops->sortByDesc('created_at') as $feedback)
+                                            <div class="border rounded p-3 mb-2">
+                                                <div class="d-flex justify-content-between gap-2">
+                                                    <div>
+                                                        <h6 class="fs-13 mb-1">
+                                                            {{$feedback->user->name ?? 'User'}}
+                                                            <small class="text-muted">{{date('d M, Y - h:i A', strtotime($feedback->created_at))}}</small>
+                                                        </h6>
+                                                        <p class="text-muted mb-2">{!! nl2br(e($feedback->feedback)) !!}</p>
+                                                        @if($feedback->status === 'Resolved')
+                                                            <small class="text-muted">
+                                                                Resolved by {{$feedback->resolver->name ?? 'User'}}
+                                                                @if($feedback->resolved_at)
+                                                                    on {{date('d M, Y - h:i A', strtotime($feedback->resolved_at))}}
+                                                                @endif
+                                                            </small>
+                                                        @endif
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge {{$feedback->status === 'Resolved' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}}">
+                                                            {{$feedback->status}}
+                                                        </span>
+                                                        @if($feedback->status !== 'Resolved')
+                                                            <form method="POST" action="{{url('tasks/'.$task->id.'/feedback/'.$feedback->id.'/resolve')}}" class="mt-2">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                                    Resolve
+                                                                </button>
+                                                            </form>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-center text-muted py-3">No feedback yet</div>
+                                        @endforelse
+                                    </div>
+
+                                    <form method="POST" action="{{url('tasks/'.$task->id.'/feedback')}}">
+                                        @csrf
+                                        <label for="feedbackText{{$task->id}}" class="form-label">Add Feedback</label>
+                                        <textarea class="form-control bg-light border-light" id="feedbackText{{$task->id}}" name="feedback" rows="3" placeholder="Add feedback, requested changes, or review notes" required></textarea>
+                                        <div class="text-end mt-3">
+                                            <button type="submit" class="btn btn-success">Add to Loop</button>
+                                        </div>
+                                    </form>
                                 </div>
 
                                 <!--end tab-pane-->
@@ -1069,6 +1145,17 @@
             <div class="mb-3">
               <label>Project Name</label>
               <input type="text" class="form-control" name='name' id="projectName" required>
+            </div>
+            <div class="mb-3">
+              <label>Parent Project</label>
+              <select class="form-select select2" name="parent_id" id="parentProject">
+                <option value="">No parent project</option>
+                @foreach($projects as $parentProject)
+                  <option value="{{ $parentProject->id }}">
+                    {{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}
+                  </option>
+                @endforeach
+              </select>
             </div>
             <div class="mb-3">
               <label>Team Member</label>

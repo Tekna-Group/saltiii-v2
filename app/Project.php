@@ -9,6 +9,7 @@ class Project extends Model
     //
     protected $fillable = [
         'name',
+        'parent_id',
         'description',
         'completed', 
         'user_id', // add this line
@@ -19,6 +20,21 @@ class Project extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'project_users'); // if many-to-many
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Project::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Project::class, 'parent_id');
+    }
+
+    public function subprojects()
+    {
+        return $this->children();
     }
     public function tasks()
     {

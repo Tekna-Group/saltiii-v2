@@ -17,7 +17,8 @@ class ProjectController extends Controller
     {
         // Fetch all projects from the database
         // $projects = \App\Models\Project::all();
-        $projects = Project::whereHas('users', function ($query) {
+        $projects = Project::with(['parent', 'children.tasks', 'tasks'])
+        ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('name','asc')->where('completed','!=',1)->get();
         if (auth()->user()->role === 'Admin') {
@@ -39,10 +40,18 @@ class ProjectController extends Controller
         // dd($request->all());
         $request->validate([
             'name' => 'required|string|max:255',
+            'parent_id' => 'nullable|exists:projects,id',
         ]);
+
+        if ($request->filled('parent_id')) {
+            Project::whereHas('users', function ($query) {
+                $query->where('user_id', auth()->id());
+            })->findOrFail($request->parent_id);
+        }
 
         // Create a new project instance
         $project = new Project();
+        $project->parent_id = $request->input('parent_id');
         $project->name = $request->input('name');
         $project->description = $request->input('description');
         $project->status = $request->input('status');
@@ -83,6 +92,12 @@ class ProjectController extends Controller
     {
 
        $project = Project::with([
+            'parent',
+            'children' => function ($query) {
+                $query->where('completed', '!=', 1)->orderBy('name', 'asc');
+            },
+            'children.tasks',
+            'children.users',
             'users',
             // Sort statuses by position ASC when eager loading
             'statuses' => function ($query) {
@@ -143,6 +158,12 @@ class ProjectController extends Controller
     {
 
        $project = Project::with([
+            'parent',
+            'children' => function ($query) {
+                $query->where('completed', '!=', 1)->orderBy('name', 'asc');
+            },
+            'children.tasks',
+            'children.users',
             'users',
             // Sort statuses by position ASC when eager loading
             'statuses' => function ($query) {

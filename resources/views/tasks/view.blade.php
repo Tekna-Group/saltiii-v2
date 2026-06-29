@@ -176,6 +176,11 @@
                                 Attachments ({{$task->attachments->count()}})
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#feedback-1" role="tab">
+                                Feedback Loop ({{$task->feedbackLoops->count()}})
+                            </a>
+                        </li>
                         <li class="nav-item ">
                             <a class="nav-link " data-bs-toggle="tab" href="#profile-1" role="tab" aria-selected="true">
                                 Time Entries ({{$task->activities->count()}})
@@ -231,6 +236,63 @@
                                 </div>
                             </div>
                             <!--end row-->
+                        </form>
+                    </div>
+                    <!--end tab-pane-->
+                    <div class="tab-pane" id="feedback-1" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Feedback Loop</h5>
+                            <span class="badge bg-warning-subtle text-warning">
+                                {{$task->feedbackLoops->where('status', 'Open')->count()}} Open
+                            </span>
+                        </div>
+
+                        <div style="max-height: 300px; overflow-y: auto;" class="px-1 mb-3">
+                            @forelse($task->feedbackLoops->sortByDesc('created_at') as $feedback)
+                                <div class="border rounded p-3 mb-2">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <div>
+                                            <h6 class="fs-13 mb-1">
+                                                {{$feedback->user->name ?? 'User'}}
+                                                <small class="text-muted">{{date('d M, Y - h:i A', strtotime($feedback->created_at))}}</small>
+                                            </h6>
+                                            <p class="text-muted mb-2">{!! nl2br(e($feedback->feedback)) !!}</p>
+                                            @if($feedback->status === 'Resolved')
+                                                <small class="text-muted">
+                                                    Resolved by {{$feedback->resolver->name ?? 'User'}}
+                                                    @if($feedback->resolved_at)
+                                                        on {{date('d M, Y - h:i A', strtotime($feedback->resolved_at))}}
+                                                    @endif
+                                                </small>
+                                            @endif
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge {{$feedback->status === 'Resolved' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'}}">
+                                                {{$feedback->status}}
+                                            </span>
+                                            @if($feedback->status !== 'Resolved')
+                                                <form method="POST" action="{{url('tasks/'.$task->id.'/feedback/'.$feedback->id.'/resolve')}}" class="mt-2">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                                        Resolve
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center text-muted py-3">No feedback yet</div>
+                            @endforelse
+                        </div>
+
+                        <form method="POST" action="{{url('tasks/'.$task->id.'/feedback')}}">
+                            @csrf
+                            <label for="feedbackText{{$task->id}}" class="form-label">Add Feedback</label>
+                            <textarea class="form-control bg-light border-light" id="feedbackText{{$task->id}}" name="feedback" rows="3" placeholder="Add feedback, requested changes, or review notes" required></textarea>
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-success">Add to Loop</button>
+                            </div>
                         </form>
                     </div>
                     <!--end tab-pane-->

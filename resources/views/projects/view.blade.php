@@ -140,6 +140,15 @@
                                             <div>Created Date : <span class="fw-medium">{{date('d M, Y',strtotime($project->created_at))}}</span></div>
                                             <div class="vr"></div>
                                             <div>Last Update : <span class="fw-medium">{{date('d M, Y',strtotime($project->updated_at))}}</span></div>
+                                            @if($project->parent)
+                                                <div class="vr"></div>
+                                                <div>
+                                                    Parent :
+                                                    <a href="{{ url('/view-project/'.$project->parent->id) }}" class="fw-medium">
+                                                        {{ $project->parent->name }}
+                                                    </a>
+                                                </div>
+                                            @endif
                                             <div class="vr"></div>
                                             {{-- <div class="badge rounded-pill bg-info fs-12">New</div> --}}
                                             <div class="badge rounded-pill bg-danger fs-12">High</div>
@@ -188,6 +197,51 @@
     </div>
     <!-- end col -->
 </div>
+@if($project->children->count())
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header align-items-center d-flex">
+                <h5 class="card-title mb-0 flex-grow-1">Subprojects</h5>
+                <span class="badge bg-primary-subtle text-primary">{{ $project->children->count() }}</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    @foreach($project->children as $subproject)
+                        @php
+                            $subprojectTaskCount = $subproject->tasks->count();
+                            $subprojectCompletedTasks = $subproject->tasks->where('completed', 1)->count();
+                            $subprojectProgress = $subprojectTaskCount > 0 ? ($subprojectCompletedTasks / $subprojectTaskCount) * 100 : 0;
+                        @endphp
+                        <div class="col-md-6 col-xl-3">
+                            <a href="{{ url('/view-project/'.$subproject->id) }}" class="text-decoration-none">
+                                <div class="border rounded p-3 h-100">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="avatar-xs">
+                                            <div class="avatar-title rounded bg-primary-subtle text-primary">
+                                                <i class="ri-folder-2-line"></i>
+                                            </div>
+                                        </div>
+                                        <h6 class="mb-0 text-body">{{ $subproject->name }}</h6>
+                                    </div>
+                                    <p class="text-muted small mb-2 text-truncate">{{ $subproject->description }}</p>
+                                    <div class="d-flex justify-content-between text-muted small mb-1">
+                                        <span>Tasks</span>
+                                        <span>{{ $subprojectCompletedTasks }}/{{ $subprojectTaskCount }}</span>
+                                    </div>
+                                    <div class="progress progress-sm">
+                                        <div class="progress-bar bg-success" style="width: {{ $subprojectProgress }}%;"></div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 <div class="row">
     <div class="col-lg-12">
         <div class="tab-content text-muted">

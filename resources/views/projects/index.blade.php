@@ -44,6 +44,19 @@
                             <h5 class="mb-1 fs-15 project-name">
                                 <a href="{{ url('/view-project/'.$project->id) }}" class="text-body">{{ $project->name }}</a>
                             </h5>
+                            @if($project->parent)
+                                <div class="mb-2">
+                                    <span class="badge bg-info-subtle text-info">
+                                        Under {{ $project->parent->name }}
+                                    </span>
+                                </div>
+                            @elseif($project->children->count())
+                                <div class="mb-2">
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        {{ $project->children->count() }} Subproject{{ $project->children->count() > 1 ? 's' : '' }}
+                                    </span>
+                                </div>
+                            @endif
                             <p class="text-muted text-truncate-two-lines mb-3">{{ $project->description }}</p>
                         </div>
                     </div>
@@ -106,6 +119,17 @@
             <div class="mb-3">
               <label>Project Name</label>
               <input type="text" class="form-control" name='name' id="projectName" required>
+            </div>
+            <div class="mb-3">
+              <label>Parent Project</label>
+              <select class="form-select select2" name="parent_id" id="parentProject">
+                <option value="">No parent project</option>
+                @foreach($projects as $parentProject)
+                  <option value="{{ $parentProject->id }}">
+                    {{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}
+                  </option>
+                @endforeach
+              </select>
             </div>
             <div class="mb-3">
               <label>Team Member</label>
