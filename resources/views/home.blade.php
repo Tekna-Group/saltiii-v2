@@ -235,7 +235,7 @@
                       <div class="card-header align-items-center d-flex">
                           <h4 class="card-title mb-0 flex-grow-1 fw-bold text-{{$sectionData['color']}}">
                               {{$sectionTitle}} 
-                              <span class="badge bg-{{$sectionData['color']}}">{{ $sectionData['tasks']->count() }}</span>
+                              <span class="badge bg-{{$sectionData['color']}} dashboard-section-count" data-section-index="{{ $key }}">{{ $sectionData['tasks']->count() }}</span>
                           </h4>
                           <div class="flex-shrink-0 ms-3">
                               <input type="text"   data-intro="Search within {{$sectionTitle}} by typing keywords here." data-step="6"
@@ -245,7 +245,7 @@
                           </div>
                       </div><!-- end card header -->
                       <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
-                      <div class="card-body">
+                      <div class="card-body dashboard-task-list" data-section-index="{{ $key }}">
                          <div class="pt-2 pb-2">
                             <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()" data-intro="Click here to <b>add a new task</b> to your project. You can assign users, set deadlines, and track progress easily." data-step="7">+ Add Task</button>
                         </div>
@@ -345,7 +345,7 @@
                             </div>
                           @include('home.transfer')
                           @empty
-                              <div class="text-center text-muted py-3">No tasks</div>
+                              <div class="text-center text-muted py-3 no-tasks-message">No tasks</div>
                           @endforelse
                       </div>
                       </div>
@@ -356,18 +356,9 @@
                   document.addEventListener('DOMContentLoaded', function() {
                       const searchInput = document.getElementById('searchTasks{{$key}}');
                       const tasksContainer = document.getElementById('tasksContainer{{$key}}');
-                      const tasks = tasksContainer.querySelectorAll('.task-item');
                   
                       searchInput.addEventListener('input', function() {
-                          const filter = this.value.toLowerCase();
-                          tasks.forEach(task => {
-                              const title = task.querySelector('h6').textContent.toLowerCase();
-                              if(title.includes(filter)) {
-                                  task.style.display = '';
-                              } else {
-                                  task.style.display = 'none';
-                              }
-                          });
+                          applyDashboardTaskSearch('{{ $key }}');
                       });
                   });
                   </script>
@@ -1276,6 +1267,99 @@
         return date.toLocaleDateString('en-US', options);
     }
 
+    function formatDateOnlyForCard(dateValue) {
+        return formatDateOnlyForDisplay(dateValue, {
+            month: '2-digit',
+            day: '2-digit',
+            year: '2-digit'
+        }).replace(/\//g, '.');
+    }
+
+    function todayDateOnly() {
+        const today = new Date();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        return `${today.getFullYear()}-${month}-${day}`;
+    }
+
+    function dashboardSectionIndexForDate(dateValue) {
+        const today = todayDateOnly();
+
+        if (dateValue < today) return '0';
+        if (dateValue === today) return '1';
+        return '2';
+    }
+
+    function refreshDashboardSectionCounts() {
+        document.querySelectorAll('.dashboard-task-list').forEach(list => {
+            const countBadge = document.querySelector(`.dashboard-section-count[data-section-index="${list.dataset.sectionIndex}"]`);
+            if (countBadge) {
+                countBadge.textContent = list.querySelectorAll('.task-item').length;
+            }
+
+            let emptyMessage = list.querySelector('.no-tasks-message');
+            const hasTasks = list.querySelectorAll('.task-item').length > 0;
+
+            if (hasTasks && emptyMessage) {
+                emptyMessage.remove();
+            } else if (!hasTasks && !emptyMessage) {
+                emptyMessage = document.createElement('div');
+                emptyMessage.className = 'text-center text-muted py-3 no-tasks-message';
+                emptyMessage.textContent = 'No tasks';
+                list.appendChild(emptyMessage);
+            }
+        });
+    }
+
+    function applyDashboardTaskSearch(sectionIndex) {
+        const searchInput = document.getElementById(`searchTasks${sectionIndex}`);
+        const tasksContainer = document.getElementById(`tasksContainer${sectionIndex}`);
+
+        if (!searchInput || !tasksContainer) return;
+
+        const filter = searchInput.value.toLowerCase();
+        const tasks = tasksContainer.querySelectorAll('.task-item');
+
+        tasks.forEach(task => {
+            const title = task.querySelector('h6').textContent.toLowerCase();
+            task.style.display = title.includes(filter) ? '' : 'none';
+        });
+    }
+
+    function moveDashboardTaskCard(taskId, dueDate) {
+        const taskCard = document.getElementById(`taskCard${taskId}`);
+        const currentList = taskCard ? taskCard.closest('.dashboard-task-list') : null;
+        const currentSectionIndex = currentList ? currentList.dataset.sectionIndex : null;
+        const targetSectionIndex = dashboardSectionIndexForDate(dueDate);
+        const targetList = document.querySelector(`.dashboard-task-list[data-section-index="${targetSectionIndex}"]`);
+
+        if (!taskCard || !targetList) return;
+
+        const sectionStyles = {
+            '0': 'background-color: #FFE6E6; border: 1px solid #FFB3B3; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;',
+            '1': 'background-color: #FFF7E6; border: 1px solid #FFE3B3; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;',
+            '2': 'background-color: #E6FFEB; border: 1px solid #B3FFC2; border-radius: 10px; transition: transform 0.2s, box-shadow 0.2s;'
+        };
+
+        const card = taskCard.querySelector('.card-hover');
+        if (card) {
+            card.setAttribute('style', sectionStyles[targetSectionIndex]);
+        }
+
+        const emptyMessage = targetList.querySelector('.no-tasks-message');
+        if (emptyMessage) {
+            emptyMessage.remove();
+        }
+
+        targetList.appendChild(taskCard);
+        refreshDashboardSectionCounts();
+        if (currentSectionIndex) {
+            applyDashboardTaskSearch(currentSectionIndex);
+        }
+        applyDashboardTaskSearch(targetSectionIndex);
+    }
+
     function makeDueDateEditable(element) 
     {
     const id = element.getAttribute('data-id');
@@ -1325,11 +1409,7 @@
         if (dueDateDiv) dueDateDiv.textContent = formattedDisplay;
         if (rawSpan) rawSpan.textContent = newDate;
         if (cardDueDate) {
-            cardDueDate.textContent = formatDateOnlyForDisplay(newDate, {
-                month: '2-digit',
-                day: '2-digit',
-                year: '2-digit'
-            });
+            cardDueDate.textContent = formatDateOnlyForCard(newDate);
         }
 
         // Send AJAX
@@ -1350,12 +1430,9 @@
                 if (dueDateDiv) dueDateDiv.textContent = formatDateOnlyForDisplay(savedDate);
                 if (rawSpan) rawSpan.textContent = savedDate;
                 if (cardDueDate) {
-                    cardDueDate.textContent = formatDateOnlyForDisplay(savedDate, {
-                        month: '2-digit',
-                        day: '2-digit',
-                        year: '2-digit'
-                    });
+                    cardDueDate.textContent = formatDateOnlyForCard(savedDate);
                 }
+                moveDashboardTaskCard(id, savedDate);
 
                 Toastify({
                     text: "Due date updated successfully!",
