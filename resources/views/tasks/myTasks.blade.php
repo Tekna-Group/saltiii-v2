@@ -667,6 +667,17 @@
         }).showToast();
     }
     }
+    function formatDateOnlyForDisplay(dateValue, options = { month: 'short', day: '2-digit', year: 'numeric' }) {
+        const parts = (dateValue || '').split('-');
+
+        if (parts.length !== 3) {
+            return dateValue || '';
+        }
+
+        const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return date.toLocaleDateString('en-US', options);
+    }
+
     function makeDueDateEditable(element) 
     {
     const id = element.getAttribute('data-id');
@@ -682,7 +693,7 @@
     const parts = currentDate.split('-'); 
     const formattedDate = (parts.length === 3) 
         ? `${parts[0]}-${parts[1]}-${parts[2]}`
-        : new Date(currentDate).toISOString().split('T')[0];
+        : currentDate;
 
     // Replace content with input
     element.innerHTML = `<input type="date" class="form-control form-control-sm" data-id="${id}" value="${formattedDate}" autofocus />`;
@@ -709,11 +720,7 @@
         const rawSpan = document.querySelector(`.due-date-raw[data-id="${id}"]`);
 
         // Format for display
-        const formattedDisplay = new Date(newDate).toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-        });
+        const formattedDisplay = formatDateOnlyForDisplay(newDate);
 
         // Update UI
         if (dueDateDiv) dueDateDiv.textContent = formattedDisplay;
@@ -733,6 +740,10 @@
             const data = await response.json();
 
             if (response.ok && data.success) {
+                const savedDate = data.due_date || newDate;
+                if (dueDateDiv) dueDateDiv.textContent = formatDateOnlyForDisplay(savedDate);
+                if (rawSpan) rawSpan.textContent = savedDate;
+
                 Toastify({
                     text: "Due date updated successfully!",
                     duration: 3000,

@@ -106,18 +106,20 @@ class TaskController extends Controller
         ]);
       
         $task = Task::findOrFail($id);
+        $dueDate = \Carbon\Carbon::parse($request->due_date)->format('Y-m-d');
 
         $request->merge([
             'old_value' => $task->due_date,
-            'new_value' => $request->due_date,
+            'new_value' => $dueDate,
         ]);
-        $task->due_date = $request->due_date;
+        $task->due_date = $dueDate;
         $task->save();
         
          $this->createTaskComment($request,$task->project_id, $task->id, 'Change Due Date');
         return response()->json([
             'success' => true,
             'message' => 'Due date updated successfully',
+            'due_date' => $dueDate,
             'task' => $task
         ]);
     }
@@ -354,6 +356,7 @@ class TaskController extends Controller
             $TaskActivity->project_id = $task->project_id;
             $TaskActivity->task_id = $task->id;
             $file = $request->file('proof');
+            $this->validateSafeUpload($file);
             $sizeInBytes = $file->getSize();
 
              // Optional: Convert to KB or MB        // kilobytes
@@ -402,6 +405,7 @@ class TaskController extends Controller
             $TaskActivity->project_id = $task->project_id;
             $TaskActivity->task_id = $task->id;
             $file = $request->file('file');
+            $this->validateSafeUpload($file);
             $sizeInBytes = $file->getSize();
 
              // Optional: Convert to KB or MB        // kilobytes
@@ -435,6 +439,7 @@ class TaskController extends Controller
             $TaskAttachment->project_id = $task->project_id;
             $TaskAttachment->task_id = $task->id;
             $file = $request->file('proof');
+            $this->validateSafeUpload($file);
             $sizeInBytes = $file->getSize();
 
              // Optional: Convert to KB or MB        // kilobytes
@@ -490,6 +495,7 @@ class TaskController extends Controller
             $TaskAttachment->project_id = $task->project_id;
             $TaskAttachment->task_id = $task->id;
             $file = $request->file('proof');
+            $this->validateSafeUpload($file);
             $sizeInBytes = $file->getSize();
 
              // Optional: Convert to KB or MB        // kilobytes
@@ -541,6 +547,7 @@ class TaskController extends Controller
         $attachmentName = null;
         if ($request->hasFile('proof')) {
         $file = $request->file('proof');
+        $this->validateSafeUpload($file);
         $sizeInMB = round($file->getSize() / 1048576, 2); // MB
         $filename = time() . '.' . $file->getClientOriginalExtension();
         $file->move(public_path('uploads/tasks'), $filename);
@@ -759,6 +766,7 @@ class TaskController extends Controller
         // Handle optional file upload
         if ($request->hasFile('proof')) {
             $proof = $request->file('proof');
+            $this->validateSafeUpload($proof);
             $original_name = $proof->getClientOriginalName();
             $name = time() . '_' . $original_name;
 
@@ -800,6 +808,25 @@ class TaskController extends Controller
         }
         return true;
     }
+
+    private function validateSafeUpload($file)
+    {
+        $blockedExtensions = [
+            'ade', 'adp', 'apk', 'app', 'bat', 'bin', 'cmd', 'com', 'cpl', 'dll',
+            'dmg', 'exe', 'gadget', 'hta', 'ins', 'iso', 'jar', 'js', 'jse', 'lnk',
+            'msi', 'msp', 'mst', 'pif', 'ps1', 'scr', 'sh', 'vb', 'vbe', 'vbs',
+            'ws', 'wsc', 'wsf', 'wsh',
+        ];
+
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        if (in_array($extension, $blockedExtensions, true)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'proof' => 'Executable or script files are not allowed.',
+            ]);
+        }
+    }
+
     public function destroyApi(Request $request,$id)
     {
         $activity = TaskActivity::find($id);

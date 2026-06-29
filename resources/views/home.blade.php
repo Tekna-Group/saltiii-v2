@@ -335,7 +335,7 @@
                                         </div>
                                            <span class="text-muted me-2">
                                                     <i class="ri-calendar-event-fill fs-8"></i>  
-                                                    <span class='fs-8'>{{ date('m.d.y', strtotime($task->due_date)) }}</span>
+                                                    <span class="fs-8 dashboard-task-due-date" data-id="{{ $task->id }}">{{ date('m.d.y', strtotime($task->due_date)) }}</span>
                                                      <i class="ri-arrow-right-s-line fs-5 text-muted"></i>
                                            </span>
                                     </div>
@@ -1265,6 +1265,17 @@
         }).showToast();
     }
     }
+    function formatDateOnlyForDisplay(dateValue, options = { month: 'short', day: '2-digit', year: 'numeric' }) {
+        const parts = (dateValue || '').split('-');
+
+        if (parts.length !== 3) {
+            return dateValue || '';
+        }
+
+        const date = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        return date.toLocaleDateString('en-US', options);
+    }
+
     function makeDueDateEditable(element) 
     {
     const id = element.getAttribute('data-id');
@@ -1280,7 +1291,7 @@
     const parts = currentDate.split('-'); 
     const formattedDate = (parts.length === 3) 
         ? `${parts[0]}-${parts[1]}-${parts[2]}`
-        : new Date(currentDate).toISOString().split('T')[0];
+        : currentDate;
 
     // Replace content with input
     element.innerHTML = `<input type="date" class="form-control form-control-sm" data-id="${id}" value="${formattedDate}" autofocus />`;
@@ -1305,17 +1316,21 @@
         // Find elements to update
         const dueDateDiv = document.querySelector(`.due-date[data-id="${id}"]`);
         const rawSpan = document.querySelector(`.due-date-raw[data-id="${id}"]`);
+        const cardDueDate = document.querySelector(`.dashboard-task-due-date[data-id="${id}"]`);
 
         // Format for display
-        const formattedDisplay = new Date(newDate).toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-        });
+        const formattedDisplay = formatDateOnlyForDisplay(newDate);
 
         // Update UI
         if (dueDateDiv) dueDateDiv.textContent = formattedDisplay;
         if (rawSpan) rawSpan.textContent = newDate;
+        if (cardDueDate) {
+            cardDueDate.textContent = formatDateOnlyForDisplay(newDate, {
+                month: '2-digit',
+                day: '2-digit',
+                year: '2-digit'
+            });
+        }
 
         // Send AJAX
         try {
@@ -1331,6 +1346,17 @@
             const data = await response.json();
 
             if (response.ok && data.success) {
+                const savedDate = data.due_date || newDate;
+                if (dueDateDiv) dueDateDiv.textContent = formatDateOnlyForDisplay(savedDate);
+                if (rawSpan) rawSpan.textContent = savedDate;
+                if (cardDueDate) {
+                    cardDueDate.textContent = formatDateOnlyForDisplay(savedDate, {
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: '2-digit'
+                    });
+                }
+
                 Toastify({
                     text: "Due date updated successfully!",
                     duration: 3000,
