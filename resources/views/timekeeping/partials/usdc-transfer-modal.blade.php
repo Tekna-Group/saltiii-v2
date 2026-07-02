@@ -191,7 +191,7 @@
                 </button>
                 
                 <button type="button" class="btn btn-primary" id="modal-confirm-btn" style="display: none;">
-                    <i class="fas fa-check me-2"></i>Confirm & Transfer
+                    <i class="fas fa-wallet me-2"></i>Open Phantom & Transfer
                 </button>
                 
                 <button type="button" class="btn btn-success" id="modal-complete-btn" style="display: none;" data-bs-dismiss="modal">
@@ -647,6 +647,8 @@
             transaction.feePayer = senderPublicKey;
 
             await simulatePayrollTransaction(transaction, connection);
+
+            showAlert('Confirm in Phantom', 'Phantom will open now. Review and approve the transfer in your wallet.', 'info');
 
             // Phantom signs + broadcasts the transaction
             const { signature } = await window.solana.signAndSendTransaction(transaction);

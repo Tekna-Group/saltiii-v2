@@ -137,7 +137,7 @@
                 </button>
                 
                 <button type="button" class="btn btn-primary" id="bulk-modal-confirm-btn" style="display: none;">
-                    <i class="fas fa-check me-2"></i>Confirm & Transfer
+                    <i class="fas fa-wallet me-2"></i>Open Phantom & Transfer
                 </button>
                 
                 <button type="button" class="btn btn-success" id="bulk-modal-complete-btn" style="display: none;" data-bs-dismiss="modal">
@@ -431,6 +431,8 @@
         if (typeof simulatePayrollTransaction === 'function') {
             await simulatePayrollTransaction(transaction, connection);
         }
+
+        showBulkAlert('Confirm in Phantom', 'Phantom will open now. Review and approve this transfer batch in your wallet.', 'info');
 
         const { signature } = await window.solana.signAndSendTransaction(transaction);
 
