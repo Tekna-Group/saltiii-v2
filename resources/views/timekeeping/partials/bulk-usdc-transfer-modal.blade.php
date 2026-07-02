@@ -370,11 +370,13 @@
 
         const senderATA    = deriveATA(senderPublicKey, usdcMint);
         const transaction  = new Transaction();
+        let totalRawAmount = BigInt(0);
 
         for (const transfer of transfers) {
             const recipientPublicKey = new PublicKey(transfer.recipientWalletAddress);
             const recipientATA = deriveATA(recipientPublicKey, usdcMint);
             const rawAmount = BigInt(Math.round(transfer.usdcAmount * 1_000_000));
+            totalRawAmount += rawAmount;
 
             let recipientAccountInfo;
             try {
@@ -418,6 +420,10 @@
             }));
         }
 
+        if (typeof validateSenderCanPayUsdc === 'function') {
+            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, totalRawAmount, showBulkAlert);
+        }
+
         let blockhash;
         try {
             ({ blockhash } = await connection.getLatestBlockhash());
@@ -429,7 +435,7 @@
         transaction.feePayer = senderPublicKey;
 
         if (typeof simulatePayrollTransaction === 'function') {
-            await simulatePayrollTransaction(transaction, connection);
+            await warnIfPayrollSimulationFails(transaction, connection, showBulkAlert);
         }
 
         showBulkAlert('Confirm in Phantom', 'Phantom will open now. Review and approve this transfer batch in your wallet.', 'info');

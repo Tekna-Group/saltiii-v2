@@ -317,6 +317,22 @@
 
                     return result?.value || null;
                 },
+                async getBalance(publicKey) {
+                    const result = await callSolanaRpc('getBalance', [
+                        publicKey.toString(),
+                        { commitment: 'confirmed' }
+                    ]);
+
+                    return result?.value || 0;
+                },
+                async getTokenAccountBalance(publicKey) {
+                    const result = await callSolanaRpc('getTokenAccountBalance', [
+                        publicKey.toString(),
+                        { commitment: 'confirmed' }
+                    ]);
+
+                    return result?.value || null;
+                },
                 async getLatestBlockhash() {
                     const result = await callSolanaRpc('getLatestBlockhash', [
                         { commitment: 'confirmed' }
@@ -590,6 +606,7 @@
 
             // USDC uses 6 decimal places
             const rawAmount = BigInt(Math.round(usdcTransferData.total_usdc_amount * 1_000_000));
+            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, rawAmount, showAlert);
 
             const transaction = new Transaction();
 
@@ -646,7 +663,7 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = senderPublicKey;
 
-            await simulatePayrollTransaction(transaction, connection);
+            await warnIfPayrollSimulationFails(transaction, connection, showAlert);
 
             showAlert('Confirm in Phantom', 'Phantom will open now. Review and approve the transfer in your wallet.', 'info');
 
@@ -679,12 +696,84 @@
         }
 
         if (simulation?.err) {
+            const err = typeof simulation.err === 'string'
+                ? simulation.err
+                : JSON.stringify(simulation.err);
             const logs = Array.isArray(simulation.logs) ? simulation.logs.slice(-4).join(' ') : '';
             throw new Error(
-                'Solana preflight simulation failed. Phantom may block this request. ' +
-                (logs ? 'Last logs: ' + logs : 'Please check sender USDC balance, recipient wallet, and USDC mint address.')
+                'Solana preflight simulation failed before Phantom could approve it. ' +
+                `Reason: ${err || 'Unknown simulation error'}. ` +
+                (logs ? 'Last logs: ' + logs : 'Please check sender USDC balance, SOL fee balance, recipient wallet, and USDC mint address.')
             );
         }
+    }
+
+    async function warnIfPayrollSimulationFails(transaction, connection, alertCallback) {
+        try {
+            await simulatePayrollTransaction(transaction, connection);
+        } catch (error) {
+            console.warn('Solana preflight warning:', error);
+            alertCallback(
+                'Phantom Check',
+                (error.message || 'The transaction may fail during Phantom confirmation.') + ' You can still review it in Phantom.',
+                'warning'
+            );
+        }
+    }
+
+    async function warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, requiredRawAmount, alertCallback) {
+        try {
+            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, requiredRawAmount);
+        } catch (error) {
+            console.warn('Payroll transfer balance warning:', error);
+            alertCallback(
+                'Wallet Check',
+                (error.message || 'The connected wallet may not be ready for this transfer.') + ' Phantom will still open for review.',
+                'warning'
+            );
+        }
+    }
+
+    async function validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, requiredRawAmount) {
+        const senderTokenAccount = await connection.getAccountInfo(senderATA);
+
+        if (!senderTokenAccount) {
+            throw new Error(
+                'The connected Phantom wallet does not have a USDC token account on Solana mainnet. ' +
+                'Connect the wallet that holds your payroll USDC, or send USDC to this wallet first.'
+            );
+        }
+
+        let tokenBalance;
+        try {
+            tokenBalance = await connection.getTokenAccountBalance(senderATA);
+        } catch (rpcError) {
+            throw normalizeSolanaRpcError(rpcError, 'check sender USDC balance');
+        }
+
+        const availableRawAmount = BigInt(tokenBalance?.amount || '0');
+        if (availableRawAmount < requiredRawAmount) {
+            throw new Error(
+                `Insufficient USDC in the connected Phantom wallet. ` +
+                `Available: ${formatUsdcRawAmount(availableRawAmount)} USDC. ` +
+                `Required: ${formatUsdcRawAmount(requiredRawAmount)} USDC.`
+            );
+        }
+
+        const solLamports = await connection.getBalance(senderPublicKey);
+        if (solLamports <= 0) {
+            throw new Error(
+                'The connected Phantom wallet has no SOL for network fees. ' +
+                'Add a small amount of SOL before transferring USDC.'
+            );
+        }
+    }
+
+    function formatUsdcRawAmount(rawAmount) {
+        const raw = BigInt(rawAmount);
+        const whole = raw / BigInt(1_000_000);
+        const fractional = String(raw % BigInt(1_000_000)).padStart(6, '0').replace(/0+$/, '');
+        return fractional ? `${whole}.${fractional}` : `${whole}`;
     }
 
     function isValidSolanaPublicKey(address) {

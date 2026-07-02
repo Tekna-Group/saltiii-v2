@@ -718,7 +718,9 @@ class TimekeepingController extends Controller
         ]);
 
         $allowedMethods = [
+            'getBalance',
             'getAccountInfo',
+            'getTokenAccountBalance',
             'getLatestBlockhash',
             'getSignatureStatuses',
             'simulateTransaction',
