@@ -714,7 +714,7 @@
 
         if (!senderTokenAccount) {
             throw new Error(
-                'The connected Phantom wallet does not have a USDC token account on Solana mainnet. ' +
+                `The connected Phantom wallet (${shortWallet(senderPublicKey.toString())}) does not have a USDC token account on ${getSolanaNetworkLabel()}. ` +
                 'Connect the wallet that holds your payroll USDC, or send USDC to this wallet first.'
             );
         }
@@ -749,6 +749,20 @@
         const whole = raw / BigInt(1_000_000);
         const fractional = String(raw % BigInt(1_000_000)).padStart(6, '0').replace(/0+$/, '');
         return fractional ? `${whole}.${fractional}` : `${whole}`;
+    }
+
+    function getSolanaNetworkLabel() {
+        if (solanaNetwork === 'mainnet-beta') {
+            return 'Solana mainnet';
+        }
+
+        return `Solana ${solanaNetwork}`;
+    }
+
+    function shortWallet(wallet) {
+        return wallet && wallet.length > 12
+            ? `${wallet.substring(0, 6)}...${wallet.substring(wallet.length - 6)}`
+            : wallet;
     }
 
     function assertSingleTransactionSigner(transaction, expectedSigner) {
