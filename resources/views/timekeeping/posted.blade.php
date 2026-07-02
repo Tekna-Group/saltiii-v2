@@ -166,6 +166,15 @@
                                                 data-members="{{ $selected_member }}">
                                                 <i class="fas fa-exchange-alt me-1"></i>Transfer USDC
                                             </button>
+                                            <form method="POST" action="{{ route('Timekeeping.processStripeSalary', $user->id) }}" class="d-inline" onsubmit="return confirm('Process salary through Stripe for {{ $user->name }}?')">
+                                                @csrf
+                                                <input type="hidden" name="date_from" value="{{ $date_from }}">
+                                                <input type="hidden" name="date_to" value="{{ $date_to }}">
+                                                <input type="hidden" name="members" value="{{ $selected_member }}">
+                                                <button type="submit" class="btn btn-sm btn-primary me-1" @if(!$user->stripe_account_id) disabled title="Stripe Account ID is missing" @endif>
+                                                    <i class="ri-bank-card-line me-1"></i>Pay Stripe
+                                                </button>
+                                            </form>
                                             <button type="button" class="btn btn-sm btn-warning btn-adjustment"
                                                 data-bs-toggle="modal" data-bs-target="#adjustmentModal"
                                                 data-posting-id="{{ $posting->id }}"

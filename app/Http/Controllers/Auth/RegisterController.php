@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\TeamInvitation;
+use App\Http\Controllers\TeamGroupController;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -52,7 +55,21 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'invitation_token' => ['nullable', 'string'],
         ]);
+    }
+
+    public function showRegistrationForm(Request $request)
+    {
+        $invitation = null;
+
+        if ($request->filled('invite')) {
+            $invitation = TeamInvitation::with('group')
+                ->where('token', $request->invite)
+                ->first();
+        }
+
+        return view('auth.register', compact('invitation'));
     }
 
     /**
@@ -68,6 +85,15 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+
+        if (!empty($data['invitation_token'])) {
+            $invitation = TeamInvitation::where('token', $data['invitation_token'])->first();
+
+            if ($invitation && $invitation->isPending() && strtolower($invitation->email) === strtolower($user->email)) {
+                TeamGroupController::acceptInvitation($invitation, $user->id);
+            }
+        }
+
         try {
             // dd('renz');
             $ghl = new GHLService();

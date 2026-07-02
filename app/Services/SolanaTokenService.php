@@ -14,7 +14,7 @@ class SolanaTokenService
     public function __construct()
     {
         $this->rpcUrl = env('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com');
-        $this->usdcMint = env('USDC_MINT_ADDRESS', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+        $this->usdcMint = env('USDC_MINT_ADDRESS', 'EPjFWaLb3gqP6Cmis3h8PVqeVtSUGhd7xMZLqcRi1Nd');
 
         // Initialize Guzzle Client
         $this->client = new Client([

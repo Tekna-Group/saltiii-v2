@@ -111,6 +111,33 @@
     .kanban-card.dragging {
         opacity: 0.5;
     }
+    .subproject-card {
+        border: 1px solid #e9ebec;
+        border-radius: 8px;
+        transition: all .2s ease;
+    }
+    .subproject-card:hover {
+        border-color: #cfd4da;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, .08);
+        transform: translateY(-2px);
+    }
+    .subproject-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #eef6ff;
+        color: #3577f1;
+        font-size: 20px;
+    }
+    .subproject-stat {
+        border: 1px solid #eef0f2;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fafbfc;
+    }
 </style>
 @endsection
 @section('content')
@@ -179,6 +206,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#sub-projects" role="tab">
+                                Sub-projects
+                                <span class="badge bg-primary-subtle text-primary ms-1" id="subProjectsCountBadge">{{ $project->children->count() }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#project-comments" role="tab">
                                 Comments
                             </a>
@@ -197,51 +230,6 @@
     </div>
     <!-- end col -->
 </div>
-@if($project->children->count())
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card">
-            <div class="card-header align-items-center d-flex">
-                <h5 class="card-title mb-0 flex-grow-1">Subprojects</h5>
-                <span class="badge bg-primary-subtle text-primary">{{ $project->children->count() }}</span>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    @foreach($project->children as $subproject)
-                        @php
-                            $subprojectTaskCount = $subproject->tasks->count();
-                            $subprojectCompletedTasks = $subproject->tasks->where('completed', 1)->count();
-                            $subprojectProgress = $subprojectTaskCount > 0 ? ($subprojectCompletedTasks / $subprojectTaskCount) * 100 : 0;
-                        @endphp
-                        <div class="col-md-6 col-xl-3">
-                            <a href="{{ url('/view-project/'.$subproject->id) }}" class="text-decoration-none">
-                                <div class="border rounded p-3 h-100">
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <div class="avatar-xs">
-                                            <div class="avatar-title rounded bg-primary-subtle text-primary">
-                                                <i class="ri-folder-2-line"></i>
-                                            </div>
-                                        </div>
-                                        <h6 class="mb-0 text-body">{{ $subproject->name }}</h6>
-                                    </div>
-                                    <p class="text-muted small mb-2 text-truncate">{{ $subproject->description }}</p>
-                                    <div class="d-flex justify-content-between text-muted small mb-1">
-                                        <span>Tasks</span>
-                                        <span>{{ $subprojectCompletedTasks }}/{{ $subprojectTaskCount }}</span>
-                                    </div>
-                                    <div class="progress progress-sm">
-                                        <div class="progress-bar bg-success" style="width: {{ $subprojectProgress }}%;"></div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-@endif
 <div class="row">
     <div class="col-lg-12">
         <div class="tab-content text-muted">
@@ -318,6 +306,114 @@
                     </div>
                   </div>
              </div>
+             <div class="tab-pane fade" id="sub-projects" role="tabpanel">
+                <div class="card">
+                    <div class="card-header align-items-center d-flex">
+                        <div class="flex-grow-1">
+                            <h5 class="card-title mb-1">Sub-projects</h5>
+                            <p class="text-muted mb-0">View all projects inside {{ $project->name }}.</p>
+                        </div>
+                        <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-soft-primary">
+                            <i class="ri-add-line align-bottom me-1"></i> Add Sub-project
+                        </a>
+                    </div>
+                    <div class="card-body" id="subProjectsPanelBody">
+                        @if($project->children->count())
+                            <div class="row g-3" id="subProjectsGrid">
+                                @foreach($project->children as $subproject)
+                                    @php
+                                        $subprojectTaskCount = $subproject->tasks->count();
+                                        $subprojectCompletedTasks = $subproject->tasks->where('completed', 1)->count();
+                                        $subprojectOpenTasks = $subprojectTaskCount - $subprojectCompletedTasks;
+                                        $subprojectProgress = $subprojectTaskCount > 0 ? round(($subprojectCompletedTasks / $subprojectTaskCount) * 100) : 0;
+                                        $subprojectHours = $subproject->tasks->sum(function ($task) {
+                                            return $task->activities->sum('hours');
+                                        });
+                                    @endphp
+                                    <div class="col-xl-4 col-md-6">
+                                        <a href="{{ url('/view-project/'.$subproject->id) }}" class="text-decoration-none text-body">
+                                            <div class="subproject-card h-100 bg-white p-3">
+                                                <div class="d-flex align-items-start gap-3 mb-3">
+                                                    <div class="subproject-icon flex-shrink-0">
+                                                        <i class="ri-folder-5-line"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1 overflow-hidden">
+                                                        <div class="d-flex align-items-start justify-content-between gap-2">
+                                                            <h5 class="fs-15 mb-1 text-truncate">{{ $subproject->name }}</h5>
+                                                            <span class="badge bg-success-subtle text-success">{{ $subprojectProgress }}%</span>
+                                                        </div>
+                                                        <p class="text-muted mb-0 text-truncate-two-lines">
+                                                            {{ $subproject->description ?: 'No description added yet.' }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="progress progress-sm animated-progress mb-3">
+                                                    <div class="progress-bar bg-success" style="width: {{ $subprojectProgress }}%;" role="progressbar" aria-valuenow="{{ $subprojectProgress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+
+                                                <div class="row g-2 mb-3">
+                                                    <div class="col-4">
+                                                        <div class="subproject-stat">
+                                                            <div class="fs-16 fw-semibold text-body">{{ $subprojectTaskCount }}</div>
+                                                            <div class="fs-12 text-muted">Tasks</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="subproject-stat">
+                                                            <div class="fs-16 fw-semibold text-body">{{ $subprojectOpenTasks }}</div>
+                                                            <div class="fs-12 text-muted">Open</div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-4">
+                                                        <div class="subproject-stat">
+                                                            <div class="fs-16 fw-semibold text-body">{{ number_format($subprojectHours, 1) }}</div>
+                                                            <div class="fs-12 text-muted">Hours</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <div class="avatar-group">
+                                                        @foreach($subproject->users->take(4) as $member)
+                                                            <span class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{ $member->name }}">
+                                                                <img src="{{ asset($member->avatar) }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="" class="rounded-circle avatar-xs">
+                                                            </span>
+                                                        @endforeach
+                                                        @if($subproject->users->count() > 4)
+                                                            <span class="avatar-group-item material-shadow">
+                                                                <span class="avatar-xs">
+                                                                    <span class="avatar-title rounded-circle bg-light text-muted">+{{ $subproject->users->count() - 4 }}</span>
+                                                                </span>
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <span class="text-primary fw-medium">
+                                                        Open <i class="ri-arrow-right-line align-bottom"></i>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center py-5" id="subProjectsEmptyState">
+                                <div class="avatar-lg mx-auto mb-3">
+                                    <div class="avatar-title bg-primary-subtle text-primary rounded-circle fs-24">
+                                        <i class="ri-folder-add-line"></i>
+                                    </div>
+                                </div>
+                                <h5>No sub-projects yet</h5>
+                                <p class="text-muted mb-3">Create a project under {{ $project->name }} to organize related work here.</p>
+                                <a data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-primary">
+                                    <i class="ri-add-line align-bottom me-1"></i> Add Sub-project
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+             </div>
         </div>
     </div>
 </div>
@@ -325,6 +421,7 @@
 @include('projects.new-board')
 @include('projects.add_member')
 @include('projects.add_task')
+@include('projects.add_project')
 @endsection
 @section('js')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -981,6 +1078,177 @@ $(document).ready(function() {
         });
     });
 });
+</script>
+<script>
+$(document).ready(function() {
+    $('#subProjectForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const form = this;
+        const formData = new FormData(form);
+        const submitButton = $(form).find('button[type="submit"]');
+        const originalButtonText = submitButton.html();
+
+        submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving');
+
+        $.ajax({
+            url: form.action,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (!response.success || !response.project) {
+                    showSubProjectToast(response.message || 'Unable to create sub-project.', '#dc3545');
+                    return;
+                }
+
+                appendSubProjectCard(response.project);
+                incrementSubProjectCount();
+
+                $('#projectModal').modal('hide');
+                resetSubProjectForm(form);
+                showSubProjectToast(response.message || 'Sub-project created successfully.', '#28a745');
+            },
+            error: function(xhr) {
+                let message = 'Unable to create sub-project. Please try again.';
+
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    const firstError = Object.values(xhr.responseJSON.errors)[0];
+                    message = Array.isArray(firstError) ? firstError[0] : firstError;
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+
+                showSubProjectToast(message, '#dc3545');
+            },
+            complete: function() {
+                submitButton.prop('disabled', false).html(originalButtonText);
+                $('#loader').hide();
+            }
+        });
+    });
+});
+
+function appendSubProjectCard(project) {
+    let grid = $('#subProjectsGrid');
+
+    if (!grid.length) {
+        $('#subProjectsEmptyState').remove();
+        $('#subProjectsPanelBody').html('<div class="row g-3" id="subProjectsGrid"></div>');
+        grid = $('#subProjectsGrid');
+    }
+
+    grid.prepend(renderSubProjectCard(project));
+}
+
+function renderSubProjectCard(project) {
+    const description = escapeHtml(project.description || 'No description added yet.');
+    const members = (project.users || []).slice(0, 4).map(function(member) {
+        return `
+            <span class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="${escapeHtml(member.name)}">
+                <img src="${member.avatar}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="" class="rounded-circle avatar-xs">
+            </span>
+        `;
+    }).join('');
+
+    const extraMembers = project.users && project.users.length > 4
+        ? `<span class="avatar-group-item material-shadow"><span class="avatar-xs"><span class="avatar-title rounded-circle bg-light text-muted">+${project.users.length - 4}</span></span></span>`
+        : '';
+
+    return `
+        <div class="col-xl-4 col-md-6">
+            <a href="${project.url}" class="text-decoration-none text-body">
+                <div class="subproject-card h-100 bg-white p-3">
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <div class="subproject-icon flex-shrink-0">
+                            <i class="ri-folder-5-line"></i>
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <h5 class="fs-15 mb-1 text-truncate">${escapeHtml(project.name)}</h5>
+                                <span class="badge bg-success-subtle text-success">${project.progress}%</span>
+                            </div>
+                            <p class="text-muted mb-0 text-truncate-two-lines">${description}</p>
+                        </div>
+                    </div>
+                    <div class="progress progress-sm animated-progress mb-3">
+                        <div class="progress-bar bg-success" style="width: ${project.progress}%;" role="progressbar" aria-valuenow="${project.progress}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="subproject-stat">
+                                <div class="fs-16 fw-semibold text-body">${project.tasks}</div>
+                                <div class="fs-12 text-muted">Tasks</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="subproject-stat">
+                                <div class="fs-16 fw-semibold text-body">${project.open_tasks}</div>
+                                <div class="fs-12 text-muted">Open</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="subproject-stat">
+                                <div class="fs-16 fw-semibold text-body">${Number(project.hours).toFixed(1)}</div>
+                                <div class="fs-12 text-muted">Hours</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="avatar-group">${members}${extraMembers}</div>
+                        <span class="text-primary fw-medium">Open <i class="ri-arrow-right-line align-bottom"></i></span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    `;
+}
+
+function incrementSubProjectCount() {
+    const badge = $('#subProjectsCountBadge');
+    badge.text((parseInt(badge.text(), 10) || 0) + 1);
+}
+
+function resetSubProjectForm(form) {
+    const $form = $(form);
+    const parentId = $form.find('[name="parent_id"]').val();
+    const selectedMembers = $form.find('[name="team_member[]"]').val();
+
+    form.reset();
+    $form.find('[name="parent_id"]').val(parentId).trigger('change');
+    $form.find('[name="team_member[]"]').val(selectedMembers).trigger('change');
+}
+
+function showSubProjectToast(message, color) {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: 'top',
+            position: 'right',
+            backgroundColor: color,
+            stopOnFocus: true
+        }).showToast();
+        return;
+    }
+
+    alert(message);
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 </script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.js"></script>

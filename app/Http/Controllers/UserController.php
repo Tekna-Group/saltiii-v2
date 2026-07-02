@@ -33,6 +33,7 @@ class UserController extends Controller
             'hourly_rate' => 'required|numeric|min:0',
             'wallet_address' => 'nullable|string|max:255',
             'wallet_network' => 'nullable|string|max:100',
+            'stripe_account_id' => 'nullable|string|max:255|regex:/^acct_[A-Za-z0-9]+$/',
         ]);
 
         $new_account = new User;
@@ -43,6 +44,7 @@ class UserController extends Controller
         $new_account->status = "Active";
         $new_account->wallet_address = $request->wallet_address;
         $new_account->wallet_network = $request->wallet_network;
+        $new_account->stripe_account_id = $request->stripe_account_id;
         $new_account->save();
 
         UserSalary::updateOrCreate(
@@ -64,6 +66,7 @@ class UserController extends Controller
             'hourly_rate' => 'nullable|numeric|min:0',
             'wallet_address' => 'nullable|string|max:255',
             'wallet_network' => 'nullable|string|max:100',
+            'stripe_account_id' => 'nullable|string|max:255|regex:/^acct_[A-Za-z0-9]+$/',
         ]);
 
         $account = User::where('id', $id)->first();
@@ -72,6 +75,7 @@ class UserController extends Controller
         $account->role = $request->role;
         $account->wallet_address = $request->wallet_address;
         $account->wallet_network = $request->wallet_network;
+        $account->stripe_account_id = $request->stripe_account_id;
         $account->save();
 
         UserSalary::updateOrCreate(

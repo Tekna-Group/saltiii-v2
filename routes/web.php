@@ -16,6 +16,7 @@ Auth::routes(['verify' => true]);
 Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe');
 Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
 Route::post('/stripe/webhook', 'StripeWebhookController@handle')->name('stripe.webhook');
+Route::get('/team/invite/{token}', 'TeamGroupController@showInvite')->name('team-groups.invite.show');
 
 Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
 
@@ -88,6 +89,7 @@ Route::get('timekeeping/posted','TimekeepingController@postedReport')->name('Tim
 Route::post('timekeeping/approve/{userId}','TimekeepingController@approvePayment')->name('Timekeeping.approvePayment');
 Route::post('timekeeping/prepare-transfer/{userId}','TimekeepingController@prepareTransfer')->name('Timekeeping.prepareTransfer');
 Route::post('timekeeping/process-usdc-transfer','TimekeepingController@processUsdcTransfer')->name('Timekeeping.processUsdcTransfer');
+Route::post('timekeeping/process-stripe-salary/{userId}','TimekeepingController@processStripeSalary')->name('Timekeeping.processStripeSalary');
 Route::post('timekeeping/solana-rpc','TimekeepingController@solanaRpc')->name('Timekeeping.solanaRpc');
 Route::get('my-timekeeping','TimekeepingController@myTimekeeping')->name('My Timekeeping');
 Route::get('payslips','PayrollController@index')->name('Payslip');
@@ -138,6 +140,11 @@ Route::prefix('workflow')->group(function () {
 });
 
 Route::get('/subscription-plan', 'SubscriptionController@showPlan')->name('subscription.plan');
+Route::get('/team-groups', 'TeamGroupController@index')->name('team-groups.index');
+Route::post('/team-groups', 'TeamGroupController@store')->name('team-groups.store');
+Route::post('/team-groups/{group}/invite', 'TeamGroupController@invite')->name('team-groups.invite');
+Route::post('/team-groups/{group}/invite/{invitation}/resend', 'TeamGroupController@resendInvite')->name('team-groups.invite.resend');
+Route::post('/team/invite/{token}/join', 'TeamGroupController@join')->name('team-groups.invite.join');
 
 Route::get('/project/{project}/diagrams', 'ProjectDiagramController@index');
 Route::post('/diagram/store', 'ProjectDiagramController@store');

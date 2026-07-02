@@ -5,7 +5,7 @@
             <h5 class="modal-title">Add Project</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method='POST' action='new-project' onsubmit="show();"   enctype="multipart/form-data">
+            <form method='POST' action='{{ url('new-project') }}' id="subProjectForm" enctype="multipart/form-data">
             @csrf
             <div class="modal-body">
             <input type="hidden" id="projectId">
@@ -18,7 +18,7 @@
                 <select class="form-select select2" name="parent_id" id="parentProject">
                     <option value="">No parent project</option>
                     @foreach($projects as $parentProject)
-                        <option value="{{ $parentProject->id }}">
+                        <option value="{{ $parentProject->id }}" @if(isset($project) && $project->id == $parentProject->id) selected @endif>
                             {{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}
                         </option>
                     @endforeach
@@ -29,7 +29,7 @@
                 <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member' required>
                 {{-- <option value="">Select Team Member</option> --}}
                 @foreach($users as $user)
-                    <option value="{{$user->id}}">{{$user->name}}</option>
+                    <option value="{{$user->id}}" @if(isset($project) && $project->users->contains('id', $user->id)) selected @endif>{{$user->name}}</option>
                 @endforeach
                 </select>
             </div>

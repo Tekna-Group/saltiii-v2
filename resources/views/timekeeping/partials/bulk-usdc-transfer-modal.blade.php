@@ -418,6 +418,10 @@
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = senderPublicKey;
 
+        if (typeof simulatePayrollTransaction === 'function') {
+            await simulatePayrollTransaction(transaction, connection);
+        }
+
         const { signature } = await window.solana.signAndSendTransaction(transaction);
 
         try {

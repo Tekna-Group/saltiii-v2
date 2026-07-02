@@ -402,7 +402,8 @@ class TaskController extends Controller
             'feedback' => 'required|string|max:5000',
         ]);
 
-        $task = Task::findOrFail($taskId);
+        $task = Task::with(['users', 'project.users'])->findOrFail($taskId);
+        $this->authorizeFeedbackAccess($task);
 
         TaskFeedbackLoop::create([
             'task_id' => $task->id,
@@ -423,8 +424,15 @@ class TaskController extends Controller
 
     public function resolveFeedback(Request $request, $taskId, $feedbackId)
     {
-        $task = Task::findOrFail($taskId);
+        $task = Task::with(['users', 'project.users'])->findOrFail($taskId);
+        $this->authorizeFeedbackAccess($task);
+
         $feedback = TaskFeedbackLoop::where('task_id', $task->id)->findOrFail($feedbackId);
+
+        if ($feedback->status === 'Resolved') {
+            Alert::warning('This feedback is already resolved.')->persistent('Dismiss');
+            return back();
+        }
 
         $feedback->status = 'Resolved';
         $feedback->resolved_by = auth()->id();
@@ -439,6 +447,22 @@ class TaskController extends Controller
 
         Alert::success('Feedback marked as resolved.')->persistent('Dismiss');
         return back();
+    }
+
+    private function authorizeFeedbackAccess(Task $task)
+    {
+        $user = auth()->user();
+
+        if ($user->role === 'Admin') {
+            return;
+        }
+
+        $isTaskMember = $task->users->contains('id', $user->id);
+        $isProjectMember = $task->project && $task->project->users->contains('id', $user->id);
+
+        if (!$isTaskMember && !$isProjectMember) {
+            abort(403, 'You are not allowed to update feedback for this task.');
+        }
     }
 
     public function attachment(Request $request,$id)

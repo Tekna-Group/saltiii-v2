@@ -313,6 +313,11 @@ src="https://www.facebook.com/tr?id=4242328826038076&ev=PageView&noscript=1"
                                 <i class="ri-money-dollar-circle-line"></i> <span data-key="t-my-payslips">My Payslips</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('team-groups') ? 'active' : '' }}" href="{{url('/team-groups')}}">
+                                <i class="ri-team-line"></i> <span data-key="t-team-groups">Team Group</span>
+                            </a>
+                        </li>
                 
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
                         <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Timekeeper</span></li>

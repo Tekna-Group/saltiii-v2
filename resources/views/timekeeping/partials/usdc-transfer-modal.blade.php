@@ -228,7 +228,7 @@
     // Network config injected from .env via Blade
     const solanaNetwork   = @json(env('SOLANA_NETWORK', 'mainnet-beta'));
     const solanaRpcProxyUrl = @json(route('Timekeeping.solanaRpc'));
-    const usdcMintAddress = @json(env('USDC_MINT_ADDRESS', 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'));
+    const usdcMintAddress = @json(env('USDC_MINT_ADDRESS', 'EPjFWaLb3gqP6Cmis3h8PVqeVtSUGhd7xMZLqcRi1Nd'));
 
     let usdcTransferData = {};
     let currentStep = 'details';
@@ -326,6 +326,25 @@
                         blockhash: result?.value?.blockhash,
                         lastValidBlockHeight: result?.value?.lastValidBlockHeight
                     };
+                },
+                async simulateTransaction(transaction) {
+                    const serialized = transaction.serialize({
+                        requireAllSignatures: false,
+                        verifySignatures: false
+                    });
+
+                    const encoded = btoa(String.fromCharCode(...serialized));
+                    const result = await callSolanaRpc('simulateTransaction', [
+                        encoded,
+                        {
+                            encoding: 'base64',
+                            sigVerify: false,
+                            replaceRecentBlockhash: false,
+                            commitment: 'processed'
+                        }
+                    ]);
+
+                    return result?.value || null;
                 },
                 async confirmTransaction(signature) {
                     for (let attempt = 0; attempt < 30; attempt++) {
@@ -619,6 +638,8 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = senderPublicKey;
 
+            await simulatePayrollTransaction(transaction, connection);
+
             // Phantom signs + broadcasts the transaction
             const { signature } = await window.solana.signAndSendTransaction(transaction);
 
@@ -635,6 +656,24 @@
             console.error('Phantom transfer failed:', error);
             showAlert('Error', error.message || 'Transfer failed. Check console for details.', 'error');
             showStep('confirmation');
+        }
+    }
+
+    async function simulatePayrollTransaction(transaction, connection) {
+        let simulation;
+
+        try {
+            simulation = await connection.simulateTransaction(transaction);
+        } catch (rpcError) {
+            throw normalizeSolanaRpcError(rpcError, 'simulate the transaction');
+        }
+
+        if (simulation?.err) {
+            const logs = Array.isArray(simulation.logs) ? simulation.logs.slice(-4).join(' ') : '';
+            throw new Error(
+                'Solana preflight simulation failed. Phantom may block this request. ' +
+                (logs ? 'Last logs: ' + logs : 'Please check sender USDC balance, recipient wallet, and USDC mint address.')
+            );
         }
     }
 

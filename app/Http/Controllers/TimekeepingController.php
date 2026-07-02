@@ -12,6 +12,8 @@ use App\Services\SolanaTokenService;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
+use Stripe\Stripe;
+use Stripe\Transfer;
 
 class TimekeepingController extends Controller
 {
@@ -578,6 +580,136 @@ class TimekeepingController extends Controller
         }
     }
 
+    public function processStripeSalary(Request $request, $userId)
+    {
+        $request->validate([
+            'date_from' => 'required|date',
+            'date_to' => 'required|date',
+        ]);
+
+        try {
+            $user = User::findOrFail($userId);
+
+            if (!$user->stripe_account_id) {
+                return back()->with('error', 'Stripe Account ID is not set for '.$user->name.'.');
+            }
+
+            if (!preg_match('/^acct_[A-Za-z0-9]+$/', $user->stripe_account_id)) {
+                return back()->with('error', 'Invalid Stripe Account ID for '.$user->name.'. Use a Stripe Connect account ID that starts with acct_, not a bank account number.');
+            }
+
+            $activities = TaskActivity::with('user.salary')
+                ->where('user_id', $userId)
+                ->whereNotNull('timekeeping_from')
+                ->whereNotNull('timekeeping_to')
+                ->whereDate('timekeeping_to', '>=', $request->date_from)
+                ->whereDate('timekeeping_from', '<=', $request->date_to)
+                ->get();
+
+            if ($activities->isEmpty()) {
+                return back()->with('error', 'No posted activities found for Stripe salary payment.');
+            }
+
+            $posting = PaymentPosting::with('adjustments')
+                ->where('user_id', $userId)
+                ->where('date_from', $request->date_from)
+                ->where('date_to', $request->date_to)
+                ->first();
+
+            if ($posting && $posting->status === 'Completed') {
+                return back()->with('error', 'A payment has already been completed for this date range.');
+            }
+
+            $totalHours = $activities->sum('hours');
+            $grossPay = $activities->sum(function ($activity) {
+                return $activity->hours * (optional($activity->user->salary)->salary ?? 0);
+            });
+            $adjAdds = $posting ? $posting->adjustments->where('type', 'add')->sum('amount') : 0;
+            $adjDeducts = $posting ? $posting->adjustments->where('type', 'deduct')->sum('amount') : 0;
+            $netPay = $grossPay + $adjAdds - $adjDeducts;
+
+            if ($netPay <= 0) {
+                return back()->with('error', 'Net pay must be greater than zero before processing Stripe salary.');
+            }
+
+            Stripe::setApiKey(config('services.stripe.secret'));
+
+            $currency = strtolower(env('STRIPE_SALARY_CURRENCY', 'php'));
+            $transfer = Transfer::create([
+                'amount' => (int) round($netPay * 100),
+                'currency' => $currency,
+                'destination' => $user->stripe_account_id,
+                'description' => 'Salary payment for '.$user->name.' ('.$request->date_from.' to '.$request->date_to.')',
+                'metadata' => [
+                    'user_id' => $user->id,
+                    'date_from' => $request->date_from,
+                    'date_to' => $request->date_to,
+                    'type' => 'salary',
+                ],
+            ]);
+
+            $referenceNumber = $posting ? $posting->reference_number : 'STRIPE-' . strtoupper(uniqid());
+            $notes = 'Stripe Transfer ID: '.$transfer->id.' | Destination: '.$user->stripe_account_id;
+
+            if ($posting) {
+                $posting->update([
+                    'reference_number' => $referenceNumber,
+                    'wallet_address' => $user->stripe_account_id,
+                    'wallet_network' => 'Stripe',
+                    'payment_method' => 'Stripe',
+                    'total_hours' => $totalHours,
+                    'total_amount' => $netPay,
+                    'status' => 'Completed',
+                    'payment_approved_by' => auth()->user()->name,
+                    'approved_at' => now(),
+                    'notes' => $notes,
+                ]);
+            } else {
+                PaymentPosting::create([
+                    'user_id' => $userId,
+                    'reference_number' => $referenceNumber,
+                    'wallet_address' => $user->stripe_account_id,
+                    'wallet_network' => 'Stripe',
+                    'payment_method' => 'Stripe',
+                    'date_from' => $request->date_from,
+                    'date_to' => $request->date_to,
+                    'total_hours' => $totalHours,
+                    'total_amount' => $netPay,
+                    'status' => 'Completed',
+                    'payment_approved_by' => auth()->user()->name,
+                    'approved_at' => now(),
+                    'notes' => $notes,
+                ]);
+            }
+
+            foreach ($activities as $activity) {
+                $hourlyRate = optional($activity->user->salary)->salary ?? 0;
+                $activity->payment_method = 'Stripe';
+                $activity->payment_reference = $referenceNumber;
+                $activity->payment_amount = $activity->hours * $hourlyRate;
+                $activity->paid_at = now();
+                $activity->payment_approved_by = auth()->user()->name;
+                $activity->save();
+            }
+
+            Log::info('Stripe salary processed', [
+                'user_id' => $userId,
+                'transfer_id' => $transfer->id,
+                'amount' => $netPay,
+                'currency' => $currency,
+            ]);
+
+            return back()->with('success', 'Stripe salary payment processed for '.$user->name.'. Transfer ID: '.$transfer->id);
+        } catch (\Exception $e) {
+            Log::error('Stripe salary processing failed', [
+                'user_id' => $userId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Stripe salary payment failed: '.$e->getMessage());
+        }
+    }
+
     public function solanaRpc(Request $request)
     {
         $validated = $request->validate([
@@ -589,6 +721,7 @@ class TimekeepingController extends Controller
             'getAccountInfo',
             'getLatestBlockhash',
             'getSignatureStatuses',
+            'simulateTransaction',
         ];
 
         if (!in_array($validated['method'], $allowedMethods, true)) {

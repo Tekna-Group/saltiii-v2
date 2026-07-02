@@ -75,11 +75,7 @@ class HomeController extends Controller
                 return $activity->user_id == auth()->user()->id;
             });
         }
-        if (auth()->user()->role === 'Admin') {
-            $users = User::all();
-        } else {
-            $users = User::where('id', auth()->id())->get();
-        }
+        $users = User::assignableFor(auth()->user());
         $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
             $query->whereBetween('date', [$last_sunday, $saturday]);
         }])->get();

@@ -21,11 +21,7 @@ class ProjectController extends Controller
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('name','asc')->where('completed','!=',1)->get();
-        if (auth()->user()->role === 'Admin') {
-            $users = User::all();
-        } else {
-            $users = User::where('id', auth()->id())->get();
-        }
+        $users = User::assignableFor(auth()->user());
         // Return the view with the projects data
         return view('projects.index',
             array(
@@ -44,9 +40,33 @@ class ProjectController extends Controller
         ]);
 
         if ($request->filled('parent_id')) {
-            Project::whereHas('users', function ($query) {
-                $query->where('user_id', auth()->id());
-            })->findOrFail($request->parent_id);
+            $parentProjectQuery = Project::query();
+
+            if (auth()->user()->role !== 'Admin') {
+                $parentProjectQuery->whereHas('users', function ($query) {
+                    $query->where('user_id', auth()->id());
+                });
+            }
+
+            $parentProjectQuery->findOrFail($request->parent_id);
+        }
+
+        $assignableUserIds = User::assignableFor(auth()->user())->pluck('id')->toArray();
+        $requestedMembers = collect($request->input('team_member', []))->map(function ($id) {
+            return (int) $id;
+        })->unique()->values();
+
+        if ($requestedMembers->diff($assignableUserIds)->isNotEmpty()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'message' => 'One or more selected members are not part of your team group.',
+                    'errors' => [
+                        'team_member' => ['One or more selected members are not part of your team group.'],
+                    ],
+                ], 422);
+            }
+
+            return back()->withErrors(['team_member' => 'One or more selected members are not part of your team group.']);
         }
 
         // Create a new project instance
@@ -66,7 +86,7 @@ class ProjectController extends Controller
             $project->save();
         } 
         // Attach team members to the project
-        foreach($request->input('team_member') as $memberId) {
+        foreach($requestedMembers as $memberId) {
             $projectUser = new ProjectUser();
             $projectUser->project_id = $project->id;
             $projectUser->user_id = $memberId;
@@ -83,6 +103,32 @@ class ProjectController extends Controller
         }
        
 
+        if ($request->ajax() || $request->wantsJson()) {
+            $project->load('users');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sub-project created successfully.',
+                'project' => [
+                    'id' => $project->id,
+                    'name' => $project->name,
+                    'description' => $project->description,
+                    'url' => url('/view-project/'.$project->id),
+                    'progress' => 0,
+                    'tasks' => 0,
+                    'open_tasks' => 0,
+                    'hours' => 0,
+                    'users' => $project->users->map(function ($user) {
+                        return [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'avatar' => asset($user->avatar ?: 'images/Favicon.png'),
+                        ];
+                    })->values(),
+                ],
+            ]);
+        }
+
         Alert::success('Successfully Save')->persistent('Dismiss');
         return back();
         
@@ -96,7 +142,10 @@ class ProjectController extends Controller
             'children' => function ($query) {
                 $query->where('completed', '!=', 1)->orderBy('name', 'asc');
             },
-            'children.tasks',
+            'children.tasks.comments',
+            'children.tasks.attachments',
+            'children.tasks.activities',
+            'children.tasks.users',
             'children.users',
             'users',
             // Sort statuses by position ASC when eager loading
@@ -145,10 +194,20 @@ class ProjectController extends Controller
             }
             // Return the view with the projects data
         
-            $users = User::get();
+            $users = User::assignableFor(auth()->user());
+            $projects = Project::with('parent')
+                ->when(auth()->user()->role !== 'Admin', function ($query) {
+                    $query->whereHas('users', function ($query) {
+                        $query->where('user_id', auth()->id());
+                    });
+                })
+                ->where('completed', '!=', 1)
+                ->orderBy('name', 'asc')
+                ->get();
             return view('projects.view',
                 array(
                     'project' => $project,
+                    'projects' => $projects,
                     'users' => $users,
                     'boardData' => $boardData,
                 )
@@ -220,14 +279,20 @@ class ProjectController extends Controller
                 )
             );
     }
-
-
     public function teamMember(Request $request,$id)
     {
+        $assignableUserIds = User::assignableFor(auth()->user())->pluck('id')->toArray();
+        $requestedMembers = collect($request->input('team_member', []))->map(function ($id) {
+            return (int) $id;
+        })->unique()->values();
+
+        if ($requestedMembers->diff($assignableUserIds)->isNotEmpty()) {
+            return back()->withErrors(['team_member' => 'One or more selected members are not part of your team group.']);
+        }
 
         ProjectUser::where('project_id',$id)->delete();
 
-          foreach($request->input('team_member') as $memberId) {
+          foreach($requestedMembers as $memberId) {
             $projectUser = new ProjectUser();
             $projectUser->project_id = $id;
             $projectUser->user_id = $memberId;

@@ -16,7 +16,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'email_verified_at', 'google_id', 'wallet_address', 'wallet_network'
+        'name', 'email', 'password', 'email_verified_at', 'google_id', 'wallet_address', 'wallet_network', 'stripe_account_id'
     ];
 
     /**
@@ -64,5 +64,44 @@ class User extends Authenticatable implements MustVerifyEmail
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
+    }
+    public function ownedTeamGroups()
+    {
+        return $this->hasMany(TeamGroup::class, 'owner_id');
+    }
+    public function teamGroupMemberships()
+    {
+        return $this->hasMany(TeamGroupMember::class);
+    }
+    public function teamGroups()
+    {
+        return $this->belongsToMany(TeamGroup::class, 'team_group_members')
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
+    public function billingTeamGroups()
+    {
+        return $this->hasMany(TeamGroup::class, 'billing_user_id');
+    }
+
+    public static function assignableFor(User $user)
+    {
+        if ($user->role === 'Admin') {
+            return static::orderBy('name', 'asc')->get();
+        }
+
+        $groupIds = TeamGroup::where('owner_id', $user->id)
+            ->orWhereHas('members', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->pluck('id');
+
+        $userIds = TeamGroupMember::whereIn('team_group_id', $groupIds)
+            ->pluck('user_id')
+            ->push($user->id)
+            ->unique()
+            ->values();
+
+        return static::whereIn('id', $userIds)->orderBy('name', 'asc')->get();
     }
 }

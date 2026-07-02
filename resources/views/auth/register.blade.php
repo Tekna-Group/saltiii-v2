@@ -35,6 +35,12 @@
                 <div class="p-2 mt-4">
                     <form method="POST" action="{{ route('register') }}" onsubmit='show();'>
                         @csrf
+                        @if(isset($invitation) && $invitation)
+                            <input type="hidden" name="invitation_token" value="{{ $invitation->token }}">
+                            <div class="alert alert-info">
+                                You are joining <strong>{{ $invitation->group->name }}</strong>. Use <strong>{{ $invitation->email }}</strong> to accept this invite.
+                            </div>
+                        @endif
                          @if($errors->any())
                             <div class="mt-3 form-group alert alert-danger alert-dismissable">
                                 <strong>{{$errors->first()}}</strong>
@@ -54,7 +60,7 @@
                         <div class="mb-3 form-group">
                             <label for="email" class="form-label">Email Address<span class="text-danger">*</span></label>
                             <input type="email" class="form-control" id="email" placeholder="" 
-                                   value="{{ old('email') }}" name="email" required>
+                                   value="{{ old('email', isset($invitation) && $invitation ? $invitation->email : '') }}" name="email" required>
                         </div>
 
                         <div class="mb-3 form-group">

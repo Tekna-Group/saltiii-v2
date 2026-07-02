@@ -41,6 +41,13 @@
                         </div>
                         <div class="col-xxl-12">
                             <div>
+                                <label for="stripe_account_id" class="form-label">Stripe Account ID</label>
+                                <input type="text" class="form-control" id="stripe_account_id" name="stripe_account_id" placeholder="acct_..." value="{{ $user->stripe_account_id }}">
+                                <small class="text-muted">Required for Stripe salary payouts. Use Stripe Connect ID like acct_..., not a bank account number.</small>
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
                                 <label for="role" class="form-label">Role</label>
                                 <select class='form-control' name='role' required>
                                     <option value=''>Select</option>
