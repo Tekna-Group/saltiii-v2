@@ -421,7 +421,7 @@
         }
 
         if (typeof validateSenderCanPayUsdc === 'function') {
-            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, totalRawAmount);
+            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, totalRawAmount, showBulkAlert);
         }
 
         let blockhash;
@@ -439,7 +439,7 @@
         }
 
         if (typeof simulatePayrollTransaction === 'function') {
-            await simulatePayrollTransaction(transaction, connection);
+            await warnIfPayrollSimulationFails(transaction, connection, showBulkAlert);
         }
 
         showBulkAlert('Confirm in Phantom', 'Phantom will open now. Review and approve this transfer batch in your wallet.', 'info');

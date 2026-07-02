@@ -606,7 +606,7 @@
 
             // USDC uses 6 decimal places
             const rawAmount = BigInt(Math.round(usdcTransferData.total_usdc_amount * 1_000_000));
-            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, rawAmount);
+            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, rawAmount, showAlert);
 
             const transaction = new Transaction();
 
@@ -664,7 +664,7 @@
             transaction.feePayer = senderPublicKey;
 
             assertSingleTransactionSigner(transaction, senderPublicKey);
-            await simulatePayrollTransaction(transaction, connection);
+            await warnIfPayrollSimulationFails(transaction, connection, showAlert);
 
             showAlert('Confirm in Phantom', 'Phantom will open now. Review and approve the transfer in your wallet.', 'info');
 
@@ -705,6 +705,32 @@
                 'Solana preflight simulation failed before Phantom could approve it. ' +
                 `Reason: ${err || 'Unknown simulation error'}. ` +
                 (logs ? 'Last logs: ' + logs : 'Please check sender USDC balance, SOL fee balance, recipient wallet, and USDC mint address.')
+            );
+        }
+    }
+
+    async function warnIfPayrollSimulationFails(transaction, connection, alertCallback) {
+        try {
+            await simulatePayrollTransaction(transaction, connection);
+        } catch (error) {
+            console.warn('Solana preflight warning:', error);
+            alertCallback(
+                'Phantom Check',
+                (error.message || 'The transaction may fail during Phantom confirmation.') + ' You can still review it in Phantom.',
+                'warning'
+            );
+        }
+    }
+
+    async function warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, requiredRawAmount, alertCallback) {
+        try {
+            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, requiredRawAmount);
+        } catch (error) {
+            console.warn('Payroll transfer balance warning:', error);
+            alertCallback(
+                'Wallet Check',
+                (error.message || 'The connected wallet may not be ready for this transfer.') + ' Phantom will still open for review.',
+                'warning'
             );
         }
     }
