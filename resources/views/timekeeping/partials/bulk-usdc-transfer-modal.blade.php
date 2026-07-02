@@ -293,7 +293,7 @@
         document.getElementById('processing-progress').innerHTML = progressHtml;
 
         let successCount = 0;
-        const batchSize = 8;
+        const batchSize = 1;
 
         for (let i = 0; i < bulkTransferState.selectedUsers.length; i += batchSize) {
             const batch = bulkTransferState.selectedUsers.slice(i, i + batchSize);
@@ -421,7 +421,7 @@
         }
 
         if (typeof validateSenderCanPayUsdc === 'function') {
-            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, totalRawAmount, showBulkAlert);
+            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, totalRawAmount);
         }
 
         let blockhash;
@@ -434,8 +434,12 @@
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = senderPublicKey;
 
+        if (typeof assertSingleTransactionSigner === 'function') {
+            assertSingleTransactionSigner(transaction, senderPublicKey);
+        }
+
         if (typeof simulatePayrollTransaction === 'function') {
-            await warnIfPayrollSimulationFails(transaction, connection, showBulkAlert);
+            await simulatePayrollTransaction(transaction, connection);
         }
 
         showBulkAlert('Confirm in Phantom', 'Phantom will open now. Review and approve this transfer batch in your wallet.', 'info');

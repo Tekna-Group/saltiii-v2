@@ -606,7 +606,7 @@
 
             // USDC uses 6 decimal places
             const rawAmount = BigInt(Math.round(usdcTransferData.total_usdc_amount * 1_000_000));
-            await warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, rawAmount, showAlert);
+            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, rawAmount);
 
             const transaction = new Transaction();
 
@@ -663,7 +663,8 @@
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = senderPublicKey;
 
-            await warnIfPayrollSimulationFails(transaction, connection, showAlert);
+            assertSingleTransactionSigner(transaction, senderPublicKey);
+            await simulatePayrollTransaction(transaction, connection);
 
             showAlert('Confirm in Phantom', 'Phantom will open now. Review and approve the transfer in your wallet.', 'info');
 
@@ -708,32 +709,6 @@
         }
     }
 
-    async function warnIfPayrollSimulationFails(transaction, connection, alertCallback) {
-        try {
-            await simulatePayrollTransaction(transaction, connection);
-        } catch (error) {
-            console.warn('Solana preflight warning:', error);
-            alertCallback(
-                'Phantom Check',
-                (error.message || 'The transaction may fail during Phantom confirmation.') + ' You can still review it in Phantom.',
-                'warning'
-            );
-        }
-    }
-
-    async function warnIfPayrollTransferMayFail(connection, senderPublicKey, senderATA, requiredRawAmount, alertCallback) {
-        try {
-            await validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, requiredRawAmount);
-        } catch (error) {
-            console.warn('Payroll transfer balance warning:', error);
-            alertCallback(
-                'Wallet Check',
-                (error.message || 'The connected wallet may not be ready for this transfer.') + ' Phantom will still open for review.',
-                'warning'
-            );
-        }
-    }
-
     async function validateSenderCanPayUsdc(connection, senderPublicKey, senderATA, requiredRawAmount) {
         const senderTokenAccount = await connection.getAccountInfo(senderATA);
 
@@ -774,6 +749,24 @@
         const whole = raw / BigInt(1_000_000);
         const fractional = String(raw % BigInt(1_000_000)).padStart(6, '0').replace(/0+$/, '');
         return fractional ? `${whole}.${fractional}` : `${whole}`;
+    }
+
+    function assertSingleTransactionSigner(transaction, expectedSigner) {
+        const signerSet = new Set();
+
+        transaction.instructions.forEach((instruction) => {
+            instruction.keys
+                .filter((key) => key.isSigner)
+                .forEach((key) => signerSet.add(key.pubkey.toString()));
+        });
+
+        if (transaction.feePayer) {
+            signerSet.add(transaction.feePayer.toString());
+        }
+
+        if (signerSet.size !== 1 || !signerSet.has(expectedSigner.toString())) {
+            throw new Error('Phantom requires this payroll transaction to use only the connected wallet as signer.');
+        }
     }
 
     function isValidSolanaPublicKey(address) {
