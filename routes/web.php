@@ -16,6 +16,7 @@ Auth::routes(['verify' => true]);
 Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe');
 Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
 Route::post('/stripe/webhook', 'StripeWebhookController@handle')->name('stripe.webhook');
+Route::post('/airwallex/webhook', 'AirwallexWebhookController@handle')->name('airwallex.webhook');
 Route::get('/team/invite/{token}', 'TeamGroupController@showInvite')->name('team-groups.invite.show');
 
 Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
@@ -90,6 +91,7 @@ Route::post('timekeeping/approve/{userId}','TimekeepingController@approvePayment
 Route::post('timekeeping/prepare-transfer/{userId}','TimekeepingController@prepareTransfer')->name('Timekeeping.prepareTransfer');
 Route::post('timekeeping/process-usdc-transfer','TimekeepingController@processUsdcTransfer')->name('Timekeeping.processUsdcTransfer');
 Route::post('timekeeping/process-stripe-salary/{userId}','TimekeepingController@processStripeSalary')->name('Timekeeping.processStripeSalary');
+Route::post('timekeeping/process-airwallex-salary/{postingId}','TimekeepingController@processAirwallexSalary')->name('Timekeeping.processAirwallexSalary');
 Route::post('timekeeping/solana-rpc','TimekeepingController@solanaRpc')->name('Timekeeping.solanaRpc');
 Route::get('my-timekeeping','TimekeepingController@myTimekeeping')->name('My Timekeeping');
 Route::get('payslips','PayrollController@index')->name('Payslip');

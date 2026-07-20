@@ -130,6 +130,10 @@
                                     <td>
                                         @if($paymentStatus === 'Completed')
                                             <span class="badge bg-success-subtle text-success">Paid</span>
+                                        @elseif($paymentStatus === 'Processing')
+                                            <span class="badge bg-primary-subtle text-primary">Processing</span>
+                                        @elseif($paymentStatus === 'Payment Failed')
+                                            <span class="badge bg-danger-subtle text-danger">Payment Failed</span>
                                         @elseif($paymentStatus === 'Approved')
                                             <span class="badge bg-info-subtle text-info">Approved</span>
                                         @else
@@ -156,6 +160,17 @@
                                             <button class="btn btn-sm btn-outline-secondary" disabled title="Locked after USDC transfer">
                                                 <i class="ri-lock-line me-1"></i>Locked
                                             </button>
+                                        @elseif($posting && $posting->status === 'Processing')
+                                            <button class="btn btn-sm btn-primary me-1" disabled title="{{ $posting->airwallex_status ?: 'Processing' }}">
+                                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Airwallex Processing
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled title="Locked while payment is processing">
+                                                <i class="ri-lock-line me-1"></i>Locked
+                                            </button>
+                                        @elseif($posting && $posting->status === 'Payment Failed')
+                                            <button class="btn btn-sm btn-danger me-1" disabled title="Review the transfer in Airwallex before retrying">
+                                                <i class="ri-error-warning-line me-1"></i>Airwallex Failed
+                                            </button>
                                         @elseif($posting && $posting->status === 'Approved')
                                             {{-- Approved: add adjustments then transfer --}}
                                             <button type="button" class="btn btn-sm btn-success me-1"
@@ -173,6 +188,16 @@
                                                 <input type="hidden" name="members" value="{{ $selected_member }}">
                                                 <button type="submit" class="btn btn-sm btn-primary me-1" @if(!$user->stripe_account_id) disabled title="Stripe Account ID is missing" @endif>
                                                     <i class="ri-bank-card-line me-1"></i>Pay Stripe
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{{ route('Timekeeping.processAirwallexSalary', $posting->id) }}" class="d-inline" onsubmit="return confirm('Create this PHP salary transfer in Airwallex?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-primary me-1"
+                                                    @if(!$user->airwallex_beneficiary_id || !config('services.airwallex.client_id') || !config('services.airwallex.api_key') || !config('services.airwallex.webhook_secret'))
+                                                        disabled
+                                                        title="{{ !$user->airwallex_beneficiary_id ? 'Airwallex Beneficiary ID is missing' : 'Airwallex API or webhook credentials are not configured' }}"
+                                                    @endif>
+                                                    <i class="ri-send-plane-line me-1"></i>Pay Airwallex
                                                 </button>
                                             </form>
                                             <button type="button" class="btn btn-sm btn-warning btn-adjustment"

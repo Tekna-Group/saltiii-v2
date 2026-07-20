@@ -9,6 +9,7 @@ use App\PayrollAdjustment;
 use App\TokenTransfer;
 use App\Services\ExchangeRateService;
 use App\Services\SolanaTokenService;
+use App\Services\AirwallexService;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Log;
@@ -707,6 +708,111 @@ class TimekeepingController extends Controller
             ]);
 
             return back()->with('error', 'Stripe salary payment failed: '.$e->getMessage());
+        }
+    }
+
+    public function processAirwallexSalary(Request $request, $postingId, AirwallexService $airwallex)
+    {
+        try {
+            $posting = PaymentPosting::with(['user', 'adjustments', 'activities.user.salary'])
+                ->findOrFail($postingId);
+            $user = $posting->user;
+
+            if ($posting->status !== 'Approved') {
+                return back()->with('error', 'Only approved payroll postings can be sent through Airwallex.');
+            }
+
+            if ($posting->airwallex_transfer_id) {
+                return back()->with('error', 'This payroll posting already has an Airwallex transfer.');
+            }
+
+            if (!$user || !$user->airwallex_beneficiary_id) {
+                return back()->with('error', 'Airwallex Beneficiary ID is not set for this employee.');
+            }
+
+            if (!$airwallex->isConfigured()) {
+                return back()->with('error', 'Airwallex is not configured on this server.');
+            }
+
+            if (!config('services.airwallex.webhook_secret')) {
+                return back()->with('error', 'Airwallex webhook verification is not configured on this server.');
+            }
+
+            if ($posting->activities->isEmpty()) {
+                return back()->with('error', 'No timekeeping activities are linked to this payroll posting.');
+            }
+
+            $netPay = round((float) $posting->net_amount, 2);
+            if ($netPay <= 0) {
+                return back()->with('error', 'Net pay must be greater than zero before processing Airwallex salary.');
+            }
+
+            if (!$posting->airwallex_request_id) {
+                $posting->airwallex_request_id = 'awx_'.substr(hash('sha256', $posting->id.'|'.$posting->reference_number.'|'.microtime(true)), 0, 46);
+                $posting->save();
+            }
+
+            $reference = 'Salary '.$posting->date_from->format('Ymd').'-'.$posting->date_to->format('Ymd');
+            $transfer = $airwallex->createSalaryTransfer(
+                $user->airwallex_beneficiary_id,
+                $netPay,
+                $reference,
+                $posting->airwallex_request_id
+            );
+
+            if (empty($transfer['id'])) {
+                throw new \RuntimeException('Airwallex did not return a transfer ID.');
+            }
+
+            $airwallexStatus = strtoupper($transfer['status'] ?? 'PROCESSING');
+            $posting->update([
+                'wallet_address' => $user->airwallex_beneficiary_id,
+                'wallet_network' => 'Airwallex',
+                'payment_method' => 'Airwallex',
+                'status' => $airwallexStatus === 'COMPLETED' ? 'Completed' : 'Processing',
+                'payment_approved_by' => auth()->user()->name,
+                'approved_at' => now(),
+                'notes' => 'Airwallex Transfer ID: '.$transfer['id'].' | Status: '.$airwallexStatus,
+                'airwallex_transfer_id' => $transfer['id'],
+                'airwallex_status' => $airwallexStatus,
+            ]);
+
+            if ($airwallexStatus === 'COMPLETED') {
+                $this->markAirwallexActivitiesPaid($posting);
+            }
+
+            Log::info('Airwallex salary transfer created', [
+                'payment_posting_id' => $posting->id,
+                'user_id' => $user->id,
+                'transfer_id' => $transfer['id'],
+                'status' => $airwallexStatus,
+                'amount_php' => $netPay,
+            ]);
+
+            return back()->with(
+                'success',
+                'Airwallex salary transfer created for '.$user->name.'. Status: '.$airwallexStatus.'.'
+            );
+        } catch (\Exception $e) {
+            Log::error('Airwallex salary processing failed', [
+                'payment_posting_id' => $postingId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Airwallex salary payment failed: '.$e->getMessage());
+        }
+    }
+
+    private function markAirwallexActivitiesPaid(PaymentPosting $posting)
+    {
+        foreach ($posting->activities as $activity) {
+            $hourlyRate = optional($activity->user->salary)->salary ?? 0;
+            $activity->payment_method = 'Airwallex';
+            $activity->payment_reference = $posting->reference_number;
+            $activity->payment_amount = $activity->hours * $hourlyRate;
+            $activity->paid_at = now();
+            $activity->payment_approved_by = $posting->payment_approved_by;
+            $activity->save();
         }
     }
 

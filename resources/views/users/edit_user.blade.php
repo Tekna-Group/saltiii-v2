@@ -48,6 +48,13 @@
                         </div>
                         <div class="col-xxl-12">
                             <div>
+                                <label for="airwallex_beneficiary_id_{{ $user->id }}" class="form-label">Airwallex Beneficiary ID</label>
+                                <input type="text" class="form-control" id="airwallex_beneficiary_id_{{ $user->id }}" name="airwallex_beneficiary_id" placeholder="Beneficiary ID from Airwallex" value="{{ $user->airwallex_beneficiary_id }}">
+                                <small class="text-muted">Required for Airwallex PHP bank payouts.</small>
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
                                 <label for="role" class="form-label">Role</label>
                                 <select class='form-control' name='role' required>
                                     <option value=''>Select</option>

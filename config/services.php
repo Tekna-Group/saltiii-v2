@@ -65,5 +65,17 @@ return [
         'free_trial_days' => env('GHL_FREE_TRIAL_DAYS', 30),
         'free_trial_plan_id' => env('GHL_FREE_TRIAL_PLAN_ID', 'free_trial_30_days'),
     ],
+    'airwallex' => [
+        'base_url' => env('AIRWALLEX_BASE_URL', 'https://api-demo.airwallex.com'),
+        'client_id' => env('AIRWALLEX_CLIENT_ID'),
+        'api_key' => env('AIRWALLEX_API_KEY'),
+        'webhook_secret' => env('AIRWALLEX_WEBHOOK_SECRET'),
+        'source_currency' => env('AIRWALLEX_SOURCE_CURRENCY', 'USD'),
+        'transfer_currency' => env('AIRWALLEX_TRANSFER_CURRENCY', 'PHP'),
+        'lock_rate' => env('AIRWALLEX_LOCK_RATE', true),
+        'api_version' => env('AIRWALLEX_API_VERSION', '2024-09-27'),
+        'account_id' => env('AIRWALLEX_ACCOUNT_ID'),
+        'webhook_tolerance' => env('AIRWALLEX_WEBHOOK_TOLERANCE', 300),
+    ],
 
 ];

@@ -21,6 +21,9 @@ class PaymentPosting extends Model
         'payment_approved_by',
         'approved_at',
         'notes',
+        'airwallex_transfer_id',
+        'airwallex_request_id',
+        'airwallex_status',
     ];
 
     protected $dates = [

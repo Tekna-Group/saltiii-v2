@@ -48,6 +48,13 @@
                         </div>
                         <div class="col-xxl-12">
                             <div>
+                                <label for="airwallex_beneficiary_id" class="form-label">Airwallex Beneficiary ID</label>
+                                <input type="text" class="form-control" id="airwallex_beneficiary_id" name="airwallex_beneficiary_id" placeholder="Beneficiary ID from Airwallex" value="{{ old('airwallex_beneficiary_id') }}">
+                                <small class="text-muted">Create the employee as a PHP bank beneficiary in Airwallex, then paste the beneficiary ID here.</small>
+                            </div>
+                        </div>
+                        <div class="col-xxl-12">
+                            <div>
                                 <label for="position" class="form-label">Position</label>
                                 <input type="text" class="form-control" id="position" name='position'  placeholder="position" Required>
                             </div>
