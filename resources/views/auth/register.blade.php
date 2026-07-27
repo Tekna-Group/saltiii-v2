@@ -42,8 +42,8 @@
       radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .16) 0 2px, transparent 3px),
       radial-gradient(circle at 96% 68%, rgba(255, 255, 255, .13) 0 2px, transparent 3px),
       radial-gradient(circle at 55% 85%, rgba(255, 255, 255, .11) 0 2px, transparent 3px),
-      linear-gradient(115deg, #241c5e 0%, #4c2fc4 42%, #7b2ff7 78%, #9b3df0 100%);
-    box-shadow: 0 18px 36px -14px rgba(40, 20, 90, .5);
+      linear-gradient(115deg, #5c0a15 0%, #a01326 40%, #e11d34 72%, #ff4d54 100%);
+    box-shadow: 0 18px 36px -14px rgba(120, 10, 25, .5);
   }
 
   .promo-bar::before,
@@ -69,55 +69,19 @@
 
   .promo-bar__title {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 260px;
     align-items: center;
     gap: 8px;
     margin: 0;
     color: #fff;
-    font-size: 16px;
+    font-size: 15.5px;
     font-weight: 700;
-    white-space: nowrap;
+    line-height: 1.35;
   }
 
   .promo-bar__title span {
     font-size: 20px;
     line-height: 1;
-  }
-
-  .promo-bar__stats {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 18px;
-  }
-
-  .promo-bar__stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    min-width: 60px;
-    padding-left: 18px;
-    border-left: 1px solid rgba(255, 255, 255, .22);
-  }
-
-  .promo-bar__stat:first-child {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  .promo-bar__stat i {
-    color: #ffcc55;
-    font-size: 19px;
-  }
-
-  .promo-bar__stat span {
-    color: rgba(255, 255, 255, .85);
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: .03em;
-    text-transform: uppercase;
-    white-space: nowrap;
   }
 
   .promo-bar__timer {
@@ -190,7 +154,6 @@
     }
 
     .promo-bar__title,
-    .promo-bar__stats,
     .promo-bar__timer {
       justify-content: center;
     }
@@ -208,10 +171,10 @@
     height: 52px;
     margin: 0 auto 14px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #4c2fc4, #9b3df0);
+    background: linear-gradient(135deg, #a01326, #ff4d54);
     color: #fff;
     font-size: 22px;
-    box-shadow: 0 10px 22px -8px rgba(90, 40, 190, .55);
+    box-shadow: 0 10px 22px -8px rgba(160, 19, 38, .5);
   }
 
   .form-group .form-icon {
@@ -240,13 +203,13 @@
                 </h2>
             @else
                 <h2 class="promo-bar__title" id="promo-bar-title">
-                    <span aria-hidden="true">✨</span>
-                    One workspace, less busywork
+                    <span aria-hidden="true">🎁</span>
+                    Your FREE 30-day trial is ready. Offer ends soon.
                 </h2>
             @endif
 
             @if(isset($invitation) && $invitation && $invitation->expires_at)
-                <div class="promo-bar__timer" id="invite-countdown" data-expires="{{ $invitation->expires_at->toIso8601String() }}" role="timer" aria-label="Time remaining to accept this invitation">
+                <div class="promo-bar__timer" id="promo-countdown" data-expires="{{ $invitation->expires_at->toIso8601String() }}" role="timer" aria-label="Time remaining to accept this invitation">
                     <span class="promo-bar__timer-label"><i class="ri-time-line" aria-hidden="true"></i> Expires in</span>
                     <div class="promo-bar__timer-unit"><strong data-unit="days">00</strong><small>Days</small></div>
                     <div class="promo-bar__timer-unit"><strong data-unit="hours">00</strong><small>Hrs</small></div>
@@ -254,24 +217,17 @@
                     <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
                 </div>
             @else
-                <div class="promo-bar__stats" aria-label="Saltiii features">
-                    <div class="promo-bar__stat">
-                        <i class="ri-list-check-3" aria-hidden="true"></i>
-                        <span>Projects</span>
-                    </div>
-                    <div class="promo-bar__stat">
-                        <i class="ri-time-line" aria-hidden="true"></i>
-                        <span>Timekeeping</span>
-                    </div>
-                    <div class="promo-bar__stat">
-                        <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
-                        <span>Payroll</span>
-                    </div>
+                <div class="promo-bar__timer" id="promo-countdown" data-duration-days="7" role="timer" aria-label="Time remaining on the free trial offer">
+                    <span class="promo-bar__timer-label"><i class="ri-time-line" aria-hidden="true"></i> Offer ends in</span>
+                    <div class="promo-bar__timer-unit"><strong data-unit="days">00</strong><small>Days</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="hours">00</strong><small>Hrs</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="minutes">00</strong><small>Min</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
                 </div>
             @endif
 
             <a class="promo-bar__cta" href="#registration-form">
-                Get Started
+                Start Free Trial
             </a>
         </section>
 
@@ -580,10 +536,22 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
 });
 
 (function () {
-    var el = document.getElementById('invite-countdown');
+    var el = document.getElementById('promo-countdown');
     if (!el) return;
 
-    var expires = new Date(el.getAttribute('data-expires')).getTime();
+    var expires;
+    if (el.hasAttribute('data-expires')) {
+        expires = new Date(el.getAttribute('data-expires')).getTime();
+    } else {
+        var durationMs = parseInt(el.getAttribute('data-duration-days'), 10) * 86400000;
+        var stored = localStorage.getItem('promoOfferEndsAt');
+        expires = stored ? parseInt(stored, 10) : NaN;
+        if (!expires || isNaN(expires) || expires <= Date.now()) {
+            expires = Date.now() + durationMs;
+            localStorage.setItem('promoOfferEndsAt', String(expires));
+        }
+    }
+
     var days = el.querySelector('[data-unit="days"]');
     var hours = el.querySelector('[data-unit="hours"]');
     var minutes = el.querySelector('[data-unit="minutes"]');
