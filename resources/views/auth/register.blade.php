@@ -126,26 +126,6 @@
     text-transform: uppercase;
   }
 
-  .promo-bar__cta {
-    flex: 0 0 auto;
-    padding: 10px 22px;
-    border: 0;
-    border-radius: 8px;
-    color: #2a1760;
-    background: linear-gradient(135deg, #ffd873, #ffb238);
-    box-shadow: 0 8px 20px rgba(255, 178, 56, .35);
-    font-size: 13.5px;
-    font-weight: 700;
-    white-space: nowrap;
-    transition: transform .2s ease, box-shadow .2s ease;
-  }
-
-  .promo-bar__cta:hover {
-    color: #2a1760;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(255, 178, 56, .45);
-  }
-
   @media (max-width: 575.98px) {
     .promo-bar {
       flex-direction: column;
@@ -156,10 +136,6 @@
     .promo-bar__title,
     .promo-bar__timer {
       justify-content: center;
-    }
-
-    .promo-bar__cta {
-      text-align: center;
     }
   }
 
@@ -225,10 +201,6 @@
                     <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
                 </div>
             @endif
-
-            <a class="promo-bar__cta" href="#registration-form">
-                Start Free Trial
-            </a>
         </section>
 
         <div class="card mt-4 card-bg-fill">
