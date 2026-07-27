@@ -27,111 +27,163 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 28px;
     overflow: hidden;
     margin-top: 1.5rem;
-    padding: 20px 24px;
-    border: 1px solid rgba(255, 255, 255, .2);
-    border-radius: 14px;
+    padding: 28px 32px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 16px;
     color: #fff;
     background:
       radial-gradient(circle at 8% 18%, rgba(255, 255, 255, .22) 0 3px, transparent 4px),
       radial-gradient(circle at 78% 28%, rgba(255, 255, 255, .17) 0 4px, transparent 5px),
       radial-gradient(circle at 92% 80%, rgba(255, 255, 255, .2) 0 3px, transparent 4px),
-      linear-gradient(115deg, #405189 0%, #556ee6 52%, #6f42c1 100%);
-    box-shadow: 0 14px 30px rgba(25, 43, 94, .25);
+      linear-gradient(120deg, #383a86 0%, #405189 34%, #556ee6 70%, #6f42c1 100%);
+    box-shadow: 0 20px 40px -14px rgba(25, 43, 94, .4);
   }
 
   .registration-promo::before,
   .registration-promo::after {
     position: absolute;
     z-index: -1;
-    width: 150px;
-    height: 150px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     background: rgba(255, 255, 255, .08);
     content: "";
   }
 
   .registration-promo::before {
-    top: -105px;
-    left: 35%;
+    top: -115px;
+    left: 30%;
   }
 
   .registration-promo::after {
-    right: -55px;
-    bottom: -105px;
+    right: -60px;
+    bottom: -115px;
   }
 
   .registration-promo__eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 6px;
-    color: #cfe1ff;
+    margin-bottom: 10px;
+    padding: 4px 10px 4px 8px;
+    border: 1px solid rgba(255, 255, 255, .22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .14);
+    color: #e7edff;
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: .12em;
+    letter-spacing: .1em;
     text-transform: uppercase;
   }
 
   .registration-promo__title {
-    margin: 0;
+    margin: 0 0 8px;
     color: #fff;
-    font-size: clamp(18px, 2.2vw, 24px);
+    font-size: clamp(19px, 2.4vw, 26px);
     font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .registration-promo__subtitle {
+    margin: 0 0 14px;
+    max-width: 380px;
+    color: rgba(255, 255, 255, .82);
+    font-size: 13.5px;
+    line-height: 1.5;
   }
 
   .registration-promo__features {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 14px;
-    margin-top: 10px;
-    color: rgba(255, 255, 255, .86);
+    gap: 8px;
+    color: #fff;
     font-size: 12px;
   }
 
   .registration-promo__features span {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    font-weight: 500;
   }
 
   .registration-promo__features i {
     color: #74e5ba;
+    font-size: 14px;
   }
 
-  .registration-promo__action {
+  .registration-promo__showcase {
+    display: flex;
     flex: 0 0 auto;
-    min-width: 120px;
-    padding: 10px 18px;
-    border: 0;
-    border-radius: 8px;
-    color: #405189;
-    background: #fff;
-    box-shadow: 0 8px 18px rgba(26, 37, 80, .2);
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
-    transition: transform .2s ease, box-shadow .2s ease;
+    flex-direction: column;
+    gap: 10px;
   }
 
-  .registration-promo__action:hover {
-    color: #405189;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(26, 37, 80, .28);
+  .registration-promo__showcase-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 172px;
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .12);
+    backdrop-filter: blur(6px);
+    transition: transform .25s ease, background .25s ease;
+  }
+
+  .registration-promo__showcase-tile:hover {
+    background: rgba(255, 255, 255, .2);
+    transform: translateX(-4px);
+  }
+
+  .registration-promo__showcase-tile:nth-child(2) {
+    margin-left: 14px;
+  }
+
+  .registration-promo__showcase-tile:nth-child(3) {
+    margin-left: 28px;
+  }
+
+  .registration-promo__showcase-tile i {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .18);
+    color: #fff;
+    font-size: 16px;
+  }
+
+  .registration-promo__showcase-tile span {
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+
+  @media (max-width: 767.98px) {
+    .registration-promo__showcase {
+      display: none;
+    }
   }
 
   @media (max-width: 575.98px) {
     .registration-promo {
-      align-items: stretch;
-      flex-direction: column;
-      gap: 16px;
-      padding: 18px;
+      padding: 20px;
     }
 
-    .registration-promo__action {
-      width: 100%;
+    .registration-promo__subtitle {
+      max-width: none;
     }
   }
 </style>
@@ -148,16 +200,29 @@
                 <h2 class="registration-promo__title" id="registration-promo-title">
                     Bring your team’s work together
                 </h2>
+                <p class="registration-promo__subtitle">
+                    Plan projects, track time, and run payroll from a single account — set up in just a couple of minutes.
+                </p>
                 <div class="registration-promo__features" aria-label="Saltiii features">
                     <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Projects &amp; tasks</span>
                     <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Timekeeping</span>
                     <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Payroll</span>
                 </div>
             </div>
-            <a class="registration-promo__action" href="#registration-form">
-                Join Saltiii
-                <i class="ri-arrow-down-line ms-1" aria-hidden="true"></i>
-            </a>
+            <div class="registration-promo__showcase" aria-hidden="true">
+                <div class="registration-promo__showcase-tile">
+                    <i class="ri-list-check-3" aria-hidden="true"></i>
+                    <span>Projects &amp; tasks</span>
+                </div>
+                <div class="registration-promo__showcase-tile">
+                    <i class="ri-time-line" aria-hidden="true"></i>
+                    <span>Timekeeping</span>
+                </div>
+                <div class="registration-promo__showcase-tile">
+                    <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
+                    <span>Payroll</span>
+                </div>
+            </div>
         </section>
 
         <div class="card mt-4 card-bg-fill">
@@ -201,9 +266,9 @@
                         <div class="mb-3 form-group">
                             <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
                             <div class=" auth-pass-inputgroup">
-                                <input type="password" name="password" class="form-control  password-input{{ $errors->has('password') ? ' is-invalid' : '' }}" 
+                                <input type="password" name="password" class="form-control  password-input{{ $errors->has('password') ? ' is-invalid' : '' }}"
                                        placeholder="" id="password" required>
-                                <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
+                                <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
                             </div>
@@ -212,9 +277,9 @@
                         <div class="mb-3 form-group">
                             <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
                             <div class="auth-pass-inputgroup    ">
-                                <input type="password" name="password_confirmation" class="form-control  " 
+                                <input type="password" name="password_confirmation" class="form-control  password-input"
                                        placeholder="" id="password-confirm" required>
-                                <button class="btn btn-link position-absolute end-0 top-0 text-muted" type="button" id="password-addon">
+                                <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-confirm-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
                             </div>
@@ -447,6 +512,15 @@ function openTermsModal() {
 function closeTermsModal() {
     document.querySelector('#terms').style.display = 'none';
 }
+
+document.querySelectorAll('#registration-form .password-addon').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var icon = btn.querySelector('i');
+        var isHidden = icon.classList.contains('ri-eye-fill');
+        icon.classList.toggle('ri-eye-fill', !isHidden);
+        icon.classList.toggle('ri-eye-off-fill', isHidden);
+    });
+});
 </script>
 
 @endsection
