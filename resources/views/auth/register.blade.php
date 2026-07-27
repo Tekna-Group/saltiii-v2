@@ -21,169 +21,138 @@
     font-size: 14px;
   }
 
-  .registration-promo {
+  .promo-bar {
     position: relative;
     isolation: isolate;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 28px;
+    row-gap: 16px;
+    column-gap: 24px;
     overflow: hidden;
     margin-top: 1.5rem;
-    padding: 28px 32px;
+    padding: 18px 26px;
     border: 1px solid rgba(255, 255, 255, .18);
-    border-radius: 16px;
+    border-radius: 14px;
     color: #fff;
     background:
-      radial-gradient(circle at 8% 18%, rgba(255, 255, 255, .22) 0 3px, transparent 4px),
-      radial-gradient(circle at 78% 28%, rgba(255, 255, 255, .17) 0 4px, transparent 5px),
-      radial-gradient(circle at 92% 80%, rgba(255, 255, 255, .2) 0 3px, transparent 4px),
-      linear-gradient(120deg, #383a86 0%, #405189 34%, #556ee6 70%, #6f42c1 100%);
-    box-shadow: 0 20px 40px -14px rgba(25, 43, 94, .4);
+      radial-gradient(circle at 6% 22%, rgba(255, 255, 255, .18) 0 2px, transparent 3px),
+      radial-gradient(circle at 20% 78%, rgba(255, 255, 255, .14) 0 2px, transparent 3px),
+      radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18) 0 2px, transparent 3px),
+      radial-gradient(circle at 96% 68%, rgba(255, 255, 255, .14) 0 2px, transparent 3px),
+      radial-gradient(circle at 55% 85%, rgba(255, 255, 255, .12) 0 2px, transparent 3px),
+      linear-gradient(100deg, #3b3f97 0%, #556ee6 58%, #6f42c1 100%);
+    box-shadow: 0 16px 32px -14px rgba(25, 43, 94, .45);
   }
 
-  .registration-promo::before,
-  .registration-promo::after {
+  .promo-bar::before,
+  .promo-bar::after {
     position: absolute;
     z-index: -1;
-    width: 170px;
-    height: 170px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, .08);
+    background: rgba(255, 255, 255, .07);
     content: "";
   }
 
-  .registration-promo::before {
-    top: -115px;
-    left: 30%;
+  .promo-bar::before {
+    top: -95px;
+    left: 20%;
   }
 
-  .registration-promo::after {
-    right: -60px;
-    bottom: -115px;
+  .promo-bar::after {
+    right: -50px;
+    bottom: -95px;
   }
 
-  .registration-promo__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-    padding: 4px 10px 4px 8px;
-    border: 1px solid rgba(255, 255, 255, .22);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .14);
-    color: #e7edff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-  }
-
-  .registration-promo__title {
-    margin: 0 0 8px;
-    color: #fff;
-    font-size: clamp(19px, 2.4vw, 26px);
-    font-weight: 700;
-    line-height: 1.25;
-  }
-
-  .registration-promo__subtitle {
-    margin: 0 0 14px;
-    max-width: 380px;
-    color: rgba(255, 255, 255, .82);
-    font-size: 13.5px;
-    line-height: 1.5;
-  }
-
-  .registration-promo__features {
+  .promo-bar__title {
     display: flex;
-    flex-wrap: wrap;
+    flex: 1 1 auto;
+    align-items: center;
     gap: 8px;
-    color: #fff;
-    font-size: 12px;
-  }
-
-  .registration-promo__features span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border: 1px solid rgba(255, 255, 255, .16);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, .12);
-    font-weight: 500;
-  }
-
-  .registration-promo__features i {
-    color: #74e5ba;
-    font-size: 14px;
-  }
-
-  .registration-promo__showcase {
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .registration-promo__showcase-tile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 172px;
-    padding: 10px 14px;
-    border: 1px solid rgba(255, 255, 255, .18);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, .12);
-    backdrop-filter: blur(6px);
-    transition: transform .25s ease, background .25s ease;
-  }
-
-  .registration-promo__showcase-tile:hover {
-    background: rgba(255, 255, 255, .2);
-    transform: translateX(-4px);
-  }
-
-  .registration-promo__showcase-tile:nth-child(2) {
-    margin-left: 14px;
-  }
-
-  .registration-promo__showcase-tile:nth-child(3) {
-    margin-left: 28px;
-  }
-
-  .registration-promo__showcase-tile i {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, .18);
+    margin: 0;
     color: #fff;
     font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
-  .registration-promo__showcase-tile span {
+  .promo-bar__title span {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .promo-bar__stats {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .promo-bar__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+    padding-left: 18px;
+    border-left: 1px solid rgba(255, 255, 255, .22);
+  }
+
+  .promo-bar__stat:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .promo-bar__stat i {
     color: #fff;
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 19px;
   }
 
-  @media (max-width: 767.98px) {
-    .registration-promo__showcase {
-      display: none;
-    }
+  .promo-bar__stat span {
+    color: rgba(255, 255, 255, .85);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .promo-bar__cta {
+    flex: 0 0 auto;
+    padding: 10px 22px;
+    border-radius: 8px;
+    color: #405189;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(26, 37, 80, .22);
+    font-size: 13.5px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .promo-bar__cta:hover {
+    color: #405189;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(26, 37, 80, .3);
   }
 
   @media (max-width: 575.98px) {
-    .registration-promo {
+    .promo-bar {
+      flex-direction: column;
+      align-items: stretch;
       padding: 20px;
     }
 
-    .registration-promo__subtitle {
-      max-width: none;
+    .promo-bar__title,
+    .promo-bar__stats {
+      justify-content: center;
+    }
+
+    .promo-bar__cta {
+      text-align: center;
     }
   }
 </style>
@@ -191,38 +160,28 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-md-9 col-lg-7 col-xl-6">
-        <section class="registration-promo" aria-labelledby="registration-promo-title">
-            <div>
-                <div class="registration-promo__eyebrow">
-                    <i class="ri-sparkling-2-fill" aria-hidden="true"></i>
-                    One workspace, less busywork
-                </div>
-                <h2 class="registration-promo__title" id="registration-promo-title">
-                    Bring your team’s work together
-                </h2>
-                <p class="registration-promo__subtitle">
-                    Plan projects, track time, and run payroll from a single account — set up in just a couple of minutes.
-                </p>
-                <div class="registration-promo__features" aria-label="Saltiii features">
-                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Projects &amp; tasks</span>
-                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Timekeeping</span>
-                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Payroll</span>
-                </div>
-            </div>
-            <div class="registration-promo__showcase" aria-hidden="true">
-                <div class="registration-promo__showcase-tile">
+        <section class="promo-bar" aria-labelledby="promo-bar-title">
+            <h2 class="promo-bar__title" id="promo-bar-title">
+                <span aria-hidden="true">✨</span>
+                One workspace, less busywork
+            </h2>
+            <div class="promo-bar__stats" aria-label="Saltiii features">
+                <div class="promo-bar__stat">
                     <i class="ri-list-check-3" aria-hidden="true"></i>
-                    <span>Projects &amp; tasks</span>
+                    <span>Projects</span>
                 </div>
-                <div class="registration-promo__showcase-tile">
+                <div class="promo-bar__stat">
                     <i class="ri-time-line" aria-hidden="true"></i>
                     <span>Timekeeping</span>
                 </div>
-                <div class="registration-promo__showcase-tile">
+                <div class="promo-bar__stat">
                     <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
                     <span>Payroll</span>
                 </div>
             </div>
+            <a class="promo-bar__cta" href="#registration-form">
+                Get Started
+            </a>
         </section>
 
         <div class="card mt-4 card-bg-fill">
