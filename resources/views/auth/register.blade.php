@@ -33,17 +33,17 @@
     overflow: hidden;
     margin-top: 1.5rem;
     padding: 18px 26px;
-    border: 1px solid rgba(255, 255, 255, .18);
+    border: 1px solid rgba(255, 255, 255, .16);
     border-radius: 14px;
     color: #fff;
     background:
-      radial-gradient(circle at 6% 22%, rgba(255, 255, 255, .18) 0 2px, transparent 3px),
-      radial-gradient(circle at 20% 78%, rgba(255, 255, 255, .14) 0 2px, transparent 3px),
-      radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18) 0 2px, transparent 3px),
-      radial-gradient(circle at 96% 68%, rgba(255, 255, 255, .14) 0 2px, transparent 3px),
-      radial-gradient(circle at 55% 85%, rgba(255, 255, 255, .12) 0 2px, transparent 3px),
-      linear-gradient(100deg, #3b3f97 0%, #556ee6 58%, #6f42c1 100%);
-    box-shadow: 0 16px 32px -14px rgba(25, 43, 94, .45);
+      radial-gradient(circle at 6% 22%, rgba(255, 255, 255, .16) 0 2px, transparent 3px),
+      radial-gradient(circle at 20% 78%, rgba(255, 255, 255, .13) 0 2px, transparent 3px),
+      radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .16) 0 2px, transparent 3px),
+      radial-gradient(circle at 96% 68%, rgba(255, 255, 255, .13) 0 2px, transparent 3px),
+      radial-gradient(circle at 55% 85%, rgba(255, 255, 255, .11) 0 2px, transparent 3px),
+      linear-gradient(115deg, #241c5e 0%, #4c2fc4 42%, #7b2ff7 78%, #9b3df0 100%);
+    box-shadow: 0 18px 36px -14px rgba(40, 20, 90, .5);
   }
 
   .promo-bar::before,
@@ -107,7 +107,7 @@
   }
 
   .promo-bar__stat i {
-    color: #fff;
+    color: #ffcc55;
     font-size: 19px;
   }
 
@@ -120,13 +120,56 @@
     white-space: nowrap;
   }
 
+  .promo-bar__timer {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .promo-bar__timer-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 2px;
+    color: #ffd473;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .promo-bar__timer-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 40px;
+  }
+
+  .promo-bar__timer-unit strong {
+    color: #fff;
+    font-size: 21px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .promo-bar__timer-unit small {
+    margin-top: 4px;
+    color: rgba(255, 255, 255, .75);
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
   .promo-bar__cta {
     flex: 0 0 auto;
     padding: 10px 22px;
+    border: 0;
     border-radius: 8px;
-    color: #405189;
-    background: #fff;
-    box-shadow: 0 8px 18px rgba(26, 37, 80, .22);
+    color: #2a1760;
+    background: linear-gradient(135deg, #ffd873, #ffb238);
+    box-shadow: 0 8px 20px rgba(255, 178, 56, .35);
     font-size: 13.5px;
     font-weight: 700;
     white-space: nowrap;
@@ -134,9 +177,9 @@
   }
 
   .promo-bar__cta:hover {
-    color: #405189;
+    color: #2a1760;
     transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(26, 37, 80, .3);
+    box-shadow: 0 10px 24px rgba(255, 178, 56, .45);
   }
 
   @media (max-width: 575.98px) {
@@ -147,7 +190,8 @@
     }
 
     .promo-bar__title,
-    .promo-bar__stats {
+    .promo-bar__stats,
+    .promo-bar__timer {
       justify-content: center;
     }
 
@@ -155,30 +199,77 @@
       text-align: center;
     }
   }
+
+  .register-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4c2fc4, #9b3df0);
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 10px 22px -8px rgba(90, 40, 190, .55);
+  }
+
+  .form-group .form-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    color: #9aa1b1;
+    font-size: 15px;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  .form-group .form-control.ps-icon {
+    padding-left: 36px;
+  }
 </style>
 @endsection
 @section('content')
 <div class="row justify-content-center">
     <div class="col-md-9 col-lg-7 col-xl-6">
         <section class="promo-bar" aria-labelledby="promo-bar-title">
-            <h2 class="promo-bar__title" id="promo-bar-title">
-                <span aria-hidden="true">✨</span>
-                One workspace, less busywork
-            </h2>
-            <div class="promo-bar__stats" aria-label="Saltiii features">
-                <div class="promo-bar__stat">
-                    <i class="ri-list-check-3" aria-hidden="true"></i>
-                    <span>Projects</span>
+            @if(isset($invitation) && $invitation)
+                <h2 class="promo-bar__title" id="promo-bar-title">
+                    <span aria-hidden="true">📩</span>
+                    You're invited to {{ $invitation->group->name }}
+                </h2>
+            @else
+                <h2 class="promo-bar__title" id="promo-bar-title">
+                    <span aria-hidden="true">✨</span>
+                    One workspace, less busywork
+                </h2>
+            @endif
+
+            @if(isset($invitation) && $invitation && $invitation->expires_at)
+                <div class="promo-bar__timer" id="invite-countdown" data-expires="{{ $invitation->expires_at->toIso8601String() }}" role="timer" aria-label="Time remaining to accept this invitation">
+                    <span class="promo-bar__timer-label"><i class="ri-time-line" aria-hidden="true"></i> Expires in</span>
+                    <div class="promo-bar__timer-unit"><strong data-unit="days">00</strong><small>Days</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="hours">00</strong><small>Hrs</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="minutes">00</strong><small>Min</small></div>
+                    <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
                 </div>
-                <div class="promo-bar__stat">
-                    <i class="ri-time-line" aria-hidden="true"></i>
-                    <span>Timekeeping</span>
+            @else
+                <div class="promo-bar__stats" aria-label="Saltiii features">
+                    <div class="promo-bar__stat">
+                        <i class="ri-list-check-3" aria-hidden="true"></i>
+                        <span>Projects</span>
+                    </div>
+                    <div class="promo-bar__stat">
+                        <i class="ri-time-line" aria-hidden="true"></i>
+                        <span>Timekeeping</span>
+                    </div>
+                    <div class="promo-bar__stat">
+                        <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
+                        <span>Payroll</span>
+                    </div>
                 </div>
-                <div class="promo-bar__stat">
-                    <i class="ri-money-dollar-circle-line" aria-hidden="true"></i>
-                    <span>Payroll</span>
-                </div>
-            </div>
+            @endif
+
             <a class="promo-bar__cta" href="#registration-form">
                 Get Started
             </a>
@@ -187,6 +278,9 @@
         <div class="card mt-4 card-bg-fill">
             <div class="card-body p-4">
                 <div class="text-center mt-2">
+                    <div class="register-card-icon" aria-hidden="true">
+                        <i class="ri-user-add-line"></i>
+                    </div>
                     <h5 class="text-primary">Create your Saltiii account</h5>
                     {{-- <p class="text-muted">Sign up to continue to {{ config('app.name', 'Laravel') }}</p> --}}
                 </div>
@@ -207,7 +301,8 @@
                         @endif
                         <div class="mb-3 form-group">
                             <label for="name" class="form-label">Name<span class="text-danger">*</span></label>
-                            <input id="name" type="text" class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" 
+                            <i class="ri-user-line form-icon" aria-hidden="true"></i>
+                            <input id="name" type="text" class="form-control ps-icon{{ $errors->has('name') ? ' is-invalid' : '' }}"
                                    name="name" value="{{ old('name') }}" placeholder="" required autofocus>
                             @if ($errors->has('name'))
                                 <span class="invalid-feedback" role="alert">
@@ -218,14 +313,16 @@
 
                         <div class="mb-3 form-group">
                             <label for="email" class="form-label">Email Address<span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" placeholder="" 
+                            <i class="ri-mail-line form-icon" aria-hidden="true"></i>
+                            <input type="email" class="form-control ps-icon" id="email" placeholder=""
                                    value="{{ old('email', isset($invitation) && $invitation ? $invitation->email : '') }}" name="email" required>
                         </div>
 
                         <div class="mb-3 form-group">
                             <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+                            <i class="ri-lock-2-line form-icon" aria-hidden="true"></i>
                             <div class=" auth-pass-inputgroup">
-                                <input type="password" name="password" class="form-control  password-input{{ $errors->has('password') ? ' is-invalid' : '' }}"
+                                <input type="password" name="password" class="form-control ps-icon password-input{{ $errors->has('password') ? ' is-invalid' : '' }}"
                                        placeholder="" id="password" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
@@ -235,8 +332,9 @@
 
                         <div class="mb-3 form-group">
                             <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
+                            <i class="ri-shield-check-line form-icon" aria-hidden="true"></i>
                             <div class="auth-pass-inputgroup    ">
-                                <input type="password" name="password_confirmation" class="form-control  password-input"
+                                <input type="password" name="password_confirmation" class="form-control ps-icon password-input"
                                        placeholder="" id="password-confirm" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-confirm-addon">
                                     <i class="ri-eye-fill align-middle"></i>
@@ -480,6 +578,38 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
         icon.classList.toggle('ri-eye-off-fill', isHidden);
     });
 });
+
+(function () {
+    var el = document.getElementById('invite-countdown');
+    if (!el) return;
+
+    var expires = new Date(el.getAttribute('data-expires')).getTime();
+    var days = el.querySelector('[data-unit="days"]');
+    var hours = el.querySelector('[data-unit="hours"]');
+    var minutes = el.querySelector('[data-unit="minutes"]');
+    var seconds = el.querySelector('[data-unit="seconds"]');
+
+    function pad(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function tick() {
+        var diff = Math.max(0, expires - Date.now());
+        var totalSeconds = Math.floor(diff / 1000);
+
+        days.textContent = pad(Math.floor(totalSeconds / 86400));
+        hours.textContent = pad(Math.floor((totalSeconds % 86400) / 3600));
+        minutes.textContent = pad(Math.floor((totalSeconds % 3600) / 60));
+        seconds.textContent = pad(totalSeconds % 60);
+
+        if (diff <= 0) {
+            clearInterval(timer);
+        }
+    }
+
+    tick();
+    var timer = setInterval(tick, 1000);
+})();
 </script>
 
 @endsection
