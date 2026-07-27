@@ -20,11 +20,146 @@
     padding: 10px;
     font-size: 14px;
   }
+
+  .registration-promo {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    margin-top: 1.5rem;
+    padding: 20px 24px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 14px;
+    color: #fff;
+    background:
+      radial-gradient(circle at 8% 18%, rgba(255, 255, 255, .22) 0 3px, transparent 4px),
+      radial-gradient(circle at 78% 28%, rgba(255, 255, 255, .17) 0 4px, transparent 5px),
+      radial-gradient(circle at 92% 80%, rgba(255, 255, 255, .2) 0 3px, transparent 4px),
+      linear-gradient(115deg, #405189 0%, #556ee6 52%, #6f42c1 100%);
+    box-shadow: 0 14px 30px rgba(25, 43, 94, .25);
+  }
+
+  .registration-promo::before,
+  .registration-promo::after {
+    position: absolute;
+    z-index: -1;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    content: "";
+  }
+
+  .registration-promo::before {
+    top: -105px;
+    left: 35%;
+  }
+
+  .registration-promo::after {
+    right: -55px;
+    bottom: -105px;
+  }
+
+  .registration-promo__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: #cfe1ff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .registration-promo__title {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(18px, 2.2vw, 24px);
+    font-weight: 700;
+  }
+
+  .registration-promo__features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: rgba(255, 255, 255, .86);
+    font-size: 12px;
+  }
+
+  .registration-promo__features span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .registration-promo__features i {
+    color: #74e5ba;
+  }
+
+  .registration-promo__action {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 8px;
+    color: #405189;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(26, 37, 80, .2);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .registration-promo__action:hover {
+    color: #405189;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(26, 37, 80, .28);
+  }
+
+  @media (max-width: 575.98px) {
+    .registration-promo {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 16px;
+      padding: 18px;
+    }
+
+    .registration-promo__action {
+      width: 100%;
+    }
+  }
 </style>
 @endsection
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6 col-xl-5">
+    <div class="col-md-9 col-lg-7 col-xl-6">
+        <section class="registration-promo" aria-labelledby="registration-promo-title">
+            <div>
+                <div class="registration-promo__eyebrow">
+                    <i class="ri-sparkling-2-fill" aria-hidden="true"></i>
+                    One workspace, less busywork
+                </div>
+                <h2 class="registration-promo__title" id="registration-promo-title">
+                    Bring your team’s work together
+                </h2>
+                <div class="registration-promo__features" aria-label="Saltiii features">
+                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Projects &amp; tasks</span>
+                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Timekeeping</span>
+                    <span><i class="ri-checkbox-circle-fill" aria-hidden="true"></i> Payroll</span>
+                </div>
+            </div>
+            <a class="registration-promo__action" href="#registration-form">
+                Join Saltiii
+                <i class="ri-arrow-down-line ms-1" aria-hidden="true"></i>
+            </a>
+        </section>
+
         <div class="card mt-4 card-bg-fill">
             <div class="card-body p-4">
                 <div class="text-center mt-2">
@@ -33,7 +168,7 @@
                 </div>
 
                 <div class="p-2 mt-4">
-                    <form method="POST" action="{{ route('register') }}" onsubmit='show();'>
+                    <form method="POST" action="{{ route('register') }}" onsubmit='show();' id="registration-form">
                         @csrf
                         @if(isset($invitation) && $invitation)
                             <input type="hidden" name="invitation_token" value="{{ $invitation->token }}">
@@ -312,7 +447,6 @@ function openTermsModal() {
 function closeTermsModal() {
     document.querySelector('#terms').style.display = 'none';
 }
-</script>
 </script>
 
 @endsection
