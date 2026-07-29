@@ -2,23 +2,23 @@
 @section('css')
 <style>
   .form-group {
-    position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .form-group label {
-    position: absolute;
-    top: -8px;
-    left: 12px;
-    background-color: #fff;
-    font-size: 12px;
-    color: #6c757d;
-    padding: 0 4px;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
   }
 
   .form-group .form-control {
-    padding: 10px;
+    height: 46px;
+    padding: 10px 14px;
     font-size: 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
   }
 
   .promo-bar {
@@ -139,32 +139,97 @@
     }
   }
 
-  .register-card-icon {
+  .register-title {
+    margin-bottom: 8px;
+    color: #172554;
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .register-subtitle {
+    margin-bottom: 4px;
+    color: #475569;
+    font-size: 15px;
+  }
+
+  .register-subtitle-muted {
+    max-width: 400px;
+    margin: 0 auto;
+    color: #94a3b8;
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .trust-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
+    margin: 20px 0 24px;
+    color: #1e3a8a;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .trust-badges .dot {
+    color: #cbd5e1;
+  }
+
+  .btn-google {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
-    margin: 0 auto 14px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #a01326, #ff4d54);
-    color: #fff;
-    font-size: 22px;
-    box-shadow: 0 10px 22px -8px rgba(160, 19, 38, .5);
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #1e293b;
+    font-size: 15px;
+    font-weight: 600;
+    transition: background-color .15s ease;
   }
 
-  .form-group .form-icon {
+  .btn-google:hover {
+    background: #f8fafc;
+    color: #1e293b;
+  }
+
+  .divider-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  .divider-text::before,
+  .divider-text::after {
+    flex: 1;
+    height: 1px;
+    background: #e2e8f0;
+    content: "";
+  }
+
+  .input-icon-wrap {
+    position: relative;
+  }
+
+  .input-icon-wrap .form-icon {
     position: absolute;
     top: 50%;
-    left: 12px;
-    color: #9aa1b1;
+    left: 14px;
+    color: #94a3b8;
     font-size: 15px;
     pointer-events: none;
     transform: translateY(-50%);
   }
 
   .form-group .form-control.ps-icon {
-    padding-left: 36px;
+    padding-left: 40px;
   }
 </style>
 @endsection
@@ -206,14 +271,27 @@
         <div class="card mt-4 card-bg-fill">
             <div class="card-body p-4">
                 <div class="text-center mt-2">
-                    <div class="register-card-icon" aria-hidden="true">
-                        <i class="ri-user-add-line"></i>
-                    </div>
-                    <h5 class="text-primary">Create your Saltiii account</h5>
-                    {{-- <p class="text-muted">Sign up to continue to {{ config('app.name', 'Laravel') }}</p> --}}
+                    <h1 class="register-title">Create Your Free Saltiii Account</h1>
+                    <p class="register-subtitle">Start exploring Saltiii today with a full 30-day free trial.</p>
+                    <p class="register-subtitle-muted">Stay organized, meet deadlines, and keep every project moving without juggling multiple apps.</p>
                 </div>
 
-                <div class="p-2 mt-4">
+                <div class="trust-badges">
+                    <span><i class="ri-shield-check-line align-middle" aria-hidden="true"></i> No credit card required</span>
+                    <span class="dot" aria-hidden="true">&bull;</span>
+                    <span>Cancel anytime</span>
+                    <span class="dot" aria-hidden="true">&bull;</span>
+                    <span>Setup takes less than 60 seconds</span>
+                </div>
+
+                <a href="{{ url('auth/google') }}" class="btn-google">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" style="width:20px; height:20px;">
+                    Continue with Google
+                </a>
+
+                <div class="divider-text">or create an account with email</div>
+
+                <div class="p-2">
                     <form method="POST" action="{{ route('register') }}" onsubmit='show();' id="registration-form">
                         @csrf
                         @if(isset($invitation) && $invitation)
@@ -229,9 +307,11 @@
                         @endif
                         <div class="mb-3 form-group">
                             <label for="name" class="form-label">Name<span class="text-danger">*</span></label>
-                            <i class="ri-user-line form-icon" aria-hidden="true"></i>
-                            <input id="name" type="text" class="form-control ps-icon{{ $errors->has('name') ? ' is-invalid' : '' }}"
-                                   name="name" value="{{ old('name') }}" placeholder="" required autofocus>
+                            <div class="input-icon-wrap">
+                                <i class="ri-user-line form-icon" aria-hidden="true"></i>
+                                <input id="name" type="text" class="form-control ps-icon{{ $errors->has('name') ? ' is-invalid' : '' }}"
+                                       name="name" value="{{ old('name') }}" placeholder="Enter your name" required autofocus>
+                            </div>
                             @if ($errors->has('name'))
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $errors->first('name') }}</strong>
@@ -241,17 +321,19 @@
 
                         <div class="mb-3 form-group">
                             <label for="email" class="form-label">Email Address<span class="text-danger">*</span></label>
-                            <i class="ri-mail-line form-icon" aria-hidden="true"></i>
-                            <input type="email" class="form-control ps-icon" id="email" placeholder=""
-                                   value="{{ old('email', isset($invitation) && $invitation ? $invitation->email : '') }}" name="email" required>
+                            <div class="input-icon-wrap">
+                                <i class="ri-mail-line form-icon" aria-hidden="true"></i>
+                                <input type="email" class="form-control ps-icon" id="email" placeholder="Enter your email address"
+                                       value="{{ old('email', isset($invitation) && $invitation ? $invitation->email : '') }}" name="email" required>
+                            </div>
                         </div>
 
                         <div class="mb-3 form-group">
                             <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
-                            <i class="ri-lock-2-line form-icon" aria-hidden="true"></i>
-                            <div class=" auth-pass-inputgroup">
+                            <div class="input-icon-wrap auth-pass-inputgroup">
+                                <i class="ri-lock-2-line form-icon" aria-hidden="true"></i>
                                 <input type="password" name="password" class="form-control ps-icon password-input{{ $errors->has('password') ? ' is-invalid' : '' }}"
-                                       placeholder="" id="password" required>
+                                       placeholder="Create a strong password" id="password" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
@@ -260,55 +342,39 @@
 
                         <div class="mb-3 form-group">
                             <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger">*</span></label>
-                            <i class="ri-shield-check-line form-icon" aria-hidden="true"></i>
-                            <div class="auth-pass-inputgroup    ">
+                            <div class="input-icon-wrap auth-pass-inputgroup">
+                                <i class="ri-shield-check-line form-icon" aria-hidden="true"></i>
                                 <input type="password" name="password_confirmation" class="form-control ps-icon password-input"
-                                       placeholder="" id="password-confirm" required>
+                                       placeholder="Re-enter your password" id="password-confirm" required>
                                 <button class="btn btn-link position-absolute end-0 top-0 text-muted password-addon" type="button" id="password-confirm-addon">
                                     <i class="ri-eye-fill align-middle"></i>
                                 </button>
                             </div>
                         </div>
 
-                     
-
-                       
-
                         <div class="mt-4">
-                            <button class="btn btn-success w-100" type="submit">Sign Up</button>
+                            <button class="btn btn-success w-100" type="submit">Start My Free 30-Day Trial</button>
                         </div>
 
-                        <div class="mt-2 text-center">
-                            
-                            <div>
-                                <a href="{{ url('auth/google') }}" 
-                                   class="btn btn-light border d-flex align-items-center justify-content-center px-4 py-2" 
-                                   style="gap: 8px; font-weight: 500; border-radius: 8px;">
-                                    <img src="https://developers.google.com/identity/images/g-logo.png" 
-                                         alt="Google Logo" style="width:20px; height:20px;">
-                                    Continue with Google
-                                </a>
-                            </div>
+                        <div class="mt-3 text-center">
+                            <p class="mb-0 fs-12 text-muted">
+                                <i class="ri-lock-2-fill" aria-hidden="true"></i>
+                                By continuing, you agree to Saltiii's
+                                <a href="#" onclick="openTermsModal()" class="text-primary text-decoration-underline fw-medium">Terms</a>
+                                and
+                                <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">Privacy Policy</a>.
+                                <br>Your information is protected and will never be sold.
+                            </p>
                         </div>
-                           <div class="mb-4">
-                            <p class="mb-0 fs-12 text-muted fst-italic">
-                                By signing up, you accept our
-                                <a href="#" onclick="openTermsModal()" class="text-primary text-decoration-underline fw-medium">
-                                    Terms 
-                                </a> and <a href="#" onclick="openPrivacyModal()" class="text-primary text-decoration-underline fw-medium">
-                                    Privacy Policy 
-                                </a>
+
+                        <div class="mt-3 text-center">
+                            <p class="mb-0">Already have an account?
+                                <a href="{{url('/')}}" onclick='show()' class="fw-semibold text-primary text-decoration-underline"> Log in </a>
                             </p>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
-
-        <div class="mt-4 text-center">
-            <p class="mb-0">Already have an account? 
-                <a href="{{url('/')}}" onclick='show()' class="fw-semibold text-primary text-decoration-underline"> Sign in </a>
-            </p>
         </div>
     </div>
 </div>
