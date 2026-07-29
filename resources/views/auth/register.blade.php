@@ -27,7 +27,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     row-gap: 16px;
     column-gap: 24px;
     overflow: hidden;
@@ -71,12 +71,14 @@
     display: flex;
     flex: 1 1 260px;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin: 0;
     color: #fff;
     font-size: 15.5px;
     font-weight: 700;
     line-height: 1.35;
+    text-align: center;
   }
 
   .promo-bar__title > span:first-child {
@@ -90,6 +92,7 @@
     color: rgba(255, 255, 255, .8);
     font-size: 12.5px;
     font-weight: 500;
+    text-align: center;
   }
 
   @media (max-width: 575.98px) {
