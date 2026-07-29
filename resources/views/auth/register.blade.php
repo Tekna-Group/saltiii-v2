@@ -92,48 +92,6 @@
     font-weight: 500;
   }
 
-  .promo-bar__timer {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .promo-bar__timer-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-right: 2px;
-    color: #ffd473;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .promo-bar__timer-unit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 40px;
-  }
-
-  .promo-bar__timer-unit strong {
-    color: #fff;
-    font-size: 21px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    line-height: 1;
-  }
-
-  .promo-bar__timer-unit small {
-    margin-top: 4px;
-    color: rgba(255, 255, 255, .75);
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-  }
-
   @media (max-width: 575.98px) {
     .promo-bar {
       flex-direction: column;
@@ -141,8 +99,7 @@
       padding: 20px;
     }
 
-    .promo-bar__title,
-    .promo-bar__timer {
+    .promo-bar__title {
       justify-content: center;
     }
   }
@@ -258,24 +215,6 @@
                         <span class="promo-bar__subtitle">Get started in less than 60 seconds.</span>
                     </span>
                 </h2>
-            @endif
-
-            @if(isset($invitation) && $invitation && $invitation->expires_at)
-                <div class="promo-bar__timer" id="promo-countdown" data-expires="{{ $invitation->expires_at->toIso8601String() }}" role="timer" aria-label="Time remaining to accept this invitation">
-                    <span class="promo-bar__timer-label"><i class="ri-time-line" aria-hidden="true"></i> Expires in</span>
-                    <div class="promo-bar__timer-unit"><strong data-unit="days">00</strong><small>Days</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="hours">00</strong><small>Hrs</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="minutes">00</strong><small>Min</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
-                </div>
-            @else
-                <div class="promo-bar__timer" id="promo-countdown" data-duration-days="7" role="timer" aria-label="Time remaining on the free trial offer">
-                    <span class="promo-bar__timer-label"><i class="ri-time-line" aria-hidden="true"></i> Offer ends in</span>
-                    <div class="promo-bar__timer-unit"><strong data-unit="days">00</strong><small>Days</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="hours">00</strong><small>Hrs</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="minutes">00</strong><small>Min</small></div>
-                    <div class="promo-bar__timer-unit"><strong data-unit="seconds">00</strong><small>Sec</small></div>
-                </div>
             @endif
         </section>
 
@@ -584,49 +523,6 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
     });
 });
 
-(function () {
-    var el = document.getElementById('promo-countdown');
-    if (!el) return;
-
-    var expires;
-    if (el.hasAttribute('data-expires')) {
-        expires = new Date(el.getAttribute('data-expires')).getTime();
-    } else {
-        var durationMs = parseInt(el.getAttribute('data-duration-days'), 10) * 86400000;
-        var stored = localStorage.getItem('promoOfferEndsAt');
-        expires = stored ? parseInt(stored, 10) : NaN;
-        if (!expires || isNaN(expires) || expires <= Date.now()) {
-            expires = Date.now() + durationMs;
-            localStorage.setItem('promoOfferEndsAt', String(expires));
-        }
-    }
-
-    var days = el.querySelector('[data-unit="days"]');
-    var hours = el.querySelector('[data-unit="hours"]');
-    var minutes = el.querySelector('[data-unit="minutes"]');
-    var seconds = el.querySelector('[data-unit="seconds"]');
-
-    function pad(n) {
-        return String(n).padStart(2, '0');
-    }
-
-    function tick() {
-        var diff = Math.max(0, expires - Date.now());
-        var totalSeconds = Math.floor(diff / 1000);
-
-        days.textContent = pad(Math.floor(totalSeconds / 86400));
-        hours.textContent = pad(Math.floor((totalSeconds % 86400) / 3600));
-        minutes.textContent = pad(Math.floor((totalSeconds % 3600) / 60));
-        seconds.textContent = pad(totalSeconds % 60);
-
-        if (diff <= 0) {
-            clearInterval(timer);
-        }
-    }
-
-    tick();
-    var timer = setInterval(tick, 1000);
-})();
 </script>
 
 @endsection
