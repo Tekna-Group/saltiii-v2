@@ -79,9 +79,17 @@
     line-height: 1.35;
   }
 
-  .promo-bar__title span {
+  .promo-bar__title > span:first-child {
     font-size: 20px;
     line-height: 1;
+  }
+
+  .promo-bar__subtitle {
+    display: block;
+    margin-top: 3px;
+    color: rgba(255, 255, 255, .8);
+    font-size: 12.5px;
+    font-weight: 500;
   }
 
   .promo-bar__timer {
@@ -245,7 +253,10 @@
             @else
                 <h2 class="promo-bar__title" id="promo-bar-title">
                     <span aria-hidden="true">🎁</span>
-                    Your FREE 30-day trial is ready. Offer ends soon.
+                    <span>
+                        <strong class="d-block">Your free 30-day trial is ready</strong>
+                        <span class="promo-bar__subtitle">Get started in less than 60 seconds.</span>
+                    </span>
                 </h2>
             @endif
 
