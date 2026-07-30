@@ -97,24 +97,27 @@
 
   @media (max-width: 575.98px) {
     .promo-bar {
-      flex-direction: column;
-      align-items: stretch;
-      margin-top: 1rem;
-      padding: 12px 16px;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 0.75rem;
+      padding: 8px 14px;
+      column-gap: 8px;
     }
 
     .promo-bar__title {
       justify-content: center;
-      font-size: 13.5px;
+      gap: 6px;
+      font-size: 12.5px;
+      line-height: 1.2;
     }
 
     .promo-bar__title > span:first-child {
-      font-size: 17px;
+      font-size: 15px;
     }
 
     .promo-bar__subtitle {
-      margin-top: 2px;
-      font-size: 11.5px;
+      margin-top: 1px;
+      font-size: 10.5px;
     }
   }
 
