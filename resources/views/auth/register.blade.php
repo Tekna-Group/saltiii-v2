@@ -99,11 +99,22 @@
     .promo-bar {
       flex-direction: column;
       align-items: stretch;
-      padding: 20px;
+      margin-top: 1rem;
+      padding: 12px 16px;
     }
 
     .promo-bar__title {
       justify-content: center;
+      font-size: 13.5px;
+    }
+
+    .promo-bar__title > span:first-child {
+      font-size: 17px;
+    }
+
+    .promo-bar__subtitle {
+      margin-top: 2px;
+      font-size: 11.5px;
     }
   }
 
