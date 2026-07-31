@@ -95,6 +95,29 @@
     text-align: center;
   }
 
+  .promo-bar__countdown {
+    display: none;
+    margin-top: 8px;
+    letter-spacing: .02em;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .promo-bar__countdown.is-active {
+    display: block;
+  }
+
+  .promo-bar__countdown .promo-bar__countdown-time {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .18);
+  }
+
   @media (max-width: 575.98px) {
     .promo-bar {
       flex-direction: row;
@@ -117,6 +140,11 @@
 
     .promo-bar__subtitle {
       margin-top: 1px;
+      font-size: 10.5px;
+    }
+
+    .promo-bar__countdown {
+      margin-top: 4px;
       font-size: 10.5px;
     }
   }
@@ -226,10 +254,10 @@
                 </h2>
             @else
                 <h2 class="promo-bar__title" id="promo-bar-title">
-                    <span aria-hidden="true">🎁</span>
                     <span>
                         <strong class="d-block">Your free 30-day trial is ready</strong>
                         <span class="promo-bar__subtitle">Get started in less than 60 seconds.</span>
+                        <span class="promo-bar__countdown" id="promo-countdown" aria-live="polite"></span>
                     </span>
                 </h2>
             @endif
@@ -539,6 +567,46 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
         icon.classList.toggle('ri-eye-off-fill', isHidden);
     });
 });
+
+(function () {
+    var el = document.getElementById('promo-countdown');
+    if (!el) return;
+
+    var STORAGE_KEY = 'saltiii_promo_deadline';
+    var DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 48 hours
+    var deadline = parseInt(localStorage.getItem(STORAGE_KEY), 10);
+
+    if (!deadline || isNaN(deadline)) {
+        deadline = Date.now() + DURATION_MS;
+        localStorage.setItem(STORAGE_KEY, deadline);
+    }
+
+    function pad(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function render() {
+        var remaining = deadline - Date.now();
+
+        if (remaining <= 0) {
+            el.classList.remove('is-active');
+            clearInterval(timer);
+            return;
+        }
+
+        var totalSeconds = Math.floor(remaining / 1000);
+        var hours = Math.floor(totalSeconds / 3600);
+        var minutes = Math.floor((totalSeconds % 3600) / 60);
+        var seconds = totalSeconds % 60;
+
+        el.innerHTML = 'Offer ends in <span class="promo-bar__countdown-time">' +
+            pad(hours) + ':' + pad(minutes) + ':' + pad(seconds) + '</span>';
+        el.classList.add('is-active');
+    }
+
+    render();
+    var timer = setInterval(render, 1000);
+})();
 
 </script>
 
