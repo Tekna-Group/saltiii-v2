@@ -97,25 +97,61 @@
 
   .promo-bar__countdown {
     display: none;
-    margin-top: 8px;
-    letter-spacing: .02em;
+    margin-top: 10px;
     color: #fff;
-    font-variant-numeric: tabular-nums;
-    font-size: 12.5px;
-    font-weight: 700;
     text-align: center;
   }
 
   .promo-bar__countdown.is-active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
   }
 
-  .promo-bar__countdown .promo-bar__countdown-time {
-    display: inline-block;
-    margin-left: 4px;
-    padding: 2px 8px;
+  .promo-bar__countdown-label {
+    color: rgba(255, 255, 255, .8);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .promo-bar__countdown-units {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .promo-bar__countdown-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 34px;
+    padding: 4px 6px;
     border-radius: 6px;
     background: rgba(255, 255, 255, .18);
+  }
+
+  .promo-bar__countdown-value {
+    font-variant-numeric: tabular-nums;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  .promo-bar__countdown-unit-label {
+    margin-top: 1px;
+    color: rgba(255, 255, 255, .8);
+    font-size: 8.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+
+  .promo-bar__countdown-sep {
+    color: rgba(255, 255, 255, .6);
+    font-weight: 700;
   }
 
   @media (max-width: 575.98px) {
@@ -144,8 +180,29 @@
     }
 
     .promo-bar__countdown {
-      margin-top: 4px;
-      font-size: 10.5px;
+      margin-top: 6px;
+      gap: 4px;
+    }
+
+    .promo-bar__countdown-label {
+      font-size: 9.5px;
+    }
+
+    .promo-bar__countdown-units {
+      gap: 4px;
+    }
+
+    .promo-bar__countdown-unit {
+      min-width: 26px;
+      padding: 3px 4px;
+    }
+
+    .promo-bar__countdown-value {
+      font-size: 12px;
+    }
+
+    .promo-bar__countdown-unit-label {
+      font-size: 7px;
     }
   }
 
@@ -257,7 +314,30 @@
                     <span>
                         <strong class="d-block">Your free 30-day trial is ready</strong>
                         <span class="promo-bar__subtitle">Get started in less than 60 seconds.</span>
-                        <span class="promo-bar__countdown" id="promo-countdown" aria-live="polite"></span>
+                        <span class="promo-bar__countdown" id="promo-countdown" aria-live="polite">
+                            <span class="promo-bar__countdown-label">Offer ends in</span>
+                            <span class="promo-bar__countdown-units">
+                                <span class="promo-bar__countdown-unit">
+                                    <span class="promo-bar__countdown-value" id="promo-countdown-days">00</span>
+                                    <span class="promo-bar__countdown-unit-label">Days</span>
+                                </span>
+                                <span class="promo-bar__countdown-sep">:</span>
+                                <span class="promo-bar__countdown-unit">
+                                    <span class="promo-bar__countdown-value" id="promo-countdown-hours">00</span>
+                                    <span class="promo-bar__countdown-unit-label">Hours</span>
+                                </span>
+                                <span class="promo-bar__countdown-sep">:</span>
+                                <span class="promo-bar__countdown-unit">
+                                    <span class="promo-bar__countdown-value" id="promo-countdown-minutes">00</span>
+                                    <span class="promo-bar__countdown-unit-label">Min</span>
+                                </span>
+                                <span class="promo-bar__countdown-sep">:</span>
+                                <span class="promo-bar__countdown-unit">
+                                    <span class="promo-bar__countdown-value" id="promo-countdown-seconds">00</span>
+                                    <span class="promo-bar__countdown-unit-label">SS</span>
+                                </span>
+                            </span>
+                        </span>
                     </span>
                 </h2>
             @endif
@@ -572,6 +652,11 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
     var el = document.getElementById('promo-countdown');
     if (!el) return;
 
+    var daysEl = document.getElementById('promo-countdown-days');
+    var hoursEl = document.getElementById('promo-countdown-hours');
+    var minutesEl = document.getElementById('promo-countdown-minutes');
+    var secondsEl = document.getElementById('promo-countdown-seconds');
+
     var STORAGE_KEY = 'saltiii_promo_deadline';
     var DURATION_MS = 2 * 24 * 60 * 60 * 1000; // 48 hours
     var deadline = parseInt(localStorage.getItem(STORAGE_KEY), 10);
@@ -595,12 +680,15 @@ document.querySelectorAll('#registration-form .password-addon').forEach(function
         }
 
         var totalSeconds = Math.floor(remaining / 1000);
-        var hours = Math.floor(totalSeconds / 3600);
+        var days = Math.floor(totalSeconds / 86400);
+        var hours = Math.floor((totalSeconds % 86400) / 3600);
         var minutes = Math.floor((totalSeconds % 3600) / 60);
         var seconds = totalSeconds % 60;
 
-        el.innerHTML = 'Offer ends in <span class="promo-bar__countdown-time">' +
-            pad(hours) + ':' + pad(minutes) + ':' + pad(seconds) + '</span>';
+        daysEl.textContent = pad(days);
+        hoursEl.textContent = pad(hours);
+        minutesEl.textContent = pad(minutes);
+        secondsEl.textContent = pad(seconds);
         el.classList.add('is-active');
     }
 
