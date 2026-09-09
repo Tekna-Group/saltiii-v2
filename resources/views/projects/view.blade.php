@@ -314,7 +314,44 @@
                 </div>
                   <div class="kanban-board-container">
                       <div class="kanban-board-wrapper" id="kanbanBoard">
-                          <!-- Columns will be dynamically rendered -->
+                          @forelse($boardData as $column)
+                              <section class="kanban-column" data-id="{{ $column['id'] }}" @if(auth()->user()->role === 'Admin') draggable="true" @endif>
+                                  <header class="kanban-header">
+                                      <span class="kanban-column-title" id="status-name-{{ $column['id'] }}">{{ $column['name'] }} <span class="kanban-column-count">{{ $column['tasks']->count() }}</span></span>
+                                      @if(auth()->user()->role === 'Admin')
+                                          <div>
+                                              <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="editStatus('{{ $column['id'] }}')" title="Edit status" aria-label="Edit {{ $column['name'] }} status"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+                                              <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteStatus('{{ $column['id'] }}')" title="Delete status" aria-label="Delete {{ $column['name'] }} status"><i class="bi bi-trash" aria-hidden="true"></i></button>
+                                          </div>
+                                      @endif
+                                  </header>
+                                  <div class="kanban-items" ondragover="allowDrop(event)" ondrop="dropTask(event, '{{ $column['id'] }}')">
+                                      @foreach($column['tasks'] as $task)
+                                          @php
+                                              $taskPriority = $task['priority'] ?: 'Low';
+                                              $taskIsOverdue = $task['due_date'] && $task['due_date'] < date('Y-m-d') && (int) $task['completed'] === 0;
+                                          @endphp
+                                          <article id="task-{{ $task['id'] }}" class="kanban-card tasks-box task-card" draggable="true" ondragstart="dragTask(event)">
+                                              <div class="card-body" onclick="window.location.href='{{ url('/view-task/'.$task['id']) }}'" onkeydown="if(event.key === 'Enter'){ window.location.href='{{ url('/view-task/'.$task['id']) }}'; }" role="link" tabindex="0">
+                                                  <div class="task-card-heading"><span class="task-card-title">@if((int) $task['completed'] === 1)<i class="ri-checkbox-circle-fill text-success me-1" aria-hidden="true"></i>@endif{{ $task['name'] }}</span><span class="task-id">#{{ $task['id'] }}</span></div>
+                                                  <div class="task-card-meta"><span class="task-due {{ $taskIsOverdue ? 'is-overdue' : '' }}"><i class="{{ $taskIsOverdue ? 'ri-alarm-warning-line' : 'ri-calendar-line' }}" aria-hidden="true"></i>{{ $task['due_date'] ?: 'No due date' }}</span><span class="task-priority task-priority-{{ strtolower($taskPriority) }}">{{ $taskPriority }}</span></div>
+                                                  @if(count($task['assignees']))
+                                                      <div class="task-card-assignees">
+                                                          @foreach(array_slice($task['assignees'], 0, 4) as $assignee)<span title="{{ $assignee }}">{{ strtoupper(substr($assignee, 0, 1)) }}</span>@endforeach
+                                                          @if(count($task['assignees']) > 4)<span>+{{ count($task['assignees']) - 4 }}</span>@endif
+                                                      </div>
+                                                  @endif
+                                              </div>
+                                              <footer class="card-footer"><div class="task-card-foot"><span><i class="ri-question-answer-line" aria-hidden="true"></i>{{ $task['comments'] }}</span><span><i class="ri-attachment-2" aria-hidden="true"></i>{{ $task['attachments'] }}</span><span class="task-hours"><i class="ri-time-line" aria-hidden="true"></i>{{ number_format($task['hours'], 1) }}h</span></div></footer>
+                                              @if((int) $task['completed'] === 1)<button type="button" class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="event.stopPropagation(); archiveTask({{ $task['id'] }})"><i class="ri-archive-2-line" aria-hidden="true"></i> Archive</button>@endif
+                                          </article>
+                                      @endforeach
+                                  </div>
+                                  <div class="kanban-add-task"><button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="addTask('{{ $column['id'] }}')"><i class="ri-add-line" aria-hidden="true"></i> Add task</button></div>
+                              </section>
+                          @empty
+                              <div class="project-board-empty"><div><i class="ri-layout-column-line fs-32 mb-2 d-block" aria-hidden="true"></i><strong class="d-block text-body mb-1">No statuses yet</strong><span>Create a status to begin organizing project tasks.</span></div></div>
+                          @endforelse
                       </div>
                   </div>
                   <!-- Modals -->
@@ -521,7 +558,8 @@
 
 
 <script>
-    document.getElementById('search-task-options').addEventListener('keyup', function() {
+    const boardSearch = document.getElementById('search-task-options');
+    if (boardSearch) boardSearch.addEventListener('keyup', function() {
     const searchValue = this.value.toLowerCase().trim();
 
     // Loop through each kanban column
@@ -560,13 +598,14 @@
     // ====== Render the whole board ======
     function renderBoard() {
         const board = document.getElementById('kanbanBoard');
-        board.innerHTML = '';
+        if (!board) return;
 
         if (!boardData.length) {
             board.innerHTML = '<div class="project-board-empty"><div><i class="ri-layout-column-line fs-32 mb-2 d-block"></i><strong class="d-block text-body mb-1">No statuses yet</strong><span>Create a status to begin organizing project tasks.</span></div></div>';
             return;
         }
 
+        const fragment = document.createDocumentFragment();
         boardData.forEach(column => {
               const isAdmin = @json(auth()->user()->role === 'Admin');
             const columnDiv = document.createElement('div');
@@ -611,8 +650,11 @@
                 </div>
             `;
 
-            board.appendChild(columnDiv);
+            fragment.appendChild(columnDiv);
         });
+
+        board.innerHTML = '';
+        board.appendChild(fragment);
 
         enableColumnDrag(); // enable dragging for columns
     }
@@ -938,7 +980,11 @@
 
 
     // Initial render
-    renderBoard();
+    try {
+        renderBoard();
+    } catch (error) {
+        console.error('Unable to enhance the project board. Server-rendered board retained.', error);
+    }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
