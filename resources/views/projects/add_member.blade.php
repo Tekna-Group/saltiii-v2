@@ -1,8 +1,8 @@
   <div class="modal fade" id="addmemberModal" tabindex="-1" aria-labelledby="addmemberModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content border-0">
-                <div class="modal-header p-3 bg-warning-subtle">
-                    <h5 class="modal-title" id="addmemberModalLabel">Members</h5>
+                <div class="modal-header p-3">
+                    <div><h5 class="modal-title" id="addmemberModalLabel">Project team</h5><p class="text-muted mb-0 mt-1 fs-12">Choose who can access and contribute to this project.</p></div>
                     <button type="button" class="btn-close" id="btn-close-member" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -10,7 +10,7 @@
                         @csrf
                         <div class="row g-3">
                                 <div class="mb-3">
-                                    <label>Team Members</label>
+                                    <label for="team_member_member">Team members</label>
                                     <select type="text" class="form-control required select2" name='team_member[]' multiple id='team_member_member' required>
                                         {{-- <option value="">Select Team Member</option> --}}
                                         @foreach($users as $user)
@@ -26,7 +26,8 @@
                   
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-success" id="addMember">Add Member</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="addMember"><i class="ri-check-line me-1" aria-hidden="true"></i> Save team</button>
                         </div>
                     </form>
             </div>

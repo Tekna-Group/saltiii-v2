@@ -97,21 +97,324 @@
         }
     }
     </style>
+    <link href="{{ asset('inside_css/assets/css/saltiii-dashboard.css') }}" rel="stylesheet" />
 
 @endsection
 @section('content')
 
-<div class="row project-wrapper">
+@php
+    $today = date('Y-m-d');
+    $weekStart = date('Y-m-d', strtotime('monday this week'));
+    $weekEnd = date('Y-m-d', strtotime('sunday this week'));
+    $overdueTasks = $tasks->filter(function ($task) use ($today) {
+        return $task->due_date && $task->due_date < $today;
+    });
+    $todayTasks = $tasks->filter(function ($task) use ($today) {
+        return $task->due_date === $today;
+    });
+    $upcomingTasks = $tasks->filter(function ($task) use ($today) {
+        return $task->due_date && $task->due_date > $today;
+    });
+    $todayHours = $myActivities->filter(function ($activity) use ($today) {
+        return date('Y-m-d', strtotime($activity->date)) === $today;
+    })->sum('hours');
+    $weekHours = $myActivities->filter(function ($activity) use ($weekStart, $weekEnd) {
+        $activityDate = date('Y-m-d', strtotime($activity->date));
+        return $activityDate >= $weekStart && $activityDate <= $weekEnd;
+    })->sum('hours');
+    $weekGoal = 40;
+    $weekProgress = min(100, round(($weekHours / $weekGoal) * 100));
+    $focusTasks = $tasks->sortBy(function ($task) use ($today) {
+        if (!$task->due_date) return '3-9999-12-31';
+        if ($task->due_date < $today) return '0-'.$task->due_date;
+        if ($task->due_date === $today) return '1-'.$task->due_date;
+        return '2-'.$task->due_date;
+    })->take(5);
+    $firstName = explode(' ', trim(auth()->user()->name))[0];
+    $hour = (int) date('G');
+    $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
+    $managerOverdueTasks = $isManager ? $managerTasks->filter(function ($task) use ($today) {
+        return $task->due_date && $task->due_date < $today;
+    }) : collect();
+    $managerTodayTasks = $isManager ? $managerTasks->filter(function ($task) use ($today) {
+        return $task->due_date === $today;
+    }) : collect();
+    $managerUnassignedTasks = $isManager ? $managerTasks->filter(function ($task) {
+        return $task->users->isEmpty();
+    }) : collect();
+    $managerWeekHours = $isManager ? $managerMemberSummaries->sum('hours') : 0;
+    $managerExceptions = $isManager
+        ? $managerOverdueTasks->concat($managerTodayTasks)->concat($managerUnassignedTasks)->unique('id')->take(6)
+        : collect();
+@endphp
+
+@if($isManager)
+<div class="dashboard-mode-switch" role="group" aria-label="Dashboard view">
+    <button type="button" class="is-active" data-dashboard-view="team" aria-pressed="true">
+        <i class="ri-team-line" aria-hidden="true"></i> Team operations
+    </button>
+    <button type="button" data-dashboard-view="personal" aria-pressed="false">
+        <i class="ri-user-line" aria-hidden="true"></i> My work
+    </button>
+</div>
+
+<section class="manager-dashboard" data-dashboard-panel="team" aria-labelledby="manager-dashboard-title">
+    <header class="manager-briefing">
+        <div>
+            <span class="manager-kicker">{{ auth()->user()->role }} view · {{ date('l, F j') }}</span>
+            <h1 id="manager-dashboard-title">Keep the team moving.</h1>
+            <p>
+                @if($managerOverdueTasks->count())
+                    {{ $managerOverdueTasks->count() }} overdue {{ str_plural('item', $managerOverdueTasks->count()) }} need ownership or a decision.
+                @elseif($managerTodayTasks->count())
+                    {{ $managerTodayTasks->count() }} {{ str_plural('item', $managerTodayTasks->count()) }} are due today across your active projects.
+                @else
+                    No urgent project exceptions are waiting. Review workload or prepare the next handoff.
+                @endif
+            </p>
+        </div>
+        <div class="manager-actions" aria-label="Manager shortcuts">
+            <a class="btn manager-primary-action" href="{{ url('/projects') }}"><i class="ri-folder-open-line" aria-hidden="true"></i> Review projects</a>
+            <a class="btn manager-secondary-action" href="{{ url('/tasks') }}"><i class="ri-list-check-2" aria-hidden="true"></i> All tasks</a>
+            @if(auth()->user()->role === 'Admin')
+                <a class="btn manager-quiet-action" href="{{ url('/timekeeping') }}"><i class="ri-time-line" aria-hidden="true"></i> Timekeeping</a>
+            @endif
+        </div>
+    </header>
+
+    <div class="manager-signal-strip" aria-label="Team operations summary">
+        <a href="{{ url('/leave') }}" class="manager-signal is-approval">
+            <small>Leave reviews</small><strong>{{ $pendingLeaveRequests->count() }}</strong><span>Pending decisions</span>
+        </a>
+        <a href="#manager-exceptions" class="manager-signal is-critical">
+            <small>Overdue</small><strong>{{ $managerOverdueTasks->count() }}</strong><span>Needs intervention</span>
+        </a>
+        <a href="#manager-exceptions" class="manager-signal is-today">
+            <small>Due today</small><strong>{{ $managerTodayTasks->count() }}</strong><span>Across active projects</span>
+        </a>
+        <a href="#manager-exceptions" class="manager-signal">
+            <small>Unassigned</small><strong>{{ $managerUnassignedTasks->count() }}</strong><span>Waiting for an owner</span>
+        </a>
+        <a href="#manager-team-load" class="manager-signal">
+            <small>Team hours</small><strong>{{ number_format($managerWeekHours, 1) }}h</strong><span>Logged this week</span>
+        </a>
+    </div>
+
+    <div class="manager-operations-grid">
+        <section class="manager-panel manager-exceptions" id="manager-exceptions" aria-labelledby="manager-exceptions-title">
+            <header class="manager-panel-head">
+                <div><span>Decision queue</span><h2 id="manager-exceptions-title">Exceptions to resolve</h2></div>
+                <a href="{{ url('/tasks') }}">Open task register <i class="ri-arrow-right-line" aria-hidden="true"></i></a>
+            </header>
+            <div class="manager-exception-list">
+                @forelse($managerExceptions as $task)
+                    @php
+                        $managerTaskOverdue = $task->due_date && $task->due_date < $today;
+                        $managerTaskToday = $task->due_date === $today;
+                        $managerTaskOwners = $task->users->pluck('name')->take(2)->implode(', ');
+                    @endphp
+                    <a class="manager-exception-row {{ $managerTaskOverdue ? 'is-overdue' : ($managerTaskToday ? 'is-due' : '') }}" href="{{ url('/view-task/'.$task->id) }}">
+                        <span class="exception-mark" aria-hidden="true"></span>
+                        <span class="exception-main">
+                            <strong>{{ $task->title }}</strong>
+                            <small>{{ optional($task->project)->name ?: 'No project' }} · {{ optional($task->board)->board ?: 'Open' }}</small>
+                        </span>
+                        <span class="exception-owner"><small>Owner</small><strong>{{ $managerTaskOwners ?: 'Unassigned' }}</strong></span>
+                        <span class="exception-due"><small>Due</small><strong>{{ $managerTaskToday ? 'Today' : ($task->due_date ? date('M j', strtotime($task->due_date)) : 'No date') }}</strong></span>
+                        <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
+                    </a>
+                @empty
+                    <div class="manager-clear-state"><i class="ri-checkbox-circle-line" aria-hidden="true"></i><div><strong>No exceptions to resolve</strong><p>Overdue, due-today, and unassigned work will appear here.</p></div></div>
+                @endforelse
+            </div>
+        </section>
+
+        <aside class="manager-panel manager-team-load" id="manager-team-load" aria-labelledby="manager-team-title">
+            <header class="manager-panel-head">
+                <div><span>Capacity check</span><h2 id="manager-team-title">Team workload</h2></div>
+                @if(auth()->user()->role === 'Admin')<a href="{{ url('/users') }}">People</a>@endif
+            </header>
+            <div class="manager-member-list">
+                @forelse($managerMemberSummaries->take(6) as $summary)
+                    @php($member = $summary['user'])
+                    <a class="manager-member" href="{{ url('/view-profile/'.$member->id) }}">
+                        <img src="{{ asset($member->avatar ?: 'images/Favicon.png') }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="">
+                        <span><strong>{{ $member->name }}</strong><small>{{ $summary['open_tasks'] }} open · {{ number_format($summary['hours'], 1) }}h this week</small></span>
+                        @if($summary['overdue_tasks'])
+                            <em>{{ $summary['overdue_tasks'] }} overdue</em>
+                        @else
+                            <em class="is-clear">On track</em>
+                        @endif
+                    </a>
+                @empty
+                    <div class="manager-compact-empty">Team members assigned to your projects will appear here.</div>
+                @endforelse
+            </div>
+        </aside>
+
+        <section class="manager-panel manager-project-health" aria-labelledby="manager-projects-title">
+            <header class="manager-panel-head">
+                <div><span>Delivery view</span><h2 id="manager-projects-title">Project health</h2></div>
+                <a href="{{ url('/projects') }}">View all projects <i class="ri-arrow-right-line" aria-hidden="true"></i></a>
+            </header>
+            <div class="manager-project-table" role="table" aria-label="Project health">
+                <div class="manager-project-row manager-project-heading" role="row">
+                    <span role="columnheader">Project</span><span role="columnheader">Progress</span><span role="columnheader">Open</span><span role="columnheader">Overdue</span><span aria-hidden="true"></span>
+                </div>
+                @forelse($managerProjectSummaries->take(6) as $summary)
+                    @php($managedProject = $summary['project'])
+                    <a class="manager-project-row" role="row" href="{{ url('/view-project/'.$managedProject->id) }}">
+                        <span class="manager-project-name" role="cell"><strong>{{ $managedProject->name }}</strong><small>{{ $managedProject->status ?: 'In progress' }}</small></span>
+                        <span class="manager-project-progress" role="cell"><i><b style="width: {{ $summary['progress'] }}%"></b></i><small>{{ $summary['progress'] }}%</small></span>
+                        <strong role="cell">{{ $summary['open_tasks'] }}</strong>
+                        <strong role="cell" class="{{ $summary['overdue_tasks'] ? 'has-overdue' : '' }}">{{ $summary['overdue_tasks'] }}</strong>
+                        <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
+                    </a>
+                @empty
+                    <div class="manager-compact-empty">Assign the manager to a project to show delivery health here.</div>
+                @endforelse
+            </div>
+        </section>
+    </div>
+</section>
+@endif
+
+<div data-dashboard-panel="personal" @if($isManager) hidden @endif>
+<div class="workday-dashboard">
+    <section class="workday-hero" aria-labelledby="workday-title">
+        <div class="workday-hero-copy">
+            <span class="workday-kicker">{{ date('l, F j') }} · Your workspace</span>
+            <h1 id="workday-title">{{ $greeting }}, {{ $firstName }}.</h1>
+            <p>
+                @if($overdueTasks->count())
+                    You have {{ $overdueTasks->count() }} overdue {{ str_plural('task', $overdueTasks->count()) }} to review. Let’s get the most important work moving.
+                @elseif($todayTasks->count())
+                    {{ $todayTasks->count() }} {{ str_plural('task', $todayTasks->count()) }} due today. Your plan is ready when you are.
+                @else
+                    You’re clear for today. Pick the next priority or log the work you’ve completed.
+                @endif
+            </p>
+        </div>
+        <div class="workday-actions" aria-label="Quick actions">
+            <button type="button" class="btn workday-action-primary" data-bs-toggle="modal" data-bs-target="#addActivity">
+                <i class="ri-timer-line" aria-hidden="true"></i><span>Log time</span>
+            </button>
+            <button type="button" class="btn workday-action-secondary" onclick="addTask()">
+                <i class="ri-add-circle-line" aria-hidden="true"></i><span>New task</span>
+            </button>
+            <a class="btn workday-action-quiet" href="{{ url('my-tasks') }}">
+                <i class="ri-list-check-2" aria-hidden="true"></i><span>My tasks</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="workday-metrics" aria-label="Work summary">
+        <a class="workday-metric metric-attention" href="{{ url('my-tasks') }}">
+            <span class="workday-metric-icon"><i class="ri-alarm-warning-line" aria-hidden="true"></i></span>
+            <span class="workday-metric-copy"><small>Needs attention</small><strong>{{ $overdueTasks->count() }}</strong><em>Overdue {{ str_plural('task', $overdueTasks->count()) }}</em></span>
+            <i class="ri-arrow-right-line metric-arrow" aria-hidden="true"></i>
+        </a>
+        <a class="workday-metric" href="{{ url('my-tasks') }}">
+            <span class="workday-metric-icon"><i class="ri-calendar-check-line" aria-hidden="true"></i></span>
+            <span class="workday-metric-copy"><small>Due today</small><strong>{{ $todayTasks->count() }}</strong><em>{{ $upcomingTasks->count() }} coming up</em></span>
+            <i class="ri-arrow-right-line metric-arrow" aria-hidden="true"></i>
+        </a>
+        <button type="button" class="workday-metric" data-bs-toggle="modal" data-bs-target="#addActivity">
+            <span class="workday-metric-icon"><i class="ri-time-line" aria-hidden="true"></i></span>
+            <span class="workday-metric-copy"><small>Logged today</small><strong>{{ number_format($todayHours, 1) }}h</strong><em>{{ number_format($weekHours, 1) }}h this week</em></span>
+            <i class="ri-add-line metric-arrow" aria-hidden="true"></i>
+        </button>
+        <a class="workday-metric" href="#projectSection">
+            <span class="workday-metric-icon"><i class="ri-folder-3-line" aria-hidden="true"></i></span>
+            <span class="workday-metric-copy"><small>Active work</small><strong>{{ $projects->count() }}</strong><em>Assigned {{ str_plural('project', $projects->count()) }}</em></span>
+            <i class="ri-arrow-right-line metric-arrow" aria-hidden="true"></i>
+        </a>
+    </section>
+
+    <div class="workday-overview-grid">
+        <section class="workday-panel focus-panel" aria-labelledby="focus-heading">
+            <header class="workday-panel-head">
+                <div><span class="panel-eyebrow">Priority queue</span><h2 id="focus-heading">Focus next</h2></div>
+                <a href="{{ url('my-tasks') }}">View all <i class="ri-arrow-right-line" aria-hidden="true"></i></a>
+            </header>
+            <div class="focus-list">
+                @forelse($focusTasks as $task)
+                    @php
+                        $isOverdue = $task->due_date && $task->due_date < $today;
+                        $isToday = $task->due_date === $today;
+                    @endphp
+                    <button type="button" class="focus-task" data-bs-toggle="offcanvas" data-bs-target="#taskDetails{{ $task->id }}" aria-label="Open {{ $task->title }}">
+                        <span class="focus-status {{ $isOverdue ? 'is-overdue' : ($isToday ? 'is-today' : '') }}" aria-hidden="true"></span>
+                        <span class="focus-main">
+                            <strong>{{ $task->title }}</strong>
+                            <small>{{ optional($task->project)->name ?: 'Unassigned project' }} · {{ optional($task->board)->board ?: 'Open' }}</small>
+                        </span>
+                        <span class="focus-meta">
+                            <span class="priority-badge priority-{{ strtolower($task->priority ?: 'low') }}">{{ $task->priority ?: 'Normal' }}</span>
+                            <time datetime="{{ $task->due_date }}" class="{{ $isOverdue ? 'text-danger' : '' }}">
+                                {{ $isToday ? 'Today' : ($task->due_date ? date('M j', strtotime($task->due_date)) : 'No date') }}
+                            </time>
+                        </span>
+                        <i class="ri-arrow-right-s-line focus-arrow" aria-hidden="true"></i>
+                    </button>
+                @empty
+                    <div class="workday-empty">
+                        <span><i class="ri-checkbox-circle-line" aria-hidden="true"></i></span>
+                        <strong>Your priority list is clear</strong>
+                        <p>Create a task when you’re ready to plan the next piece of work.</p>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addTask()">Create a task</button>
+                    </div>
+                @endforelse
+            </div>
+        </section>
+
+        <aside class="workday-side-stack">
+            <section class="workday-panel week-panel" aria-labelledby="week-heading">
+                <header class="workday-panel-head">
+                    <div><span class="panel-eyebrow">Time tracking</span><h2 id="week-heading">This week</h2></div>
+                    <a href="{{ url('my-timekeeping') }}">Timesheet</a>
+                </header>
+                <div class="week-total"><strong>{{ number_format($weekHours, 1) }}</strong><span>of {{ $weekGoal }} hours</span><em>{{ $weekProgress }}%</em></div>
+                <div class="week-progress" role="progressbar" aria-label="Weekly hours progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $weekProgress }}"><i style="width: {{ $weekProgress }}%"></i></div>
+                <div class="week-days" aria-label="Hours by day">
+                    @for($dayOffset = 0; $dayOffset < 7; $dayOffset++)
+                        @php
+                            $dayDate = date('Y-m-d', strtotime($weekStart.' +'.$dayOffset.' days'));
+                            $dayHours = $myActivities->filter(function ($activity) use ($dayDate) {
+                                return date('Y-m-d', strtotime($activity->date)) === $dayDate;
+                            })->sum('hours');
+                        @endphp
+                        <div class="week-day {{ $dayDate === $today ? 'is-current' : '' }}">
+                            <span>{{ strtoupper(date('D', strtotime($dayDate))) }}</span>
+                            <i style="height: {{ min(100, max(8, ($dayHours / 8) * 100)) }}%"></i>
+                            <strong>{{ $dayHours ? number_format($dayHours, 1) : '—' }}</strong>
+                        </div>
+                    @endfor
+                </div>
+                <button type="button" class="btn log-time-wide" data-bs-toggle="modal" data-bs-target="#addActivity"><i class="ri-add-line" aria-hidden="true"></i> Add time entry</button>
+            </section>
+
+            <nav class="workday-panel quick-links" aria-label="Employee shortcuts">
+                <a href="{{ url('my-timekeeping') }}"><span><i class="ri-calendar-2-line" aria-hidden="true"></i></span><div><strong>My timesheet</strong><small>Review submitted hours</small></div><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
+                <a href="{{ url('my-payslips') }}"><span><i class="ri-bank-card-line" aria-hidden="true"></i></span><div><strong>My payslips</strong><small>View payment history</small></div><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
+                <a href="{{ url('my-profile') }}"><span><i class="ri-user-settings-line" aria-hidden="true"></i></span><div><strong>Profile & settings</strong><small>Manage your account</small></div><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
+            </nav>
+        </aside>
+    </div>
+</div>
+</div>
+
+<div class="row project-wrapper" id="project-workspace">
     <div class="col-xxl-9">
         
         <div class='row' id="projectSection" data-intro="You can view all ongoing projects here with each card displaying details like total hours, comments, attachments, and task progress." data-step="1">
             <div class='col-xl-12'>
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="">Active Projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>  
+                        <h5 class="">My active projects <span class='badge border border-success text-success'>{{$projects->count()}}</span>
                             {{-- @if(auth()->user()->role == 'Admin') --}}
                         
-                                    <a data-bs-toggle="modal" data-intro="Click here to create a new project and assign users or teams." data-step="2" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> Add</a>
+                                    <a data-bs-toggle="modal" data-intro="Click here to create a new project and assign users or teams." data-step="2" data-bs-target="#projectModal" class="btn btn-soft-secondary btn-sm"><i class="ri-add-line align-bottom me-1"></i> New project</a>
                                 
                             {{-- @endif  --}}
                         </h5>
@@ -121,7 +424,7 @@
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
                                 <!-- Search Bar -->
                                 <div class="w-100 w-md-50">
-                                    <input type="text" id="projectSearch" data-intro="Easily find any project by typing its name here." data-step="3" class="form-control" placeholder="Search projects...">
+                                    <input type="text" id="projectSearch" data-intro="Easily find any project by typing its name here." data-step="3" class="form-control" placeholder="Find a project" aria-label="Find a project">
                                 </div>
 
                                 <!-- Navigation Buttons -->
@@ -220,6 +523,8 @@
                 </div><!-- end card -->
             </div>
         </div>
+        {{-- The full delayed/today/upcoming board duplicated the priority queue.
+             Detailed task management now stays on the dedicated My Tasks page.
         <div class='row g-3' data-intro="This section categorizes your tasks into Delayed, Due Today, and Upcoming Tasks for better management." data-step="5">
             @php
             $sections = [
@@ -260,7 +565,7 @@
                       <div class="tasks-scroll px-2" style="height:500px; overflow-y:auto;" id="tasksContainer{{$key}}">
                       <div class="card-body dashboard-task-list" data-section-index="{{ $key }}">
                          <div class="pt-2 pb-2">
-                            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()" data-intro="Click here to <b>add a new task</b> to your project. You can assign users, set deadlines, and track progress easily." data-step="7">+ Add Task</button>
+                            <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask()" data-intro="Click here to <b>add a new task</b> to your project. You can assign users, set deadlines, and track progress easily." data-step="7"><i class="ri-add-line" aria-hidden="true"></i> Create task</button>
                         </div>
                           @forelse($sectionData['tasks'] as $task)
                               <div  id="taskCard{{$task->id}}" class="text-decoration-none task-item">
@@ -378,6 +683,7 @@
               @php $key++; @endphp
               @endforeach
         </div>
+        --}}
         <div class="row">
             {{-- <div class="col-xl-4"> --}}
                 {{-- <div class="card card-height">
@@ -494,13 +800,15 @@
             </div>
         </div>
     </div>
+    {{-- The legacy timesheet and recent-activity rail was replaced by the
+         focused weekly-hours panel and dedicated timesheet shortcuts above.
     <div class="col-xxl-3">
         
         <div class="row" >
             <div class="col-lg-12">
                 <div class="card card-height" data-intro="This timesheet allows you to log and view your daily work hours for the current week." data-step="8">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 flex-grow-1 py-1">Timesheet   <button data-step="9" data-intro="Log the hours you’ve worked per specific task to calculate your total time spent." class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
+                        <h4 class="card-title mb-0 flex-grow-1 py-1">My weekly timesheet   <button data-step="9" data-intro="Log the hours you’ve worked per specific task to calculate your total time spent." class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addActivity">
                             <i class="ri-add-line align-bottom"></i>
                         </button></h4>
                         
@@ -602,7 +910,7 @@
                 </div><!-- end card -->
                 <div class="card" data-intro="This section displays your most recent activities, allowing you to quickly review and track your work history." data-step="10">
                     <div class="card-header align-items-center d-flex">
-                        <h4 class="card-title mb-0 me-2">Recent Activity</h4>
+                        <h4 class="card-title mb-0 me-2">Recent work</h4>
                         <div class="flex-shrink-0 ms-auto"></div>
                     </div>
                     <div class="card-body" style="max-height: 350px; overflow-y: auto;">
@@ -647,6 +955,7 @@
             
         </div>
     </div>
+    --}}
 </div>
 @include('home.add_activity')
 @if(auth()->user()->role == "Admin")
@@ -667,7 +976,7 @@
     @include('home.view_employee_delayed')
 @endforeach
 @endif
-@foreach($tasks as $task)
+@foreach($focusTasks as $task)
     <div class="offcanvas offcanvas-end" tabindex="-1" id="taskDetails{{$task->id}}" data-id="taskDetails{{ $task->id }}">
         <div class="offcanvas-header d-flex justify-content-between align-items-center">
   
@@ -1100,11 +1409,6 @@
                     form.reset();
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addActivity' + {{ $task->id }}));
                     modal.hide();
-
-                    // Refresh the timesheet row for the activity's date
-                    if (typeof window.updateTimesheetDay === 'function') {
-                        window.updateTimesheetDay(data.activity.date_old);
-                    }
 
                     Toastify({
                         text: "Activity added successfully!",
@@ -1825,6 +2129,7 @@ document.addEventListener('click', async function(e) {
 });
 
 </script>
+{{-- Legacy inline timesheet editor removed with the duplicate timesheet rail.
 <script>
     document.addEventListener('DOMContentLoaded', function () {
     const offcanvasEl = document.getElementById('editActivityOffcanvas');
@@ -2228,6 +2533,7 @@ document.addEventListener('click', async function(e) {
     window.updateTimesheetDay = updateDayAndTotal;
     });
 </script>
+--}}
 {{-- <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script> --}}
 {{-- <script>
   document.addEventListener('DOMContentLoaded', function () {
@@ -2248,5 +2554,21 @@ document.addEventListener('click', async function(e) {
       function addTask(columnId) {
           new bootstrap.Modal(document.getElementById('creatertaskModal')).show();
       }
+
+      document.querySelectorAll('[data-dashboard-view]').forEach(function (button) {
+          button.addEventListener('click', function () {
+              var selectedView = button.getAttribute('data-dashboard-view');
+
+              document.querySelectorAll('[data-dashboard-view]').forEach(function (viewButton) {
+                  var isSelected = viewButton === button;
+                  viewButton.classList.toggle('is-active', isSelected);
+                  viewButton.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+              });
+
+              document.querySelectorAll('[data-dashboard-panel]').forEach(function (panel) {
+                  panel.hidden = panel.getAttribute('data-dashboard-panel') !== selectedView;
+              });
+          });
+      });
 </script>
 @endsection

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 use App\Project;
 use App\ProjectBoard;
-use App\Invoice;
+use App\LeaveRequest;
 use App\Task;
 use App\TaskActivity;
 use App\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
+use App\WorkspaceSetting;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
@@ -29,56 +29,118 @@ class HomeController extends Controller
      */
     public function index()
     {
+        $today = date('Y-m-d');
+        $weekStart = date('Y-m-d', strtotime('monday this week'));
+        $weekEnd = date('Y-m-d', strtotime('sunday this week'));
         $boards = ProjectBoard::get();
-        $query = Project::with([
-            'parent',
-            'children.tasks',
-            'activities',
-            'comments' => function($q) {
-                $q->orderBy('updated_at', 'desc');
-            }
-        ])
-        ->where('completed', 0)
-        ->leftJoin(DB::raw('(SELECT project_id, MAX(updated_at) as latest_comment_updated_at FROM task_comments GROUP BY project_id) as c'), 'projects.id', '=', 'c.project_id')
-        ->orderBy('name','asc')
-        ->select('projects.*', 'c.latest_comment_updated_at');
-        // dd($query->get());
-    
-        if (auth()->user()->role != 'Admin') {
-            $query->with(['activities' => function ($q) {
-                    $q->where('user_id', auth()->id());
-                }])
-                ->whereHas('users', function ($q) {
-                    $q->where('users.id', auth()->id());
-                });
-        }
-        
         $projects = Project::with(['parent', 'children.tasks', 'tasks', 'activities', 'comments', 'attachments'])
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('name','asc')->where('completed','!=',1)->get();
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
+        $tasks = Task::with(['users', 'project', 'board', 'activities', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
+            ->whereHas('users', function ($query) {
+                $query->where('users.id', auth()->id());
+            })
             ->where('completed',0)
             ->orderBy('due_date','asc')
             ->get();
-        // if(auth()->user()->role != 'Admin') {
-            $tasks = $tasks->filter(function ($task) {
-                return $task->users->contains(auth()->user()->id);
-            });
-        // }
-        $last_sunday = date('Y-m-d',strtotime('last sunday'));
-        $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
-        
-        $activities = TaskActivity::get();
-        if(auth()->user()->role != 'Admin') {
-            $activities = $activities->filter(function ($activity) {
-                return $activity->user_id == auth()->user()->id;
-            });
-        }
+        $myActivities = TaskActivity::with(['project', 'task'])
+            ->where('user_id', auth()->id())
+            ->orderBy('date', 'desc')
+            ->get();
         $users = User::assignableFor(auth()->user());
-        $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
-            $query->whereBetween('date', [$last_sunday, $saturday]);
-        }])->get();
+        $last_sunday = null;
+        $saturday = null;
+        $members = collect();
+        $managerTasks = collect();
+        $managerProjects = collect();
+        $managerMemberSummaries = collect();
+        $managerProjectSummaries = collect();
+        $pendingLeaveRequests = collect();
+        $isManager = in_array(auth()->user()->role, ['Admin', 'Project Lead'], true);
+
+        if ($isManager) {
+            $managerProjects = $projects;
+            $projectIds = $managerProjects->pluck('id');
+
+            if ($projectIds->isNotEmpty()) {
+                $managerTasks = Task::with(['users', 'project', 'board'])
+                    ->whereIn('project_id', $projectIds)
+                    ->where('completed', 0)
+                    ->orderBy('due_date', 'asc')
+                    ->get();
+
+                $managerMembers = User::with(['activities' => function ($query) use ($weekStart, $weekEnd) {
+                    $query->whereBetween('date', [$weekStart, $weekEnd]);
+                }])
+                    ->whereHas('projects', function ($query) use ($projectIds) {
+                        $query->whereIn('projects.id', $projectIds);
+                    })
+                    ->orderBy('name', 'asc')
+                    ->get();
+
+                $managerMemberSummaries = $managerMembers->map(function ($member) use ($managerTasks, $today) {
+                    $memberTasks = $managerTasks->filter(function ($task) use ($member) {
+                        return $task->users->contains('id', $member->id);
+                    });
+
+                    return [
+                        'user' => $member,
+                        'hours' => $member->activities->sum('hours'),
+                        'open_tasks' => $memberTasks->count(),
+                        'overdue_tasks' => $memberTasks->filter(function ($task) use ($today) {
+                            return $task->due_date && $task->due_date < $today;
+                        })->count(),
+                    ];
+                })->sortByDesc(function ($summary) {
+                    return ($summary['overdue_tasks'] * 1000) + $summary['open_tasks'];
+                })->values();
+
+                $managerProjectSummaries = $managerProjects->map(function ($project) use ($today) {
+                    $activeTasks = $project->tasks->where('archived', '!=', 1);
+                    $completedTasks = $activeTasks->where('completed', 1)->count();
+                    $openTasks = $activeTasks->where('completed', 0);
+                    $taskCount = $activeTasks->count();
+
+                    return [
+                        'project' => $project,
+                        'progress' => $taskCount ? (int) round(($completedTasks / $taskCount) * 100) : 0,
+                        'open_tasks' => $openTasks->count(),
+                        'overdue_tasks' => $openTasks->filter(function ($task) use ($today) {
+                            return $task->due_date && $task->due_date < $today;
+                        })->count(),
+                    ];
+                })->sortByDesc(function ($summary) {
+                    return ($summary['overdue_tasks'] * 1000) + $summary['open_tasks'];
+                })->values();
+
+            }
+
+            if (Schema::hasTable('leave_requests')) {
+                $pendingLeaveQuery = LeaveRequest::with('user')
+                    ->where('status', 'Pending')
+                    ->where('user_id', '!=', auth()->id());
+
+                if (auth()->user()->role === 'Project Lead') {
+                    $workspaceSettings = Schema::hasTable('workspace_settings') ? WorkspaceSetting::first() : null;
+                    if ($workspaceSettings && $workspaceSettings->leave_approval_role === 'Admin') {
+                        $pendingLeaveQuery->whereRaw('1 = 0');
+                    }
+                    $reviewableUserIds = $managerMemberSummaries->pluck('user.id');
+                    $pendingLeaveQuery->whereIn('user_id', $reviewableUserIds);
+                }
+
+                $pendingLeaveRequests = $pendingLeaveQuery->orderBy('start_date', 'asc')->get();
+            }
+        }
+
+        if (auth()->user()->role == 'Admin') {
+            $last_sunday = date('Y-m-d', strtotime('last sunday'));
+            $saturday = date('Y-m-d', strtotime('+6 days', strtotime($last_sunday)));
+            $members = User::with(['activities' => function ($query) use ($last_sunday, $saturday) {
+                $query->whereBetween('date', [$last_sunday, $saturday]);
+            }])->get();
+        }
         // $project_this_week = Project::with(['activities' => function ($query) use ($last_sunday, $saturday) {
         // $query->whereBetween('date', [$last_sunday, $saturday]);
         // }])
@@ -122,12 +184,18 @@ class HomeController extends Controller
             array(
                 'projects' => $projects,
                 'tasks' => $tasks,
-                'activities' => $activities,
+                'myActivities' => $myActivities,
                 'members' => $members,
                 'last_sunday' => $last_sunday,
                 'saturday' => $saturday,
                 'boards' => $boards,
                 'users' => $users,
+                'isManager' => $isManager,
+                'managerTasks' => $managerTasks,
+                'managerProjects' => $managerProjects,
+                'managerMemberSummaries' => $managerMemberSummaries,
+                'managerProjectSummaries' => $managerProjectSummaries,
+                'pendingLeaveRequests' => $pendingLeaveRequests,
                 // 'projects_data' => $projects_data,
                 // 'totalHours' => $projects_data->sum('hours'),
                 // 'project_this_week' => $project_this_week,

@@ -4,15 +4,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c3442">
     {{-- @laravelPWA --}}
     <!-- CSRF Token -->
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', config('app.name', 'SALTiii'))</title>
     <link rel="shortcut icon" href="{{url('images/Favicon.png')}}">
     <link rel="icon" href="{{url('images/Favicon.png')}}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
     <!-- Layout config Js -->
     <script src="{{asset('inside_css/assets/js/layout.js')}}"></script>
     <!-- Bootstrap Css -->
@@ -24,7 +23,9 @@
     <!-- custom Css-->
     <link href="{{asset('inside_css/assets/css/custom.min.css')}}" rel="stylesheet" type="text/css" />
  
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
     
     <style>
         .loader {

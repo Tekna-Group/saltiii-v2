@@ -123,15 +123,15 @@ class UserController extends Controller
         $last_sunday = date('Y-m-d',strtotime('last sunday'));
         $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
         
-        $activities = TaskActivity::where('user_id',$id)->whereBetween('date', [$last_sunday, $saturday])->get();
-        $user = User::findOrfail($id);
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query)  use ($id) {
+        $activities = TaskActivity::with(['project', 'task'])->where('user_id',$id)->whereBetween('date', [$last_sunday, $saturday])->get();
+        $user = User::with('salary')->findOrfail($id);
+        $tasks = Task::with(['users', 'project', 'board', 'activities', 'comments', 'attachments'])->whereHas('users', function ($query)  use ($id) {
             $query->where('user_id', $id);
         })->orderBy('due_date','asc')->get();
-        $projects = Project::whereHas('users', function ($query) use ($id) {
+        $projects = Project::with('tasks')->whereHas('users', function ($query) use ($id) {
             $query->where('user_id', $id);
         })->get();
-        return view('users.view-profile',
+        return view('users.profile',
             array(
                 'user' => $user,
                 'activities' => $activities,
@@ -148,15 +148,15 @@ class UserController extends Controller
         $last_sunday = date('Y-m-d',strtotime('last sunday'));
         $saturday = date("Y-m-d", strtotime("+6 days",strtotime($last_sunday)));
         
-        $activities = TaskActivity::where('user_id',auth()->user()->id)->whereBetween('date', [$last_sunday, $saturday])->get();
-        $user = User::findOrfail(auth()->user()->id);
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments'])->whereHas('users', function ($query) {
+        $activities = TaskActivity::with(['project', 'task'])->where('user_id',auth()->user()->id)->whereBetween('date', [$last_sunday, $saturday])->get();
+        $user = User::with('salary')->findOrfail(auth()->user()->id);
+        $tasks = Task::with(['users', 'project', 'board', 'activities', 'comments', 'attachments'])->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('due_date','asc')->get();
-        $projects = Project::whereHas('users', function ($query) {
+        $projects = Project::with('tasks')->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->get();
-        return view('users.view-profile',
+        return view('users.profile',
             array(
                 'user' => $user,
                 'activities' => $activities,

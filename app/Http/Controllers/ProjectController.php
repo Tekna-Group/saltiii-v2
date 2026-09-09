@@ -17,7 +17,7 @@ class ProjectController extends Controller
     {
         // Fetch all projects from the database
         // $projects = \App\Models\Project::all();
-        $projects = Project::with(['parent', 'children.tasks', 'tasks'])
+        $projects = Project::with(['parent', 'children.tasks', 'tasks', 'users'])
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })->orderBy('name','asc')->where('completed','!=',1)->get();
@@ -157,7 +157,11 @@ class ProjectController extends Controller
             'tasks.attachments',
             'tasks.activities', // Prevent N+1
             'tasks.users'       // Prevent N+1
-        ])->findOrFail($id);
+        ])->when(auth()->user()->role !== 'Admin', function ($query) {
+            $query->whereHas('users', function ($userQuery) {
+                $userQuery->where('users.id', auth()->id());
+            });
+        })->findOrFail($id);
         $boardData = [];
         
         foreach ($project->statuses as $status) {

@@ -9,8 +9,8 @@
  <div class="row">
     <div class="col-lg-12">
         <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Users <button type="button" class="btn btn-success btn-icon waves-effect waves-light" title='New User' data-bs-toggle="modal" data-bs-target="#newUser"><i class=" ri-add-box-line"></i></button></h5>
+            <div class="card-header d-flex align-items-center justify-content-between gap-3">
+                <div><h5 class="card-title mb-1">People</h5><p class="text-muted fs-12 mb-0">Manage workspace access, roles, and profiles.</p></div><button type="button" class="btn btn-primary btn-sm" title="Add a new user" data-bs-toggle="modal" data-bs-target="#newUser"><i class="ri-user-add-line me-1"></i>Add person</button>
             </div>
             <div class="card-body">
                 <table id="example" class="table table-bordered dt-responsive nowrap table-striped align-middle" style="width:100%">

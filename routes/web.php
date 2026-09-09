@@ -13,6 +13,7 @@
 // Route::redirect('/', '/api/documentation');
 Auth::routes(['verify' => true]);
 // Route::get('login', 'Auth\LoginController@login');
+Route::view('/', 'welcome')->name('landing');
 Route::get('/subscribe', 'SubscriptionController@showForm')->name('subscribe');
 Route::post('/subscribe-submit', 'SubscriptionController@subscribe')->name('subscribe.post');
 Route::post('/stripe/webhook', 'StripeWebhookController@handle')->name('stripe.webhook');
@@ -23,7 +24,6 @@ Route::group(['middleware' => ['auth', 'verified', 'subscribed']], function () {
  
 Route::get('/view-profile/{id}','UserController@view');
 Route::get('/my-profile','UserController@viewProfile');
-Route::get('/', 'HomeController@index')->name('Dashboard');
 Route::get('/dashboard', 'HomeController@index')->name('Dashboard');
 Route::get('/home', 'HomeController@index')->name('Dashboard');
 Route::post('new-project', 'ProjectController@store')->name('New Project');
@@ -92,6 +92,10 @@ Route::post('timekeeping/process-usdc-transfer','TimekeepingController@processUs
 Route::post('timekeeping/process-stripe-salary/{userId}','TimekeepingController@processStripeSalary')->name('Timekeeping.processStripeSalary');
 Route::post('timekeeping/solana-rpc','TimekeepingController@solanaRpc')->name('Timekeeping.solanaRpc');
 Route::get('my-timekeeping','TimekeepingController@myTimekeeping')->name('My Timekeeping');
+Route::get('leave','LeaveRequestController@index')->name('leave.index');
+Route::post('leave','LeaveRequestController@store')->name('leave.store');
+Route::post('leave/{id}/review','LeaveRequestController@review')->name('leave.review');
+Route::post('leave/{id}/cancel','LeaveRequestController@cancel')->name('leave.cancel');
 Route::get('payslips','PayrollController@index')->name('Payslip');
 Route::get('payslips/{id}','PayrollController@payslip')->name('Payslip.view');
 Route::post('payslips/{id}/adjustment','PayrollController@storeAdjustment')->name('Payslip.adjustment.store');
@@ -114,6 +118,8 @@ Route::post('/invoice/pay/{id}', 'InvoiceController@processPayment')->name('invo
 // Route::post('/subscribe', 'BillingController@subscribe')->name('billing.subscribe');
 
 Route::get('/reports','TaskController@TaskReport')->name('task.reports');
+Route::get('/settings','WorkspaceSettingController@index')->name('settings.index');
+Route::post('/settings','WorkspaceSettingController@update')->name('settings.update');
 
 Route::get('/users/search', 'UserController@search');
 

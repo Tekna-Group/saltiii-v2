@@ -23,7 +23,7 @@ class TaskController extends Controller
     public function index()
     {
         // Fetch all tasks from the database
-        $tasks = Task::with(['users', 'project', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
+        $tasks = Task::with(['users', 'project', 'board', 'activities', 'comments', 'attachments', 'feedbackLoops.user', 'feedbackLoops.resolver'])
         ->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
         })
@@ -34,15 +34,21 @@ class TaskController extends Controller
         })->get();
         $users = User::get();
         // Return the view with the tasks data
-        return view('tasks.index', ['tasks' => $tasks,
+        return view('tasks.register', ['tasks' => $tasks,
                                     'projects' => $projects,
                                     'users' => $users,
                                     ]); 
     }
     public function TaskReport(Request $request)
     { 
-        
+        abort_unless(in_array(auth()->user()->role, ['Admin', 'Project Lead'], true), 403);
         $query = Task::with(['users', 'project']);
+
+        if (auth()->user()->role === 'Project Lead') {
+            $query->whereHas('project.users', function ($projectUserQuery) {
+                $projectUserQuery->where('users.id', auth()->id());
+            });
+        }
 
         // Filters
         if ($request->date_from) {
@@ -73,10 +79,16 @@ class TaskController extends Controller
         })
         ->get();
     
-        $users = User::where('status','Active')->get();
-        $projects = Project::where('completed',1)->get();
+        $users = auth()->user()->role === 'Admin'
+            ? User::where('status', 'Active')->orderBy('name')->get()
+            : User::assignableFor(auth()->user());
+        $projects = Project::when(auth()->user()->role === 'Project Lead', function ($projectQuery) {
+                $projectQuery->whereHas('users', function ($userQuery) {
+                    $userQuery->where('users.id', auth()->id());
+                });
+            })->where('completed', '!=', 1)->orderBy('name')->get();
     
-        return view('tasks.reports', compact('tasksProgress', 'tasksAging', 'tasksCompleted', 'users', 'projects'));
+        return view('tasks.report_center', compact('tasksProgress', 'tasksAging', 'tasksCompleted', 'users', 'projects'));
     }
     public function updateTitle(Request $request, $id)
     {

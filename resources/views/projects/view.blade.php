@@ -139,9 +139,68 @@
         background: #fafbfc;
     }
 </style>
+<link href="{{ asset('inside_css/assets/css/saltiii-projects.css') }}" rel="stylesheet" />
 @endsection
 @section('content')
- <div class="row">
+@php
+    $projectTaskCount = $project->tasks->where('archived', '!=', 1)->count();
+    $projectCompletedCount = $project->tasks->where('archived', '!=', 1)->where('completed', 1)->count();
+    $projectOpenCount = max(0, $projectTaskCount - $projectCompletedCount);
+    $projectOverdueCount = $project->tasks->filter(function ($task) {
+        return $task->archived != 1 && !$task->completed && $task->due_date && $task->due_date < date('Y-m-d');
+    })->count();
+    $projectHours = $project->tasks->sum(function ($task) { return $task->activities->sum('hours'); });
+    $projectProgress = $projectTaskCount > 0 ? round(($projectCompletedCount / $projectTaskCount) * 100) : 0;
+    $firstBoardId = optional($project->statuses->first())->id;
+@endphp
+
+<div class="project-workspace">
+    <section class="project-overview-hero" aria-labelledby="project-title">
+        <div class="project-overview-main">
+            <div class="project-identity">
+                <span class="project-identity-icon"><img src="{{ asset($project->icon) }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt=""></span>
+                <div>
+                    <a href="{{ url('/projects') }}" class="project-back-link"><i class="ri-arrow-left-line" aria-hidden="true"></i> All projects</a>
+                    <h1 id="project-title" @if(auth()->user()->role == 'Admin') data-editable-project-name @endif data-id="{{ $project->id }}">{{ $project->name }}</h1>
+                    <p class="project-description">{{ $project->description ?: 'No project description has been added yet.' }}</p>
+                    <div class="project-meta-row">
+                        <span class="project-status-pill">{{ $project->status ?: 'In progress' }}</span>
+                        @if($project->parent)<span><i class="ri-git-branch-line" aria-hidden="true"></i> Under <a href="{{ url('/view-project/'.$project->parent->id) }}">{{ $project->parent->name }}</a></span>@endif
+                        <span><i class="ri-calendar-line" aria-hidden="true"></i> Started {{ date('M j, Y', strtotime($project->created_at)) }}</span>
+                        <span><i class="ri-refresh-line" aria-hidden="true"></i> Updated {{ $project->updated_at->diffForHumans() }}</span>
+                        <span><i class="ri-pie-chart-line" aria-hidden="true"></i> {{ $projectProgress }}% complete</span>
+                    </div>
+                </div>
+            </div>
+            <div class="project-hero-actions">
+                @if($firstBoardId)
+                    <button type="button" class="btn btn-primary" onclick="addTask('{{ $firstBoardId }}')"><i class="ri-add-line" aria-hidden="true"></i> New task</button>
+                @endif
+                @if(auth()->user()->role == 'Admin')
+                    <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#addmemberModal"><i class="ri-user-add-line" aria-hidden="true"></i> Team</button>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Project actions"><i class="ri-more-2-fill" aria-hidden="true"></i></button>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <form method="POST" action="{{ url('/project/complete/'.$project->id) }}" onsubmit="return confirm('Mark this project as complete?');">@csrf<button type="submit" class="dropdown-item"><i class="ri-checkbox-circle-line me-2" aria-hidden="true"></i> Mark complete</button></form>
+                            <form method="POST" action="{{ url('/project/delete/'.$project->id) }}" onsubmit="return confirm('Archive this project?');">@csrf<button type="submit" class="dropdown-item text-danger"><i class="ri-archive-line me-2" aria-hidden="true"></i> Archive project</button></form>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="project-kpis" aria-label="Project summary">
+            <div class="project-kpi"><span><i class="ri-list-check-2" aria-hidden="true"></i></span><div><small>Total tasks</small><strong>{{ $projectTaskCount }}</strong><em>{{ $projectCompletedCount }} completed</em></div></div>
+            <div class="project-kpi"><span><i class="ri-loader-4-line" aria-hidden="true"></i></span><div><small>Open tasks</small><strong>{{ $projectOpenCount }}</strong><em>Across {{ $project->statuses->count() }} {{ str_plural('status', $project->statuses->count()) }}</em></div></div>
+            <div class="project-kpi {{ $projectOverdueCount ? 'is-alert' : '' }}"><span><i class="ri-alarm-warning-line" aria-hidden="true"></i></span><div><small>Overdue</small><strong>{{ $projectOverdueCount }}</strong><em>Needs attention</em></div></div>
+            <div class="project-kpi"><span><i class="ri-time-line" aria-hidden="true"></i></span><div><small>Time logged</small><strong>{{ number_format($projectHours, 1) }}h</strong><em>Across this project</em></div></div>
+        </div>
+        <ul class="nav project-workspace-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tasks-overview" role="tab" aria-controls="tasks-overview" aria-selected="true">Board <span class="badge bg-primary-subtle text-primary ms-1">{{ $projectTaskCount }}</span></a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#sub-projects" role="tab" aria-controls="sub-projects" aria-selected="false">Sub-projects <span class="badge bg-primary-subtle text-primary ms-1" id="subProjectsCountBadge">{{ $project->children->count() }}</span></a></li>
+        </ul>
+    </section>
+
+ <div class="row project-legacy-header">
     <div class="col-lg-12">
         <div class="card mt-n4 mx-n4">
             <div class="bg-warning-subtle">
@@ -208,7 +267,7 @@
                         <li class="nav-item">
                             <a class="nav-link fw-semibold" data-bs-toggle="tab" href="#sub-projects" role="tab">
                                 Sub-projects
-                                <span class="badge bg-primary-subtle text-primary ms-1" id="subProjectsCountBadge">{{ $project->children->count() }}</span>
+                                <span class="badge bg-primary-subtle text-primary ms-1">{{ $project->children->count() }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -230,50 +289,28 @@
     </div>
     <!-- end col -->
 </div>
-<div class="row">
+<div class="row project-tab-shell">
     <div class="col-lg-12">
         <div class="tab-content text-muted">
             <div class="tab-pane fade show active" id="tasks-overview" role="tabpanel">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row g-2">
-                            <div class="col-lg-auto">
-                                <div class="hstack gap-2">
-                                    @if(auth()->user()->role == 'Admin')
-                                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createboardModal"><i class="ri-add-line align-bottom me-1"></i> Create Board</button>
-                                    @endif
-                                </div>
-                            </div>
-                            <!--end col-->
-                            <div class="col-lg-3 col-auto">
-                                <div class="search-box">
-                                    <input type="text" class="form-control search" id="search-task-options" placeholder="Search for tasks....">
-                                    <i class="ri-search-line search-icon"></i>
-                                </div>
-                            </div>
-                            <div class="col-auto ms-sm-auto">
-                                <div class="avatar-group" id="newMembar">
-                                    @foreach($project->users as $member)
-                                    <a href="javascript: void(0);" class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{$member->name}}">
-                                        <img src="{{asset($member->avatar)}}" onerror="this.src='{{url('images/Favicon.png')}}';" alt="" class="rounded-circle avatar-xs">
-                                    </a>
-                                    @endforeach
-                                     @if(auth()->user()->role == 'Admin')
-                                    <a href="#addmemberModal" data-bs-toggle="modal" class="avatar-group-item material-shadow">
-                                        <div class="avatar-xs">
-                                            <div class="avatar-title rounded-circle">
-                                                +
-                                            </div>
-                                        </div>
-                                    </a>
-                                    @endif
-                                </div>
-                            </div>
-                            <!--end col-->
-                        </div>
-                        <!--end row-->
+                <div class="project-board-toolbar">
+                    <div class="project-board-actions">
+                        @if($firstBoardId)<button type="button" class="btn btn-primary" onclick="addTask('{{ $firstBoardId }}')"><i class="ri-add-line" aria-hidden="true"></i> New task</button>@endif
+                        @if(auth()->user()->role == 'Admin')<button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#createboardModal"><i class="ri-layout-column-line" aria-hidden="true"></i> New status</button>@endif
                     </div>
-                    <!--end card-body-->
+                    <div class="project-board-tools">
+                        <div class="search-box">
+                            <input type="search" class="form-control search" id="search-task-options" placeholder="Search this board" aria-label="Search tasks in this project" autocomplete="off">
+                            <i class="ri-search-line search-icon" aria-hidden="true"></i>
+                        </div>
+                        <span class="project-team-label">{{ $project->users->count() }} {{ str_plural('member', $project->users->count()) }}</span>
+                        <div class="avatar-group" id="newMembar">
+                            @foreach($project->users->take(5) as $member)
+                                <span class="avatar-group-item material-shadow" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-placement="top" title="{{ $member->name }}"><img src="{{ asset($member->avatar) }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="{{ $member->name }}" class="rounded-circle avatar-xs"></span>
+                            @endforeach
+                            @if($project->users->count() > 5)<span class="avatar-group-item"><span class="avatar-xs"><span class="avatar-title rounded-circle bg-light text-muted">+{{ $project->users->count() - 5 }}</span></span></span>@endif
+                        </div>
+                    </div>
                 </div>
                   <div class="kanban-board-container">
                       <div class="kanban-board-wrapper" id="kanbanBoard">
@@ -286,20 +323,21 @@
                     <div class="modal-dialog">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h5 class="modal-title">Status</h5>
-                          <button type="button" class="btn-close" data-dismiss="modal"></button>
+                          <h5 class="modal-title">Edit status</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form id="editBoardForm" method="POST" action="{{ url('project/edit-board') }}" enctype="multipart/form-data">
                             @csrf
                             <div class="modal-body">
                                 <input type="hidden" name="statusId" id="statusId">
                                 <div class="mb-3">
-                                    <label class="form-label">Status Name</label>
-                                    <input type="text" name="statusName" class="form-control" id="statusName">
+                                    <label for="statusName" class="form-label">Status name</label>
+                                    <input type="text" name="statusName" class="form-control" id="statusName" maxlength="80" required>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save status</button>
                             </div>
                         </form>
                       </div>
@@ -418,6 +456,7 @@
     </div>
 </div>
 
+</div>
 @include('projects.new-board')
 @include('projects.add_member')
 @include('projects.add_task')
@@ -518,12 +557,15 @@
 });
     let boardData = @json($boardData); // Laravel data for boards and tasks
 
-    console.log("Loaded board data:", boardData);
-
     // ====== Render the whole board ======
     function renderBoard() {
         const board = document.getElementById('kanbanBoard');
         board.innerHTML = '';
+
+        if (!boardData.length) {
+            board.innerHTML = '<div class="project-board-empty"><div><i class="ri-layout-column-line fs-32 mb-2 d-block"></i><strong class="d-block text-body mb-1">No statuses yet</strong><span>Create a status to begin organizing project tasks.</span></div></div>';
+            return;
+        }
 
         boardData.forEach(column => {
               const isAdmin = @json(auth()->user()->role === 'Admin');
@@ -536,7 +578,7 @@
 
             columnDiv.innerHTML = `
                 <div class="kanban-header">
-                    <span class="fw-bold" id="status-name-${column.id}">${column.name} <button class="btn btn-sm btn-outline-primary me-1" onclick="addTask('${column.id}')">+Add Task</button></span>
+                    <span class="kanban-column-title" id="status-name-${column.id}">${escapeHtml(column.name)} <span class="kanban-column-count">${column.tasks.length}</span></span>
                     
                     <div>
                         <!-- Edit button (visible to all) -->
@@ -564,8 +606,8 @@
                     ${column.tasks.map(task => renderTask(task)).join('')}
                 </div>
 
-                <div class="p-2">
-                    <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')">+ Add Task</button>
+                <div class="kanban-add-task">
+                    <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')"><i class="ri-add-line"></i> Add task</button>
                 </div>
             `;
 
@@ -577,64 +619,39 @@
 
     // ====== Render a single task card ======
     function renderTask(task) {
-    const today = new Date().toISOString().split('T')[0];
-        console.log(task.users);
-    return `
-        <div id="task-${task.id}" class="kanban-card tasks-box task-card"
-            draggable="true" ondragstart="dragTask(event)">
-            <div class="card-body">
-                <div class="d-flex mb-2">
-                    <div class="flex-grow-1">
-                        <h6 class="fs-15 mb-0 text-truncate task-title">
-                            <span onclick="window.location.href='view-task/${task.id}'" class="d-block task-link">
-                                <div class="d-flex justify-content-between align-items-start ${task.users && task.users.some(user => user.id === {{ auth()->id() }}) ? 'text-warning' : ''}"">
-                                    <div>
-                                        ${task.completed == 1 ? '<i class="text-success ri-checkbox-circle-fill align-middle me-1"></i>' : ''}
-                                        ${(task.due_date && task.due_date < today && task.completed == 0)
-                                            ? '<i class="text-danger ri-error-warning-fill align-middle me-1"></i>' : ''}
-                                        ${task.name.length > 20 ? task.name.substring(0, 15) + "..." : task.name}
-                                    </div>
-                                    <div class="text-muted ms-2 ${task.users && task.users.some(user => user.id === {{ auth()->id() }}) ? 'text-warning' : ''}">
-                                        <small>#${task.id}</small>
-                                    </div>
-                                </div>
-                            </span>
-                        </h6>
+        const today = new Date().toISOString().split('T')[0];
+        const isOverdue = task.due_date && task.due_date < today && Number(task.completed) === 0;
+        const priority = task.priority || 'Low';
+        const assignees = (task.assignees || []).slice(0, 4).map(function (name) {
+            return `<span title="${escapeHtml(name)}">${escapeHtml(getInitials(name))}</span>`;
+        }).join('');
+        const extraAssignees = task.assignees && task.assignees.length > 4
+            ? `<span>+${task.assignees.length - 4}</span>` : '';
+
+        return `
+            <div id="task-${task.id}" class="kanban-card tasks-box task-card" draggable="true" ondragstart="dragTask(event)">
+                <div class="card-body" onclick="window.location.href='{{ url('/view-task') }}/${task.id}'" onkeydown="if(event.key === 'Enter'){ window.location.href='{{ url('/view-task') }}/${task.id}'; }" role="link" tabindex="0">
+                    <div class="task-card-heading">
+                        <span class="task-card-title">${Number(task.completed) === 1 ? '<i class="ri-checkbox-circle-fill text-success me-1"></i>' : ''}${escapeHtml(task.name)}</span>
+                        <span class="task-id">#${task.id}</span>
+                    </div>
+                    <div class="task-card-meta">
+                        <span class="task-due ${isOverdue ? 'is-overdue' : ''}"><i class="${isOverdue ? 'ri-alarm-warning-line' : 'ri-calendar-line'}"></i>${task.due_date || 'No due date'}</span>
+                        <span class="task-priority task-priority-${String(priority).toLowerCase()}">${escapeHtml(priority)}</span>
+                    </div>
+                    ${assignees || extraAssignees ? `<div class="task-card-assignees">${assignees}${extraAssignees}</div>` : ''}
+                </div>
+                <div class="card-footer">
+                    <div class="task-card-foot">
+                        <span><i class="ri-question-answer-line"></i>${task.comments}</span>
+                        <span><i class="ri-attachment-2"></i>${task.attachments}</span>
+                        <span class="task-hours"><i class="ri-time-line"></i>${Number(task.hours || 0).toFixed(1)}h</span>
                     </div>
                 </div>
+                ${Number(task.completed) === 1 ? `<button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="event.stopPropagation(); archiveTask(${task.id})"><i class="ri-archive-2-line"></i> Archive</button>` : ''}
             </div>
-
-            <div class="card-footer border-top-dashed">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <span class="text-muted">
-                            <i class="ri-time-line align-bottom"></i> ${task.due_date || 'No Due Date'}
-                        </span>
-                    </div>
-                    <div class="flex-shrink-0">
-                        <ul class="link-inline mb-0">
-                            <li class="list-inline-item">
-                                <i class="ri-timer-fill"></i> ${parseFloat(Number(task.hours).toFixed(2))}
-                            </li>
-                            <li class="list-inline-item">
-                                <i class="ri-question-answer-line align-bottom"></i> ${task.comments}
-                            </li>
-                            <li class="list-inline-item">
-                                <i class="ri-attachment-2 align-bottom"></i> ${task.attachments}
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            ${task.completed == 1 ? `
-                <button class="btn btn-sm btn-outline-secondary archive-task-btn" onclick="archiveTask(${task.id})">
-                    <i class="ri-archive-2-line"></i> Archive
-                </button>
-            ` : ''}
-        </div>
-    `;
-}
+        `;
+    }
 
     // ====== Enable column dragging ======
     function enableColumnDrag() {
@@ -930,7 +947,7 @@
       let originalText = '';
 
       // Use event delegation so double-click works even after replacement
-      $(document).on('dblclick', '#editable-project-name', function() {
+      $(document).on('dblclick', '[data-editable-project-name]', function() {
           let $this = $(this);
           let currentText = $this.text().trim();
           originalText = currentText; // Store original text
@@ -1009,9 +1026,9 @@
       }
 
       function revertToText(name, projectId) {
-          let newH4 = $('<h4>', {
-              id: 'editable-project-name',
-              class: 'fw-bold',
+          let newH4 = $('<h1>', {
+              id: 'project-title',
+              'data-editable-project-name': '',
               'data-id': projectId,
               text: name
           });
@@ -1038,12 +1055,10 @@ $(document).ready(function() {
             },
             success: function(response) {
                 if (response.success) {
-                    // Hide the modal
-                    document.getElementById('status-name-' + statusId).textContent = $('#statusName').val();
-                    $('#statusModal').modal('hide');
-
-                    // Refresh the board
-                    // renderBoard();
+                    const updatedColumn = boardData.find(column => String(column.id) === String(statusId));
+                    if (updatedColumn) updatedColumn.name = statusName;
+                    renderBoard();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('statusModal')).hide();
 
                     // Show success toast
                     Toastify({
@@ -1110,7 +1125,7 @@ $(document).ready(function() {
                 appendSubProjectCard(response.project);
                 incrementSubProjectCount();
 
-                $('#projectModal').modal('hide');
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('projectModal')).hide();
                 resetSubProjectForm(form);
                 showSubProjectToast(response.message || 'Sub-project created successfully.', '#28a745');
             },

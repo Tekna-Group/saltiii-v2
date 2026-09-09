@@ -1,5 +1,6 @@
 @extends('layouts.header')
 @section('css')
+<link href="{{ asset('inside_css/assets/css/saltiii-operations.css') }}" rel="stylesheet" />
 <style>
     @media print {
         body * { visibility: hidden; }

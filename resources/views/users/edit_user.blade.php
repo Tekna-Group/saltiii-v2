@@ -54,6 +54,7 @@
                                     <option value='Admin'  @if($user->role == "Admin") selected @endif>Admin</option>
                                     <option value='Project Lead'  @if($user->role == "Project Lead") selected @endif>Project Lead</option>
                                     <option value='Member'  @if($user->role == "Member") selected @endif>Member</option>
+                                    <option value='Timekeeper'  @if($user->role == "Timekeeper") selected @endif>Timekeeper</option>
                                 </select>
                             </div>
                         </div>

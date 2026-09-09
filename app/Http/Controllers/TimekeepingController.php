@@ -68,22 +68,27 @@ class TimekeepingController extends Controller
     }
     public function myTimekeeping(Request $request)
     {
-        $date_ranges = [];
-        $TaskActivity = collect();
-        $date_from = $request->date_from;
-        $date_to = $request->date_to;
+        $date_from = $request->date_from ?: date('Y-m-d', strtotime('monday this week'));
+        $date_to = $request->date_to ?: date('Y-m-d', strtotime('sunday this week'));
         $last_sunday = $date_from;
         $saturday = $date_to;
-        if ($request->date_from && $request->date_to) {
-            $TaskActivity = TaskActivity::with(['project', 'task', 'user.salary'])
-                ->where('user_id', auth()->user()->id)
-                ->whereBetween('date', [$date_from, $date_to])
-                ->get();
-            $TaskActivity = $this->normalizeActivityDates($TaskActivity);
-            $date_ranges = $this->dateRange($date_from, $date_to);
-        }
+        $TaskActivity = TaskActivity::with(['project', 'task', 'user.salary'])
+            ->where('user_id', auth()->user()->id)
+            ->whereBetween('date', [$date_from, $date_to])
+            ->orderBy('date', 'desc')
+            ->get();
+        $TaskActivity = $this->normalizeActivityDates($TaskActivity);
+        $date_ranges = $this->dateRange($date_from, $date_to);
         $users = User::where('id', auth()->user()->id)->with('salary')->get();
-        return view('timekeeping.my_timekeeping', [
+        $tasks = \App\Task::with('project')
+            ->whereHas('users', function ($query) {
+                $query->where('users.id', auth()->id());
+            })
+            ->where('completed', 0)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
+        return view('timekeeping.workspace', [
             'activities' => $TaskActivity,
             'date_ranges' => $date_ranges,
             'date_from' => $date_from,
@@ -91,6 +96,7 @@ class TimekeepingController extends Controller
             'users' => $users,
             'last_sunday' => $last_sunday,
             'saturday' => $saturday,
+            'tasks' => $tasks,
         ]);
     }
 

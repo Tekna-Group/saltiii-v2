@@ -79,7 +79,7 @@
                     <div>
                         <div class="avatar-sm flex-shrink-0">
                             <span class="avatar-title bg-danger-subtle text-danger rounded-circle fs-4">
-                                <i class="ri-delete-bin-line"></i>
+                                <i class="ri-checkbox-circle-line"></i>
                             </span>
                         </div>
                     </div>

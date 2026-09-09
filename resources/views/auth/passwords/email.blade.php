@@ -1,51 +1,33 @@
 @extends('layouts.app')
 
+@section('title', 'Forgot password | SALTiii')
+
+@section('css')
+<link href="{{ asset('inside_css/assets/css/saltiii-auth-recovery.css') }}" rel="stylesheet" type="text/css">
+@endsection
+
 @section('content')
+<div class="recovery-shell">
+    <aside class="recovery-story" aria-label="Password recovery steps">
+        <a class="recovery-brand" href="{{ url('/') }}" aria-label="SALTiii homepage"><img src="{{ asset('images/Saltiii-Logo-White.svg') }}" alt="SALTiii"></a>
+        <div class="recovery-copy"><span class="recovery-kicker">Account recovery</span><h1>Let’s get you <em>back to work.</em></h1><p>Resetting your password is quick and secure. We’ll send a private recovery link to the email connected to your account.</p><div class="recovery-steps" aria-label="Recovery process"><div class="recovery-step active"><span>1</span>Enter your account email</div><div class="recovery-step"><span>2</span>Open the secure link we send</div><div class="recovery-step"><span>3</span>Choose a new password</div></div></div>
+        <p class="recovery-support">Still having trouble? <a href="mailto:info@saltiii.com">Contact SALTiii support</a></p>
+    </aside>
 
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6 col-xl-5">
-        <div class="card mt-4 card-bg-fill">
+    <main class="recovery-form-side"><div class="recovery-wrap">
+        <div class="recovery-top"><a class="back-link" href="{{ route('login') }}"><span aria-hidden="true">←</span>Back to login</a><p class="top-help">Need help? <a href="mailto:info@saltiii.com">Contact us</a></p></div>
+        <div class="recovery-icon" aria-hidden="true"><i class="ri-mail-send-line"></i></div>
+        <header class="recovery-heading"><h2>Forgot your password?</h2><p>Enter the email address you use for SALTiii. If an account matches, we’ll send instructions for creating a new password.</p></header>
 
-            <div class="card-body p-4">
-                <div class="text-center mt-2">
-                    <h5 class="text-primary">Forgot Password?</h5>
-                    <p class="text-muted">Reset password with {{ config('app.name', 'Laravel') }}</p>
+        @if(session('status'))<div class="status-box" role="status"><i class="ri-checkbox-circle-line" aria-hidden="true"></i><div><strong>Check your inbox.</strong><br>{{ session('status') }}</div></div>@endif
+        @if($errors->has('email'))<div class="error-box" role="alert"><i class="ri-error-warning-line" aria-hidden="true"></i><div><strong>We couldn’t send the reset link.</strong><br>{{ $errors->first('email') }}</div></div>@endif
 
-                    <lord-icon src="https://cdn.lordicon.com/rhvddzym.json" trigger="loop" colors="primary:#0ab39c" class="avatar-xl"></lord-icon>
-
-                </div>
-
-                <div class="alert border-0 alert-warning text-center mb-2 mx-2" role="alert">
-                    Enter your email and instructions will be sent to you!
-                </div>
-                <div class="p-2">
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-                        <div class="mb-4">
-                            <label class="form-label">Email</label>
-                            <input id="email" type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" required>
-                        </div>
-
-                        <div class="text-center mt-4">
-                            <button class="btn btn-success w-100" type="submit">Send Reset Link</button>
-                        </div>
-                        
-                        @if ($errors->has('email'))
-                            <div class="mt-3 form-group alert alert-danger alert-dismissable">
-                                <strong>{{ $errors->first('email') }}</strong>
-                            <div>
-                        @endif
-                    </form><!-- end form -->
-                </div>
-            </div>
-            <!-- end card body -->
-        </div>
-        <!-- end card -->
-
-        <div class="mt-4 text-center">
-            <p class="mb-0">Wait, I remember my password... <a href="{{url('/')}}" class="fw-semibold text-primary text-decoration-underline"> Click here </a> </p>
-        </div>
-
-    </div>
+        <form method="POST" action="{{ route('password.email') }}" id="recovery-form">@csrf
+            <div class="field"><label for="email">Email address <small>Required</small></label><div class="input-wrap"><i class="ri-mail-line field-icon" aria-hidden="true"></i><input id="email" type="email" class="field-input{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" placeholder="you@company.com" autocomplete="email" maxlength="255" required autofocus></div>@if($errors->has('email'))<span class="field-error">{{ $errors->first('email') }}</span>@endif</div>
+            <button class="submit-button" type="submit" id="recovery-submit"><span class="submit-spinner" aria-hidden="true"></span><span class="submit-label">Send reset link</span><span class="submit-arrow" aria-hidden="true">→</span></button>
+        </form>
+        <p class="security-note"><i class="ri-shield-check-line" aria-hidden="true"></i>For your security, reset links expire automatically.</p><p class="recovery-foot">Remembered your password? <a href="{{ route('login') }}">Log in instead</a></p>
+    </div></main>
 </div>
+<script>document.addEventListener('DOMContentLoaded',function(){var form=document.getElementById('recovery-form');var button=document.getElementById('recovery-submit');form.addEventListener('submit',function(){if(form.checkValidity()){button.disabled=true;button.classList.add('loading');button.querySelector('.submit-label').textContent='Sending secure link…';show()}})});</script>
 @endsection

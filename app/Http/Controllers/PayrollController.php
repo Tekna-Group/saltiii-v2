@@ -11,6 +11,7 @@ class PayrollController extends Controller
 {
     public function index(Request $request)
     {
+        abort_unless(in_array(auth()->user()->role, ['Admin', 'Timekeeper'], true), 403);
         $query = PaymentPosting::with(['user', 'user.salary', 'adjustments']);
 
         if ($request->date_from) {
@@ -41,7 +42,7 @@ class PayrollController extends Controller
         $totalPaid    = $paymentPostings->where('status', 'Completed')->sum(fn($p) => $p->net_amount);
         $totalPending = $paymentPostings->where('status', 'Approved')->sum(fn($p) => $p->net_amount);
 
-        return view('payroll.index', compact(
+        return view('payroll.ledger', compact(
             'paymentPostings', 'users', 'totalHours', 'totalAmount', 'totalNet', 'totalPaid', 'totalPending'
         ));
     }
@@ -56,7 +57,7 @@ class PayrollController extends Controller
         $totalHours  = $paymentPostings->sum('total_hours');
         $totalNet    = $paymentPostings->sum(fn($p) => $p->net_amount);
 
-        return view('payroll.my_payslips', compact('paymentPostings', 'totalHours', 'totalNet'));
+        return view('payroll.history', compact('paymentPostings', 'totalHours', 'totalNet'));
     }
 
     public function payslip($id)
@@ -80,6 +81,7 @@ class PayrollController extends Controller
 
     public function storeAdjustment(Request $request, $postingId)
     {
+        abort_unless(in_array(auth()->user()->role, ['Admin', 'Timekeeper'], true), 403);
         $request->validate([
             'type'        => 'required|in:add,deduct',
             'description' => 'required|string|max:255',
@@ -105,6 +107,7 @@ class PayrollController extends Controller
 
     public function destroyAdjustment($id)
     {
+        abort_unless(in_array(auth()->user()->role, ['Admin', 'Timekeeper'], true), 403);
         $adjustment = PayrollAdjustment::with('paymentPosting')->findOrFail($id);
 
         if (optional($adjustment->paymentPosting)->status === 'Completed') {

@@ -1,83 +1,34 @@
 @extends('layouts.app')
 
+@section('title', 'Log in to SALTiii')
+
+@section('css')
+<style>
+    :root{--ink:#0c3442;--blue:#15ade4;--blue-dark:#087ea4;--orange:#f28122;--cream:#f3f7f7;--muted:#607781;--line:#d9e6e6}
+    body{color:var(--ink);background:var(--cream);font-family:Inter,"Segoe UI",sans-serif}.auth-page-wrapper{min-height:100vh;padding:0!important;background:var(--cream)}.auth-one-bg-position,.auth-page-content>.container>.row:first-child{display:none!important}.auth-page-content,.auth-page-content>.container{min-height:100vh;padding:0!important;max-width:none!important}
+    .story-content h1,.login-heading h2{font-family:Manrope,Inter,"Segoe UI",sans-serif}
+    .login-shell{display:grid;min-height:100vh;grid-template-columns:minmax(380px,.9fr) minmax(520px,1.1fr)}.login-story{position:relative;display:flex;min-height:100vh;justify-content:space-between;flex-direction:column;overflow:hidden;padding:48px clamp(40px,5vw,76px);color:#fff;background:#0c3442}.login-story:before,.login-story:after{position:absolute;border:1px solid rgba(255,255,255,.09);border-radius:50%;content:""}.login-story:before{top:-170px;right:-170px;width:450px;height:450px}.login-story:after{right:-100px;bottom:-250px;width:580px;height:580px}.login-brand{position:relative;z-index:1;width:142px}.login-brand img{width:100%}.story-content{position:relative;z-index:1;max-width:540px;margin:70px 0}.story-kicker{display:flex;align-items:center;gap:10px;margin-bottom:22px;color:#8dd9e9;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase}.story-kicker:before{width:24px;height:2px;background:currentColor;content:""}.story-content h1{margin:0 0 24px;color:#fff;font-size:clamp(46px,5vw,70px);font-weight:700;line-height:.98;letter-spacing:-.055em}.story-content h1 em{color:#62cbea;font-style:normal}.story-content p{max-width:490px;color:#bdd2d7;font-size:18px;line-height:1.65}.story-quote{position:relative;z-index:1;padding-top:24px;border-top:1px solid rgba(255,255,255,.12);color:#a9c2c8;font-size:13px;line-height:1.6}.story-quote strong{display:block;margin-bottom:4px;color:#fff;font-size:14px}
+    .login-form-side{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:42px clamp(24px,7vw,105px);background:radial-gradient(circle at 100% 0,rgba(255,122,61,.1),transparent 28%),var(--cream)}.login-wrap{width:min(100%,520px)}.login-top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:46px}.back-link{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600}.back-link:hover{color:var(--blue-dark)}.signup-prompt{margin:0;color:var(--muted);font-size:14px}.signup-prompt a{color:var(--blue-dark);font-weight:700}
+    .login-heading{margin-bottom:28px}.login-heading h2{margin:0 0 10px;color:var(--ink);font-size:clamp(34px,4vw,46px);font-weight:700;letter-spacing:-.045em}.login-heading p{margin:0;color:var(--muted);font-size:16px}.error-box{display:flex;gap:10px;margin-bottom:20px;padding:13px 15px;border:1px solid #efc7c2;border-radius:9px;color:#923c32;background:#fff0ee;font-size:13px}
+    .field{margin-bottom:18px}.field-row{display:flex;align-items:center;justify-content:space-between;gap:15px}.field label{margin-bottom:7px;color:var(--ink);font-size:13px;font-weight:700}.field-row a{color:var(--blue-dark);font-size:12px;font-weight:700}.input-wrap{position:relative}.field-icon{position:absolute;top:50%;left:14px;color:#81969d;font-size:17px;pointer-events:none;transform:translateY(-50%)}.field-input{width:100%;height:51px;padding:11px 44px 11px 42px;border:1px solid #cfdfe1;border-radius:9px;outline:0;color:var(--ink);background:#fff;font-size:14px;transition:border-color .2s,box-shadow .2s}.field-input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(0,143,199,.1)}.field-input.is-invalid{border-color:#cf5143}.toggle-password{position:absolute;top:50%;right:6px;display:grid;width:38px;height:38px;place-items:center;border:0;border-radius:7px;color:#667d85;background:transparent;cursor:pointer;transform:translateY(-50%)}.toggle-password:hover{color:var(--blue-dark);background:#edf6f7}.field-error{display:block;margin-top:6px;color:#b43e33;font-size:12px;font-weight:600}
+    .remember-row{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:5px 0 22px}.remember{display:flex;align-items:center;gap:8px;color:#56717a;font-size:13px}.remember input{width:17px;height:17px;accent-color:var(--blue)}.secure-note{color:#7b9198;font-size:11px}.submit-button{display:flex;width:100%;min-height:53px;align-items:center;justify-content:center;gap:10px;border:1px solid var(--blue);border-radius:9px;color:#fff;background:var(--blue);font-size:15px;font-weight:700;transition:background .2s,transform .2s,box-shadow .2s}.submit-button:hover{border-color:var(--blue-dark);color:#fff;background:var(--blue-dark);box-shadow:0 9px 22px rgba(0,143,199,.2);transform:translateY(-1px)}.divider{display:flex;align-items:center;gap:13px;margin:23px 0;color:#879aa1;font-size:12px}.divider:before,.divider:after{flex:1;height:1px;background:var(--line);content:""}.google-button{display:flex;width:100%;min-height:51px;align-items:center;justify-content:center;gap:10px;border:1px solid var(--line);border-radius:9px;color:var(--ink);background:#fff;font-size:14px;font-weight:700}.google-button:hover{border-color:#abc9ce;color:var(--ink);box-shadow:0 7px 18px rgba(12,52,66,.07)}.google-button img{width:19px}.support{margin:26px 0 0;color:#84979d;font-size:12px;text-align:center}.support a{color:var(--ink);font-weight:700}
+    @media(max-width:820px){.login-shell{display:block}.login-story{min-height:auto;padding:28px 24px 34px}.story-content{margin:42px 0 8px}.story-content h1{font-size:48px}.story-quote{display:none}.login-form-side{min-height:auto;padding:40px 24px 60px}.login-wrap{width:min(100%,620px)}}@media(max-width:520px){.login-story{padding:24px 18px 30px}.login-brand{width:122px}.story-content{margin-top:34px}.story-content h1{font-size:40px}.story-content p{font-size:15px}.login-form-side{padding:29px 17px 48px}.login-top{margin-bottom:34px}.signup-prompt{font-size:12px}.login-heading h2{font-size:35px}.remember-row{align-items:flex-start;flex-direction:column;gap:8px}}
+</style>
+@endsection
+
 @section('content')
-   <form method="POST" action="{{ route('login') }}" aria-label="{{ __('Login') }}" onsubmit='show()'>
-                @csrf
-           
-                <!-- end row -->
-
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6 col-xl-5">
-                        <div class="card mt-4 card-bg-fill">
-
-                            <div class="card-body p-4">
-                                <div class="text-center mt-2">
-                                    <h5 class="text-primary">Welcome Back !</h5>
-                                    <p class="text-muted">Sign in to continue to {{ config('app.name', 'Laravel') }}.</p>
-                                </div>
-                                <div class="p-2 mt-4">
-
-                                        <div class="mb-3">
-                                            <label for="email" class="form-label">Email</label>
-                                            <input  class="form-control" id="email" type="email" class="form-control{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" placeholder="Email Address" required autofocus>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <div class="float-end">
-                                                <a href="{{ route('password.request') }}" class="text-muted">Forgot password?</a>
-                                            </div>
-                                            <label class="form-label" for="password-input">Password</label>
-                                            <div class="position-relative auth-pass-inputgroup mb-3">
-                                                <input id="password-input" type="password" class="form-control pe-5 password-input form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="********" name="password" required>
-                                                <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon material-shadow-none" type="button" id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" value="" id="auth-remember-check">
-                                            <label class="form-check-label" for="auth-remember-check">Remember me</label>
-                                        </div>
-                                    
-                                        <div class="mt-4">
-                                            <button class="btn btn-success w-100" type="submit">Sign In</button>
-                                        </div>
-                                            @if($errors->any())
-                                            <div class="mt-3 form-group alert alert-danger alert-dismissable">
-                                                {{-- <button aria-hidden="true" data-dismiss="alert" class="close" type="button">×</button> --}}
-                                                <strong>{{$errors->first()}}</strong>
-                                            </div>
-                                        @endif
-
-                                        <div class="mt-4 text-center">
-                                            <div class="signin-other-title">
-                                                <h5 class="fs-13 mb-4 title">Sign In with</h5>
-                                            </div>
-                                            <div>
-                                                {{-- <button type="button" class="btn btn-primary btn-icon waves-effect waves-light"><i class="ri-facebook-fill fs-16"></i></button> --}}
-                                                <a href="{{ url('auth/google') }}" 
-                                                    class="btn btn-light border d-flex align-items-center justify-content-center px-4 py-2" 
-                                                    style="gap: 8px; font-weight: 500; border-radius: 8px;">
-                                                        <img src="https://developers.google.com/identity/images/g-logo.png" 
-                                                            alt="Google Logo" style="width:20px; height:20px;">
-                                                        Continue with Google
-                                                </a>
-                                                {{-- <button type="button" class="btn btn-dark btn-icon waves-effect waves-light"><i class="ri-github-fill fs-16"></i></button> --}}
-                                                {{-- <button type="button" class="btn btn-info btn-icon waves-effect waves-light"><i class="ri-twitter-fill fs-16"></i></button> --}}
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                            <!-- end card body -->
-                        </div>
-                        <!-- end card -->
-
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Don't have an account ? <a href="{{url('/register')}}" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
-                        </div>
-
-                    </div>
-                </div>
-                <!-- end row -->
-   </form>
+<div class="login-shell">
+    <aside class="login-story"><a class="login-brand" href="{{ url('/') }}" aria-label="SALTiii homepage"><img src="{{ asset('images/Saltiii-Logo-White.svg') }}" alt="SALTiii"></a><div class="story-content"><span class="story-kicker">Welcome back</span><h1>Pick up where the work <em>left off.</em></h1><p>Your projects, time, and team updates are ready when you are.</p></div><div class="story-quote"><strong>One workspace. Fewer handoffs.</strong>Everything your team needs to keep work moving forward.</div></aside>
+    <section class="login-form-side"><div class="login-wrap"><div class="login-top"><a class="back-link" href="{{ url('/') }}"><span aria-hidden="true">←</span>Back to website</a><p class="signup-prompt">New to SALTiii? <a href="{{ route('register') }}">Create account</a></p></div><header class="login-heading"><h2>Log in to your workspace</h2><p>Enter your account details to continue.</p></header>
+        @if($errors->any())<div class="error-box" role="alert"><span aria-hidden="true">!</span><div><strong>We couldn't log you in.</strong><br>{{ $errors->first() }}</div></div>@endif
+        <form method="POST" action="{{ route('login') }}" id="login-form">@csrf
+            <div class="field"><label for="email">Email address</label><div class="input-wrap"><i class="ri-mail-line field-icon" aria-hidden="true"></i><input id="email" type="email" class="field-input{{ $errors->has('email') ? ' is-invalid' : '' }}" name="email" value="{{ old('email') }}" placeholder="you@company.com" autocomplete="email" required autofocus></div>@if($errors->has('email'))<span class="field-error">{{ $errors->first('email') }}</span>@endif</div>
+            <div class="field"><div class="field-row"><label for="password">Password</label><a href="{{ route('password.request') }}">Forgot password?</a></div><div class="input-wrap"><i class="ri-lock-2-line field-icon" aria-hidden="true"></i><input id="password" type="password" class="field-input{{ $errors->has('password') ? ' is-invalid' : '' }}" name="password" placeholder="Enter your password" autocomplete="current-password" required><button class="toggle-password" type="button" aria-label="Show password" aria-pressed="false"><i class="ri-eye-line" aria-hidden="true"></i></button></div></div>
+            <div class="remember-row"><label class="remember" for="remember"><input id="remember" type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>Keep me signed in</label><span class="secure-note"><i class="ri-shield-check-line" aria-hidden="true"></i> Secure sign in</span></div>
+            <button class="submit-button" type="submit">Log in <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="divider">or</div><a class="google-button" href="{{ url('auth/google') }}"><img src="https://developers.google.com/identity/images/g-logo.png" alt="" aria-hidden="true">Continue with Google</a><p class="support">Trouble signing in? <a href="mailto:info@saltiii.com">Contact support</a></p>
+    </div></section>
+</div>
+<script>document.addEventListener('DOMContentLoaded',function(){var button=document.querySelector('.toggle-password');var input=document.getElementById('password');button.addEventListener('click',function(){var reveal=input.type==='password';input.type=reveal?'text':'password';button.setAttribute('aria-pressed',String(reveal));button.setAttribute('aria-label',reveal?'Hide password':'Show password');button.querySelector('i').className=reveal?'ri-eye-off-line':'ri-eye-line';input.focus()});document.getElementById('login-form').addEventListener('submit',function(){if(this.checkValidity())show()})});</script>
 @endsection

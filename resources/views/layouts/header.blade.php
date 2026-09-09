@@ -1,16 +1,20 @@
 <!doctype html>
-<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
-
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c3442">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     {{-- @laravelPWA --}}
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', config('app.name', 'SALTiii'))</title>
     <link rel="shortcut icon" href="{{url('images/Favicon.png')}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 
     <!-- Layout config Js -->
     <script src="{{asset('inside_css/assets/js/layout.js')}}"></script>
@@ -22,6 +26,7 @@
     <link href="{{asset('inside_css/assets/css/app.min.css')}}" rel="stylesheet" type="text/css" />
     <!-- custom Css-->
     <link href="{{asset('inside_css/assets/css/custom.min.css')}}" rel="stylesheet" type="text/css" />
+    <link href="{{asset('inside_css/assets/css/saltiii-refresh.css')}}" rel="stylesheet" type="text/css" />
  
     {{-- <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css"> --}}
     @yield('css')
@@ -76,6 +81,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 </head>
 <body>
+      <a class="salt-skip-link" href="#workspace-content">Skip to workspace content</a>
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W84236P3"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div id = "loader" class="loader">
@@ -88,7 +94,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="d-flex">
                         <!-- LOGO -->
                         <div class="navbar-brand-box horizontal-logo">
-                            <a href="{{url('/')}}" class="logo logo-dark">
+                            <a href="{{url('/dashboard')}}" class="logo logo-dark" aria-label="SALTiii dashboard">
                                 <span class="logo-sm">
                                     <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                                 </span>
@@ -97,7 +103,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 </span>
                             </a>
 
-                            <a href="{{url('/')}}" class="logo logo-light">
+                            <a href="{{url('/dashboard')}}" class="logo logo-light" aria-label="SALTiii dashboard">
                                 <span class="logo-sm">
                                     <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                                 </span>
@@ -118,7 +124,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     
                     </div>
 
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center gap-1">
+                        <button type="button" class="global-nav-trigger" id="global-nav-trigger" aria-haspopup="dialog" aria-controls="salt-command" title="Jump to a page">
+                            <i class="ri-search-line" aria-hidden="true"></i><span>Jump to</span><kbd>Ctrl K</kbd>
+                        </button>
                           <div class="ms-1 header-item d-none d-sm-flex">
                             <button id="startTourBtn" class="btn btn-soft-primary btn-sm d-flex align-items-center gap-1 m-2">
                                 <i class="bx bx-help-circle fs-18"></i> Start Tour
@@ -244,7 +253,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 <span class="align-middle">Subscription Plan</span>
                             </a>
                               <div class="dropdown-divider"></div>
-                               <a class="dropdown-item" href="{{ route('logout') }}" onclick="logout(); show();"> <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
+                               <a class="dropdown-item" href="{{ route('logout') }}" onclick="logout(event); show();"> <i class="mdi mdi-logout text-muted fs-16 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">Logout</span></a>
                                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                     {{ csrf_field() }}
                                 </form>
@@ -261,7 +270,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <!-- LOGO -->
             <div class="navbar-brand-box">
                 <!-- Dark Logo-->
-                <a href="{{url('/')}}" class="logo logo-dark">
+                <a href="{{url('/dashboard')}}" class="logo logo-dark" aria-label="SALTiii dashboard">
                     <span class="logo-sm">
                         <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                     </span>
@@ -270,7 +279,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     </span>
                 </a>
                 <!-- Light Logo-->
-                <a href="{{url('/')}}" class="logo logo-light">
+                <a href="{{url('/dashboard')}}" class="logo logo-light" aria-label="SALTiii dashboard">
                     <span class="logo-sm">
                         <img src="{{asset('images/Favicon.png')}}" alt="" height="22">
                     </span>
@@ -288,25 +297,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <div class="container-fluid">
                     <div id="two-column-menu"></div>
                     <ul class="navbar-nav text-center" id="navbar-nav">
-                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Menu</span></li>
+                        <li class="menu-title"><span data-key="t-menu">Workspace</span></li>
                 
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('/') || request()->is('dashboard') || request()->is('home') ? 'active' : '' }}" href="{{url('/')}}">
+                            <a class="nav-link menu-link {{ request()->is('dashboard') || request()->is('home') ? 'active' : '' }}" href="{{url('/dashboard')}}">
                                 <i class="ri-dashboard-2-line"></i> <span data-key="t-dashboards">Dashboard</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('projects') ? 'active' : '' }}" href="{{url('/projects')}}">
+                            <a class="nav-link menu-link {{ request()->is('projects') || request()->is('view-project*') ? 'active' : '' }}" href="{{url('/projects')}}">
                                 <i class="ri-list-check"></i> <span data-key="t-dashboards">Projects</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('ai-workflow-diagram') ? 'active' : '' }}" href="{{url('/ai-workflow-diagram')}}">
-                                <i class="ri-flow-chart"></i> <span data-key="t-ai-diagram">AI Diagram Test</span>
+                            <a class="nav-link menu-link {{ request()->is('ai-workflow-diagram') || request()->is('diagram/*') ? 'active' : '' }}" href="{{url('/ai-workflow-diagram')}}">
+                                <i class="ri-flow-chart"></i> <span data-key="t-ai-diagram">Process Designer</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('tasks') ? 'active' : '' }}" href="{{url('/tasks')}}">
+                            <a class="nav-link menu-link {{ request()->is('tasks') || request()->is('view-task*') ? 'active' : '' }}" href="{{url('/tasks')}}">
                                 <i class="ri-check-line"></i>
                                 <span data-key="t-dashboards">Tasks</span>
                             </a>
@@ -317,18 +326,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('my-payslips') ? 'active' : '' }}" href="{{url('/my-payslips')}}">
-                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-my-payslips">My Payslips</span>
+                            <a class="nav-link menu-link {{ request()->is('leave*') ? 'active' : '' }}" href="{{url('/leave')}}">
+                                <i class="ri-calendar-event-line"></i> <span>Leave</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link menu-link {{ request()->is('team-groups') ? 'active' : '' }}" href="{{url('/team-groups')}}">
-                                <i class="ri-team-line"></i> <span data-key="t-team-groups">Team Group</span>
+                            <a class="nav-link menu-link {{ request()->is('my-payslips') ? 'active' : '' }}" href="{{url('/my-payslips')}}">
+                                <i class="ri-money-dollar-circle-line"></i> <span data-key="t-my-payslips">My Pay</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('team-groups*') ? 'active' : '' }}" href="{{url('/team-groups')}}">
+                                <i class="ri-team-line"></i> <span data-key="t-team-groups">Teams</span>
                             </a>
                         </li>
                 
                         @if((auth()->user()->role == "Timekeeper") || (auth()->user()->role == "Admin"))
-                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Timekeeper</span></li>
+                        <li class="menu-title"><span data-key="t-menu">Operations</span></li>
                         <li class="nav-item">
                             <a class="nav-link menu-link {{ request()->is('timekeeping') ? 'active' : '' }}" href="{{url('/timekeeping')}}">
                                 <i class="ri-time-line"></i> <span data-key="t-dashboards">Timekeeping</span>
@@ -340,7 +354,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             </a>
                         </li>
 
-                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Payroll</span></li>
+                        <li class="menu-title"><span data-key="t-menu">Payments</span></li>
                         <li class="nav-item">
                             <a class="nav-link menu-link {{ request()->is('payslips') || request()->is('payslips/*') ? 'active' : '' }}" href="{{url('/payslips')}}">
                                 <i class="ri-money-dollar-circle-line"></i> <span data-key="t-payslips">Payslips</span>
@@ -353,31 +367,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         </li>
                         @endif
 
+                        @if(in_array(auth()->user()->role, ['Admin', 'Project Lead'], true))
+                        <li class="menu-title"><span data-key="t-menu">Administration</span></li>
+                        @endif
                         @if(auth()->user()->role == "Admin")
-                        <li class="menu-title"><span data-key="t-menu" style='font-size:20px;'>Admin</span></li>
                         <li class="nav-item">
                             <a class="nav-link menu-link {{ request()->is('users') ? 'active' : '' }}" href="{{url('/users')}}">
-                                <i class="ri-team-fill"></i> <span data-key="t-dashboards">Users</span>
+                                <i class="ri-team-fill"></i> <span data-key="t-dashboards">People</span>
                             </a>
                         </li>
+                        @endif
+                        @if(in_array(auth()->user()->role, ['Admin', 'Project Lead'], true))
                         <li class="nav-item">
                             <a class="nav-link menu-link {{ request()->is('reports') ? 'active' : '' }}" href="{{url('/reports')}}">
                                 <i class="ri-file-list-3-fill"></i> <span data-key="t-dashboards">Reports</span>
                             </a>
                         </li>
                         @endif
+                        @if(auth()->user()->role == "Admin")
+                        <li class="nav-item">
+                            <a class="nav-link menu-link {{ request()->is('settings') ? 'active' : '' }}" href="{{url('/settings')}}">
+                                <i class="ri-settings-3-line"></i> <span>Settings</span>
+                            </a>
+                        </li>
+                        @endif
                 
                     </ul>
-                    {{-- <div class="helpdesk-link-wrapper mt-auto">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link menu-link bg-white" href="https://saltiii.freshdesk.com/support/home" target="_blank">
-                                    <i class="ri-customer-service-2-line"></i> 
-                                    <span data-key="t-submit-ticket" class="text-warning">Need Support?</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div> --}}
+                    <div class="sidebar-support"><strong>Need a hand?</strong>Visit the help center or contact the SALTiii team.<br><a href="https://saltiii.freshdesk.com/support/home" target="_blank" rel="noopener"><i class="ri-customer-service-2-line"></i> Open help center</a></div>
                 </div>
                 
                 <!-- Sidebar -->
@@ -388,16 +404,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- Left Sidebar End -->
         <!-- Vertical Overlay-->
         <div class="vertical-overlay"></div>
-        <div class="main-content">
+        <div class="main-content" id="workspace-content" tabindex="-1">
 
             <div class="page-content">
                 <div class="container-fluid">
+                        @php
+                            $pageTitle = Route::currentRouteName() ?: 'Workspace';
+                            $pageDescription = 'Manage your work in one connected workspace.';
+                            if (request()->is('dashboard') || request()->is('home')) { $pageTitle = 'Dashboard'; $pageDescription = 'Your priorities, progress, and recent work at a glance.'; }
+                            elseif (request()->is('projects')) { $pageTitle = 'Projects'; $pageDescription = 'Plan, organize, and keep every initiative moving.'; }
+                            elseif (request()->is('view-project*')) { $pageTitle = 'Project workspace'; $pageDescription = 'Coordinate tasks, people, updates, and delivery.'; }
+                            elseif (request()->is('tasks') || request()->is('view-task*')) { $pageTitle = 'Tasks'; $pageDescription = 'See what needs attention and move work forward.'; }
+                            elseif (request()->is('ai-workflow-diagram') || request()->is('diagram/*')) { $pageTitle = 'AI Workflow Builder'; $pageDescription = 'Generate, refine, and export editable process diagrams.'; }
+                            elseif (request()->is('my-timekeeping')) { $pageTitle = 'My Timesheet'; $pageDescription = 'Review and manage the time behind your work.'; }
+                            elseif (request()->is('leave*')) { $pageTitle = 'Leave'; $pageDescription = 'Coordinate time away and keep team availability clear.'; }
+                            elseif (request()->is('timekeeping/posted')) { $pageTitle = 'Posted Time'; $pageDescription = 'Review submitted and approved time records.'; }
+                            elseif (request()->is('timekeeping')) { $pageTitle = 'Timekeeping'; $pageDescription = 'Review team hours and prepare approved work for payment.'; }
+                            elseif (request()->is('my-payslips')) { $pageTitle = 'My Pay'; $pageDescription = 'Access your pay history and detailed payslips.'; }
+                            elseif (request()->is('payslips*')) { $pageTitle = 'Payroll'; $pageDescription = 'Manage pay runs, adjustments, and employee records.'; }
+                            elseif (request()->is('team-groups*')) { $pageTitle = 'Teams'; $pageDescription = 'Organize people, invitations, and shared billing groups.'; }
+                            elseif (request()->is('token-transfer')) { $pageTitle = 'Payments'; $pageDescription = 'Prepare and review secure team transfers.'; }
+                            elseif (request()->is('users')) { $pageTitle = 'People'; $pageDescription = 'Manage team access, roles, and account details.'; }
+                            elseif (request()->is('reports')) { $pageTitle = 'Reports'; $pageDescription = 'Understand workload, completion, and team performance.'; }
+                            elseif (request()->is('settings')) { $pageTitle = 'System Settings'; $pageDescription = 'Manage workspace-wide defaults and operational rules.'; }
+                            elseif (request()->is('my-profile') || request()->is('view-profile*')) { $pageTitle = 'Profile'; $pageDescription = 'Review personal details, activity, and account settings.'; }
+                            elseif (request()->is('invoices*')) { $pageTitle = 'Invoices'; $pageDescription = 'View billing history and payment records.'; }
+                            elseif (request()->is('subscription-plan')) { $pageTitle = 'Plan & Billing'; $pageDescription = 'Manage your SALTiii subscription and plan details.'; }
+                        @endphp
                         <div class="row">
                             <div class="col-12">
                                 <div class="page-title-box d-sm-flex align-items-center justify-content-between bg-galaxy-transparent">
-                                    <h4 class="mb-sm-0">{{Route::current()->getName()}}</h4>
-        
-                                    
+                                    <div><div class="salt-breadcrumb"><a href="{{ url('/dashboard') }}">Workspace</a><span aria-hidden="true">/</span><span>{{ $pageTitle }}</span></div><h4 class="mb-sm-0">{{ $pageTitle }}</h4><p class="page-heading-copy">{{ $pageDescription }}</p></div>
                                 </div>
                             </div>
                         </div>
@@ -409,17 +446,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-sm-6">
-                                {{date('Y')}} © SALTiii
+                                {{date('Y')}} &copy; SALTiii
                             </div>
                             <div class="col-sm-6">
                                 <div class="text-sm-end d-none d-sm-block">
-                                    Design & Develop by 
+                                    Work flows better in one place.
                                 </div>
                             </div>
                         </div>
                     </div>
                 </footer>
             </div>
+    </div>
+
+
+    <nav class="salt-mobile-dock" aria-label="Mobile workspace navigation">
+        <a class="{{ request()->is('dashboard') || request()->is('home') ? 'active' : '' }}" href="{{ url('/dashboard') }}"><i class="ri-dashboard-2-line" aria-hidden="true"></i><span>Today</span></a>
+        <a class="{{ request()->is('tasks') || request()->is('view-task*') ? 'active' : '' }}" href="{{ url('/tasks') }}"><i class="ri-list-check-2" aria-hidden="true"></i><span>Tasks</span></a>
+        <a class="{{ request()->is('my-timekeeping') ? 'active' : '' }}" href="{{ url('/my-timekeeping') }}"><i class="ri-time-line" aria-hidden="true"></i><span>Time</span></a>
+        <a class="{{ request()->is('leave*') ? 'active' : '' }}" href="{{ url('/leave') }}"><i class="ri-calendar-event-line" aria-hidden="true"></i><span>Leave</span></a>
+        <button type="button" id="mobile-more-menu"><i class="ri-menu-4-line" aria-hidden="true"></i><span>More</span></button>
+    </nav>
+
+
+    <div class="salt-command" id="salt-command" role="dialog" aria-modal="true" aria-labelledby="salt-command-title" hidden>
+        <div class="salt-command-dialog">
+            <h2 id="salt-command-title" class="visually-hidden">Jump to a page</h2>
+            <div class="salt-command-search"><i class="ri-search-line" aria-hidden="true"></i><input id="salt-command-input" type="search" placeholder="Search pages…" autocomplete="off" aria-label="Search available pages"><button type="button" id="salt-command-close" aria-label="Close page search">&times;</button></div>
+            <div class="salt-command-results" id="salt-command-results"></div>
+            <div class="salt-command-hint"><span>Type to filter pages</span><span>Enter to open · Esc to close</span></div>
+        </div>
     </div>
 
 
@@ -453,9 +509,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <script src="{{asset('inside_css/assets/js/plugins.js')}}"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-     
-        
-            startTourBtn.addEventListener('click', () => {
+            const startTourBtn = document.getElementById('startTourBtn');
+            if (startTourBtn && typeof introJs === 'function') startTourBtn.addEventListener('click', () => {
                 introJs().setOptions({
                     nextLabel: 'Next →',
                     prevLabel: '← Back',
@@ -479,8 +534,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
          function show() {
             document.getElementById("loader").style.display = "block";
         }
-        function logout() {
-        event.preventDefault();
+        function logout(event) {
+        if (event) event.preventDefault();
         document.getElementById('logout-form').submit();
     }
 
@@ -489,6 +544,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     window.addEventListener('load', function() {
         document.getElementById('loader').style.display = 'none';
     });
+</script>
+<script>
+(function(){
+    var trigger=document.getElementById('global-nav-trigger');
+    var palette=document.getElementById('salt-command');
+    var input=document.getElementById('salt-command-input');
+    var results=document.getElementById('salt-command-results');
+    var closeButton=document.getElementById('salt-command-close');
+    var links=[];
+    var lastFocus=null;
+    if(!trigger||!palette||!input||!results)return;
+    document.querySelectorAll('#navbar-nav .menu-link').forEach(function(link){
+        var label=(link.textContent||'').trim().replace(/\s+/g,' ');
+        if(!label||!link.href)return;
+        var icon=link.querySelector('i');
+        links.push({label:label,href:link.href,icon:icon?icon.className:'ri-arrow-right-line'});
+    });
+    function render(query){
+        var term=(query||'').trim().toLowerCase();
+        var matches=links.filter(function(item){return item.label.toLowerCase().indexOf(term)!==-1});
+        results.innerHTML='';
+        if(!matches.length){results.innerHTML='<div class="salt-command-empty">No matching page found.</div>';return}
+        matches.forEach(function(item,index){
+            var button=document.createElement('button');
+            var icon=document.createElement('i');
+            var label=document.createElement('span');
+            var hint=document.createElement('small');
+            button.type='button';button.className='salt-command-item'+(index===0?' active':'');
+            icon.className=item.icon;icon.setAttribute('aria-hidden','true');label.textContent=item.label;hint.textContent='Open';
+            button.appendChild(icon);button.appendChild(label);button.appendChild(hint);
+            button.addEventListener('click',function(){window.location.href=item.href});results.appendChild(button);
+        });
+    }
+    function openPalette(){lastFocus=document.activeElement;palette.hidden=false;document.body.style.overflow='hidden';input.value='';render('');window.setTimeout(function(){input.focus()},0)}
+    function closePalette(){palette.hidden=true;document.body.style.overflow='';if(lastFocus)lastFocus.focus()}
+    trigger.addEventListener('click',openPalette);closeButton.addEventListener('click',closePalette);input.addEventListener('input',function(){render(input.value)});
+    input.addEventListener('keydown',function(event){if(event.key==='Enter'){var first=results.querySelector('.salt-command-item');if(first){event.preventDefault();first.click()}}});
+    palette.addEventListener('click',function(event){if(event.target===palette)closePalette()});
+    document.addEventListener('keydown',function(event){if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();palette.hidden?openPalette():closePalette()}else if(event.key==='Escape'&&!palette.hidden){closePalette()}});
+}());
+</script>
+<script>
+(function(){var more=document.getElementById('mobile-more-menu');var menu=document.getElementById('topnav-hamburger-icon');if(more&&menu){more.addEventListener('click',function(){menu.click()})}}());
 </script>
 </body>
 </html>

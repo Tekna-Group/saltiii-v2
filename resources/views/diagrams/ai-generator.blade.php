@@ -380,81 +380,101 @@
         }
     }
 </style>
+<link href="{{ asset('inside_css/assets/css/saltiii-ai-workflow.css') }}" rel="stylesheet" />
 @endsection
 
 @section('content')
 <div class="wf-shell">
+    <header class="wf-product-hero">
+        <div>
+            <span class="wf-eyebrow">SALTiii AI workspace</span>
+            <h1>Turn a process into a workflow you can edit.</h1>
+            <p>Describe how work should move. SALTiii will create a structured starting point you can arrange, refine, connect, and export.</p>
+        </div>
+        <div class="wf-hero-points" aria-label="Workflow generator capabilities">
+            <span><i class="ri-sparkling-line" aria-hidden="true"></i> Generate</span>
+            <span><i class="ri-drag-move-2-line" aria-hidden="true"></i> Edit</span>
+            <span><i class="ri-download-cloud-2-line" aria-hidden="true"></i> Export</span>
+        </div>
+    </header>
+
     <section class="wf-card wf-setup" id="setupScreen">
-        <div class="mb-4">
-            <h4 class="wf-title">Create a workflow diagram</h4>
-            <p class="wf-muted mb-0">Ask for a process in plain language. The system can generate a full starter workflow even when you only give the topic.</p>
+        <div class="wf-setup-head">
+            <div><span class="wf-step-number">01</span><div><span class="wf-eyebrow">Describe the workflow</span><h2 class="wf-title">What process should we map?</h2><p class="wf-muted mb-0">Include the trigger, main steps, decisions, and final outcome when you know them. A short topic also works.</p></div></div>
+            <span class="wf-prototype-pill"><i class="ri-shield-check-line" aria-hidden="true"></i> Local prototype</span>
         </div>
 
         <form id="setupForm" class="wf-setup-grid">
-            <div>
-                <label class="form-label fw-semibold">What process do you want to map?</label>
-                <textarea class="form-control mb-3" id="initialPrompt" rows="9" placeholder="Example: Create me a basic process for recruitment."></textarea>
+            <div class="wf-prompt-column">
+                <label class="form-label fw-semibold" for="initialPrompt">Process description</label>
+                <div class="wf-prompt-wrap">
+                    <textarea class="form-control" id="initialPrompt" rows="9" maxlength="3000" required placeholder="Example: A candidate applies for a role. HR screens the application, schedules an interview for qualified candidates, and sends either an offer or a rejection email."></textarea>
+                    <span class="wf-prompt-hint"><i class="ri-lightbulb-flash-line" aria-hidden="true"></i> Clear decision rules create better branches.</span>
+                </div>
 
-                <div class="mb-3">
-                    <div class="wf-muted mb-2">Examples</div>
-                    <button type="button" class="wf-example">Create me a basic process for recruitment.</button>
-                    <button type="button" class="wf-example">Create a standard onboarding process for a new employee.</button>
-                    <button type="button" class="wf-example">Create an automation that connects GoHighLevel to Slack when a new lead submits a form.</button>
-                    <button type="button" class="wf-example">When a customer submits a refund request, our team reviews it. If under $50, approve automatically. Otherwise, escalate to a manager.</button>
-                    <button type="button" class="wf-example">A lead fills out a form, sales checks the CRM, qualifies the lead, then sends an onboarding document if approved.</button>
-                    <button type="button" class="wf-example">An employee submits an expense report. Finance reviews it. If complete, store it and pay it. If incomplete, ask for corrections.</button>
+                <div class="wf-examples">
+                    <div class="wf-example-heading"><span>Start with an example</span><small>Click to use</small></div>
+                    <div class="wf-example-grid">
+                        <button type="button" class="wf-example" data-prompt="Create a recruitment process from candidate application through screening, interviews, offer approval, and hiring."><i class="ri-user-search-line" aria-hidden="true"></i><span><strong>Recruitment</strong><small>Create a basic recruitment process from application to hiring.</small></span></button>
+                        <button type="button" class="wf-example" data-prompt="Create a standard onboarding process for a new employee, including paperwork, account setup, orientation, training, and manager check-in."><i class="ri-user-follow-line" aria-hidden="true"></i><span><strong>Employee onboarding</strong><small>Create a standard onboarding process for a new employee.</small></span></button>
+                        <button type="button" class="wf-example" data-prompt="Create an automation that connects GoHighLevel to Slack when a new lead submits a form, validates the data, creates the CRM record, and notifies sales."><i class="ri-links-line" aria-hidden="true"></i><span><strong>Lead automation</strong><small>Connect GoHighLevel to Slack after a new form submission.</small></span></button>
+                        <button type="button" class="wf-example" data-prompt="When a customer submits a refund request, review it. If the amount is under $50, approve automatically. Otherwise, escalate to a manager, then notify the customer."><i class="ri-refund-2-line" aria-hidden="true"></i><span><strong>Refund approval</strong><small>Auto-approve under $50 and escalate larger requests.</small></span></button>
+                        <button type="button" class="wf-example" data-prompt="A lead fills out a form, sales checks the CRM, qualifies the lead, and sends onboarding documents if approved. Otherwise, place the lead in nurture."><i class="ri-funds-box-line" aria-hidden="true"></i><span><strong>Lead qualification</strong><small>Qualify a CRM lead and send onboarding documents.</small></span></button>
+                        <button type="button" class="wf-example" data-prompt="An employee submits an expense report. Finance checks whether it is complete. If complete, store and pay it. If incomplete, request corrections and review again."><i class="ri-receipt-line" aria-hidden="true"></i><span><strong>Expense review</strong><small>Review, correct, store, and pay an expense report.</small></span></button>
+                    </div>
                 </div>
             </div>
 
-            <aside>
-                <label class="form-label fw-semibold">Knowledge source</label>
-                <select class="form-select mb-3" id="knowledgeSource">
-                    <option value="template">Built-in process library</option>
-                    <option value="llm">LLM/API generation</option>
-                    <option value="online">Online research + LLM</option>
-                </select>
+            <aside class="wf-generation-card">
+                <div class="wf-generation-icon"><i class="ri-flow-chart" aria-hidden="true"></i></div>
+                <h3>Ready to generate</h3>
+                <p>The built-in process engine creates an editable workflow immediately on this device.</p>
+                <ul class="wf-generation-list"><li><i class="ri-check-line" aria-hidden="true"></i> Automatic process steps</li><li><i class="ri-check-line" aria-hidden="true"></i> Decision branches and labels</li><li><i class="ri-check-line" aria-hidden="true"></i> Local draft recovery</li></ul>
 
-                <label class="form-label fw-semibold">Generation method</label>
-                <select class="form-select mb-3" id="aiProvider">
-                    <option value="prototype">Prototype parser</option>
-                    <option value="openai">OpenAI API</option>
-                    <option value="anthropic">Claude API</option>
-                    <option value="custom">Custom endpoint</option>
-                </select>
+                <details class="wf-advanced">
+                    <summary><span><i class="ri-settings-4-line" aria-hidden="true"></i> Integration preview</span><i class="ri-arrow-down-s-line" aria-hidden="true"></i></summary>
+                    <div class="wf-advanced-body">
+                        <label class="form-label fw-semibold" for="knowledgeSource">Knowledge source</label>
+                        <select class="form-select mb-3" id="knowledgeSource"><option value="template">Built-in process library</option><option value="llm">LLM/API generation preview</option><option value="online">Online research preview</option></select>
+                        <label class="form-label fw-semibold" for="aiProvider">Generation method</label>
+                        <select class="form-select mb-3" id="aiProvider"><option value="prototype">Local prototype parser</option><option value="openai">OpenAI integration preview</option><option value="anthropic">Claude integration preview</option><option value="custom">Custom endpoint preview</option></select>
+                        <label class="form-label fw-semibold" for="apiKey">API key <small class="text-muted fw-normal">Not stored</small></label>
+                        <input type="password" class="form-control mb-3" id="apiKey" autocomplete="off" placeholder="Optional preview field">
+                        <label class="form-label fw-semibold" for="modelName">Model or endpoint</label>
+                        <input type="text" class="form-control" id="modelName" placeholder="Model name or HTTPS endpoint">
+                        <p class="wf-integration-note"><i class="ri-information-line" aria-hidden="true"></i> External calls are not connected yet. These settings preview future integration behavior; generation still uses the local engine.</p>
+                    </div>
+                </details>
 
-                <label class="form-label fw-semibold">API key</label>
-                <input type="password" class="form-control mb-3" id="apiKey" placeholder="Optional for prototype mode">
-
-                <label class="form-label fw-semibold">Model or endpoint</label>
-                <input type="text" class="form-control mb-3" id="modelName" placeholder="Example: gpt-4.1-mini or https://...">
-
-                <div class="alert alert-info small mb-3">
-                    Prototype mode uses built-in business process patterns. LLM/API and online options are captured for backend integration, then the same editable builder opens.
-                </div>
-
-                <button class="btn btn-primary w-100" type="submit">
-                    <i class="ri-sparkling-2-line align-middle"></i> Generate diagram
+                <button class="btn btn-primary w-100 wf-generate-btn" type="submit" id="generateDiagramBtn">
+                    <i class="ri-sparkling-2-line align-middle" aria-hidden="true"></i> Generate workflow
                 </button>
+                <small class="wf-local-note"><i class="ri-lock-2-line" aria-hidden="true"></i> Your draft is saved only in this browser.</small>
             </aside>
         </form>
     </section>
 
     <section class="wf-builder" id="builderScreen">
+        <header class="wf-builder-heading">
+            <div><span class="wf-eyebrow">Editable diagram</span><h2>Workflow builder</h2></div>
+            <span><i class="ri-checkbox-circle-line" aria-hidden="true"></i> Saved locally</span>
+        </header>
         <aside class="wf-panel">
             <div class="wf-panel-head">
-                <h6>Assistant</h6>
+                <div><span class="wf-panel-kicker">Refine with instructions</span><h6>Workflow assistant</h6></div>
             </div>
             <div class="wf-chat-log" id="messages"></div>
             <form class="wf-panel-body" id="refineForm">
-                <textarea class="form-control mb-2" id="refinePrompt" rows="4" placeholder="Ask for a change, like: Add a notification step after approval"></textarea>
-                <button class="btn btn-primary w-100" type="submit">Update diagram</button>
+                <label class="visually-hidden" for="refinePrompt">Describe a diagram change</label>
+                <textarea class="form-control mb-2" id="refinePrompt" rows="4" placeholder="Example: Add a notification after approval"></textarea>
+                <button class="btn btn-primary w-100" type="submit"><i class="ri-sparkling-line me-1" aria-hidden="true"></i> Apply update</button>
                 <div class="wf-status mt-2" id="chatStatus">Ready</div>
             </form>
         </aside>
 
         <main class="wf-panel wf-main">
             <div class="wf-toolbar">
-                <div class="btn-group">
+                <div class="btn-group wf-toolbar-actions">
                     <button class="btn btn-light btn-sm" type="button" id="backBtn"><i class="ri-arrow-left-line"></i> Question</button>
                     <button class="btn btn-light btn-sm" type="button" id="layoutBtn"><i class="ri-node-tree"></i> Arrange</button>
                     <button class="btn btn-light btn-sm" type="button" id="connectBtn"><i class="ri-git-branch-line"></i> Connect</button>
@@ -462,13 +482,13 @@
                     <button class="btn btn-light btn-sm" type="button" id="clearBtn"><i class="ri-close-circle-line"></i> Clear</button>
                 </div>
                 <div class="wf-zoom-tools">
-                    <button class="btn btn-light btn-sm" type="button" id="zoomOutBtn"><i class="ri-subtract-line"></i></button>
+                    <button class="btn btn-light btn-sm" type="button" id="zoomOutBtn" aria-label="Zoom out" title="Zoom out"><i class="ri-subtract-line"></i></button>
                     <span class="wf-zoom-level" id="zoomLevel">100%</span>
-                    <button class="btn btn-light btn-sm" type="button" id="zoomInBtn"><i class="ri-add-line"></i></button>
+                    <button class="btn btn-light btn-sm" type="button" id="zoomInBtn" aria-label="Zoom in" title="Zoom in"><i class="ri-add-line"></i></button>
                     <button class="btn btn-light btn-sm" type="button" id="zoomFitBtn">Fit</button>
                     <button class="btn btn-light btn-sm" type="button" id="zoomResetBtn">100%</button>
                 </div>
-                <div class="btn-group">
+                <div class="btn-group wf-toolbar-export" aria-label="Export diagram">
                     <button class="btn btn-outline-primary btn-sm" type="button" id="exportPngBtn">PNG</button>
                     <button class="btn btn-outline-primary btn-sm" type="button" id="exportSvgBtn">SVG</button>
                     <button class="btn btn-outline-primary btn-sm" type="button" id="exportPdfBtn">PDF</button>
@@ -492,10 +512,11 @@
 
         <aside class="wf-panel">
             <div class="wf-panel-head">
-                <h6>Add a step</h6>
+                <div><span class="wf-panel-kicker">Build manually</span><h6>Steps and details</h6></div>
             </div>
             <div class="wf-panel-body">
-                <div class="wf-muted mb-2">Flowchart</div>
+                <label class="wf-shape-search" for="shapeSearch"><i class="ri-search-line" aria-hidden="true"></i><input type="search" id="shapeSearch" placeholder="Find a step type" autocomplete="off"><span class="visually-hidden">Find a step type</span></label>
+                <div class="wf-muted wf-shape-section mb-2">Flowchart</div>
                 <button type="button" class="wf-shape-btn" data-shape="terminator"><span class="wf-dot terminator"></span> Start or End</button>
                 <button type="button" class="wf-shape-btn" data-shape="process"><span class="wf-dot process"></span> Action</button>
                 <button type="button" class="wf-shape-btn" data-shape="decision"><span class="wf-dot decision"></span> Branch</button>
@@ -504,14 +525,14 @@
                 <button type="button" class="wf-shape-btn" data-shape="document"><span class="wf-dot document"></span> Document</button>
                 <button type="button" class="wf-shape-btn" data-shape="connector"><span class="wf-dot connector"></span> Connector</button>
 
-                <div class="wf-muted mt-3 mb-2">More Visio-style</div>
+                <div class="wf-muted wf-shape-section mt-3 mb-2">More flowchart shapes</div>
                 <button type="button" class="wf-shape-btn" data-shape="subprocess"><span class="wf-dot subprocess"></span> Sub-process</button>
                 <button type="button" class="wf-shape-btn" data-shape="manual-input"><span class="wf-dot manual-input"></span> Manual input</button>
                 <button type="button" class="wf-shape-btn" data-shape="preparation"><span class="wf-dot preparation"></span> Preparation</button>
                 <button type="button" class="wf-shape-btn" data-shape="delay"><span class="wf-dot delay"></span> Delay</button>
                 <button type="button" class="wf-shape-btn" data-shape="offpage"><span class="wf-dot offpage"></span> Off-page link</button>
 
-                <div class="wf-muted mt-3 mb-2">Automation systems</div>
+                <div class="wf-muted wf-shape-section mt-3 mb-2">Automation systems</div>
                 <button type="button" class="wf-shape-btn" data-shape="trigger"><span class="wf-dot trigger"></span> Trigger</button>
                 <button type="button" class="wf-shape-btn" data-shape="app"><span class="wf-dot app"></span> App / system</button>
                 <button type="button" class="wf-shape-btn" data-shape="api"><span class="wf-dot api"></span> API call</button>
@@ -520,7 +541,7 @@
                 <button type="button" class="wf-shape-btn" data-shape="approval"><span class="wf-dot approval"></span> Approval</button>
                 <button type="button" class="wf-shape-btn" data-shape="error"><span class="wf-dot error"></span> Error path</button>
 
-                <hr>
+                <div class="wf-inspector-divider"><span>Selected step</span></div>
 
                 <label class="form-label fw-semibold">Selected text</label>
                 <textarea class="form-control mb-2" id="selectedLabel" rows="3" placeholder="Select an item"></textarea>
@@ -583,6 +604,7 @@
     const selectedLabel = document.getElementById('selectedLabel');
     const selectedType = document.getElementById('selectedType');
     const connectBtn = document.getElementById('connectBtn');
+    const shapeSearch = document.getElementById('shapeSearch');
 
     const shapeSizes = {
         terminator: { w: 160, h: 62 },
@@ -617,8 +639,18 @@
 
     document.querySelectorAll('.wf-example').forEach(button => {
         button.addEventListener('click', () => {
-            initialPrompt.value = button.textContent.trim();
+            initialPrompt.value = button.dataset.prompt || button.textContent.trim();
+            initialPrompt.setCustomValidity('');
             initialPrompt.focus();
+        });
+    });
+
+    initialPrompt.addEventListener('input', () => initialPrompt.setCustomValidity(''));
+
+    shapeSearch.addEventListener('input', () => {
+        const query = shapeSearch.value.trim().toLowerCase();
+        document.querySelectorAll('.wf-shape-btn').forEach(button => {
+            button.hidden = query && !button.textContent.toLowerCase().includes(query);
         });
     });
 
@@ -626,9 +658,12 @@
         event.preventDefault();
         const prompt = initialPrompt.value.trim();
         if (!prompt) {
+            initialPrompt.setCustomValidity('Describe the process you want to map.');
+            initialPrompt.reportValidity();
             initialPrompt.focus();
             return;
         }
+        initialPrompt.setCustomValidity('');
 
         diagram = buildDiagram(prompt);
         diagram.settings = collectSettings();
@@ -700,6 +735,7 @@
 
     document.getElementById('deleteBtn').addEventListener('click', deleteSelected);
     document.getElementById('clearBtn').addEventListener('click', () => {
+        if (diagram.nodes.length && !window.confirm('Clear every step and connection from this workflow?')) return;
         diagram = { nodes: [], edges: [], settings: collectSettings() };
         selectedNodeId = null;
         connectFromId = null;
