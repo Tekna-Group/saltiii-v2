@@ -174,7 +174,7 @@
                     <div class="dropdown">
                         <button class="btn btn-light btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Project actions"><i class="ri-more-2-fill" aria-hidden="true"></i></button>
                         <div class="dropdown-menu dropdown-menu-end">
-                            <form method="POST" action="{{ url('/project/complete/'.$project->id) }}" onsubmit="return confirm('Mark this project as complete?');">@csrf<button type="submit" class="dropdown-item"><i class="ri-checkbox-circle-line me-2" aria-hidden="true"></i> Mark complete</button></form>
+                            <form method="POST" action="{{ url('/project/complete/'.$project->id) }}" onsubmit="return confirm('Mark this project and all its tasks as complete?');">@csrf<button type="submit" class="dropdown-item"><i class="ri-checkbox-circle-line me-2" aria-hidden="true"></i> Mark complete</button></form>
                             <form method="POST" action="{{ url('/project/delete/'.$project->id) }}" onsubmit="return confirm('Archive this project?');">@csrf<button type="submit" class="dropdown-item text-danger"><i class="ri-archive-line me-2" aria-hidden="true"></i> Archive project</button></form>
                         </div>
                     </div>

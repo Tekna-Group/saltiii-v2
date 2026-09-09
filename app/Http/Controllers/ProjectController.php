@@ -655,10 +655,24 @@ class ProjectController extends Controller
     public function markComplete($id)
     {
         $project = Project::findOrFail($id);
-        $project->completed = 1;
-        $project->status = 'Completed';
-        $project->save();
-        Alert::success('Project marked as completed.')->persistent('Dismiss');
+        $completedTaskCount = 0;
+
+        DB::transaction(function () use ($project, &$completedTaskCount) {
+            $completedTaskCount = Task::where('project_id', $project->id)
+                ->where(function ($query) {
+                    $query->where('completed', '!=', 1)->orWhereNull('completed');
+                })
+                ->update(['completed' => 1]);
+
+            $project->completed = 1;
+            $project->status = 'Completed';
+            $project->save();
+        });
+
+        Alert::success(
+            'Project completed',
+            $completedTaskCount.' unfinished '.str_plural('task', $completedTaskCount).' marked as completed.'
+        )->persistent('Dismiss');
         return back();
     }
     public function delete($id)
