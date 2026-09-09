@@ -330,7 +330,7 @@
                                       @endif
                                   </header>
                                   <div class="kanban-items" ondragover="allowDrop(event)" ondrop="dropTask(event, '{{ $column['id'] }}')">
-                                      @foreach($column['tasks'] as $task)
+                                      @foreach($column['tasks']->take(10) as $task)
                                           @php
                                               $taskPriority = $task['priority'] ?: 'Low';
                                               $taskIsOverdue = $task['due_date'] && $task['due_date'] < date('Y-m-d') && (int) $task['completed'] === 0;
@@ -351,6 +351,9 @@
                                           </article>
                                       @endforeach
                                   </div>
+                                  @if($column['tasks']->count() > 10)
+                                      <div class="kanban-task-limit"><button type="button" onclick="toggleColumnTasks('{{ $column['id'] }}')" aria-expanded="false"><i class="ri-arrow-down-s-line" aria-hidden="true"></i> Show all {{ $column['tasks']->count() }} tasks</button><small>{{ $column['tasks']->count() - 10 }} more</small></div>
+                                  @endif
                                   <div class="kanban-add-task"><button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="addTask('{{ $column['id'] }}')"><i class="ri-add-line" aria-hidden="true"></i> Add task</button></div>
                               </section>
                           @empty
@@ -566,6 +569,11 @@
     if (boardSearch) boardSearch.addEventListener('keyup', function() {
     const searchValue = this.value.toLowerCase().trim();
 
+    boardData.forEach(function (column) {
+        expandedColumns[String(column.id)] = searchValue.length > 0;
+    });
+    renderBoard();
+
     // Loop through each kanban column
     document.querySelectorAll('.kanban-items').forEach(column => {
         const tasks = column.querySelectorAll('.task-card');
@@ -598,11 +606,14 @@
     });
 });
     let boardData = @json($boardData); // Laravel data for boards and tasks
+    let expandedColumns = {};
 
     // ====== Render the whole board ======
     function renderBoard() {
         const board = document.getElementById('kanbanBoard');
         if (!board) return;
+        const scroller = board.closest('.kanban-board-container');
+        const previousScrollLeft = scroller ? scroller.scrollLeft : 0;
 
         if (!boardData.length) {
             board.innerHTML = '<div class="project-board-empty"><div><i class="ri-layout-column-line fs-32 mb-2 d-block"></i><strong class="d-block text-body mb-1">No statuses yet</strong><span>Create a status to begin organizing project tasks.</span></div></div>';
@@ -612,6 +623,9 @@
         const fragment = document.createDocumentFragment();
         boardData.forEach(column => {
               const isAdmin = @json(auth()->user()->role === 'Admin');
+            const isExpanded = expandedColumns[String(column.id)] === true;
+            const visibleTasks = isExpanded ? column.tasks : column.tasks.slice(0, 10);
+            const hiddenTaskCount = Math.max(0, column.tasks.length - 10);
             const columnDiv = document.createElement('div');
             columnDiv.className = 'kanban-column';
                  if (isAdmin) {
@@ -646,8 +660,14 @@
                 </div>
                 
                 <div class="kanban-items" ondragover="allowDrop(event)" ondrop="dropTask(event, '${column.id}')">
-                    ${column.tasks.map(task => renderTask(task)).join('')}
+                    ${visibleTasks.map(task => renderTask(task)).join('')}
                 </div>
+
+                ${column.tasks.length > 10 ? `
+                    <div class="kanban-task-limit">
+                        <button type="button" onclick="toggleColumnTasks('${column.id}')" aria-expanded="${isExpanded ? 'true' : 'false'}"><i class="${isExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}"></i>${isExpanded ? 'Show first 10' : `Show all ${column.tasks.length} tasks`}</button>
+                        <small>${isExpanded ? `${column.tasks.length} shown` : `${hiddenTaskCount} more`}</small>
+                    </div>` : ''}
 
                 <div class="kanban-add-task">
                     <button class="btn btn-sm btn-outline-primary w-100" onclick="addTask('${column.id}')"><i class="ri-add-line"></i> Add task</button>
@@ -659,8 +679,18 @@
 
         board.innerHTML = '';
         board.appendChild(fragment);
+        if (scroller) {
+            scroller.scrollLeft = previousScrollLeft;
+            scroller.dispatchEvent(new Event('scroll'));
+        }
 
         enableColumnDrag(); // enable dragging for columns
+    }
+
+    function toggleColumnTasks(columnId) {
+        const key = String(columnId);
+        expandedColumns[key] = !expandedColumns[key];
+        renderBoard();
     }
 
     // ====== Render a single task card ======
