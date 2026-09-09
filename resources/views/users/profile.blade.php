@@ -45,7 +45,9 @@
                 <header><div><span class="profile-eyebrow">Current workload</span><h2 id="profile-work-title">Assigned work</h2></div><a href="{{ $isOwnProfile ? url('/tasks') : '#profile-projects' }}">{{ $isOwnProfile ? 'Open task register' : 'View projects' }} <i class="ri-arrow-right-line" aria-hidden="true"></i></a></header>
                 <div class="profile-task-list">
                     @forelse($openTasks->take(6) as $task)
-                        @php($isOverdue = $task->due_date && $task->due_date < $today)
+                        @php
+                            $isOverdue = $task->due_date && $task->due_date < $today;
+                        @endphp
                         <a href="{{ url('/view-task/'.$task->id) }}" class="profile-task {{ $isOverdue ? 'is-overdue' : '' }}"><span class="profile-task-mark" aria-hidden="true"></span><span><strong>{{ $task->title }}</strong><small>{{ optional($task->project)->name ?: 'No project' }} · {{ optional($task->board)->board ?: 'Open' }}</small></span><time datetime="{{ $task->due_date }}">{{ $task->due_date ? date('M j', strtotime($task->due_date)) : 'No date' }}</time><i class="ri-arrow-right-s-line" aria-hidden="true"></i></a>
                     @empty
                         <div class="profile-empty"><i class="ri-checkbox-circle-line" aria-hidden="true"></i><span><strong>No open tasks</strong><small>New assignments will appear here.</small></span></div>

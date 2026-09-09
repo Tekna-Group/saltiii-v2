@@ -236,7 +236,9 @@
             </header>
             <div class="manager-member-list">
                 @forelse($managerMemberSummaries->take(6) as $summary)
-                    @php($member = $summary['user'])
+                    @php
+                        $member = $summary['user'];
+                    @endphp
                     <a class="manager-member" href="{{ url('/view-profile/'.$member->id) }}">
                         <img src="{{ asset($member->avatar ?: 'images/Favicon.png') }}" onerror="this.src='{{ url('images/Favicon.png') }}';" alt="">
                         <span><strong>{{ $member->name }}</strong><small>{{ $summary['open_tasks'] }} open · {{ number_format($summary['hours'], 1) }}h this week</small></span>
@@ -262,7 +264,9 @@
                     <span role="columnheader">Project</span><span role="columnheader">Progress</span><span role="columnheader">Open</span><span role="columnheader">Overdue</span><span aria-hidden="true"></span>
                 </div>
                 @forelse($managerProjectSummaries->take(6) as $summary)
-                    @php($managedProject = $summary['project'])
+                    @php
+                        $managedProject = $summary['project'];
+                    @endphp
                     <a class="manager-project-row" role="row" href="{{ url('/view-project/'.$managedProject->id) }}">
                         <span class="manager-project-name" role="cell"><strong>{{ $managedProject->name }}</strong><small>{{ $managedProject->status ?: 'In progress' }}</small></span>
                         <span class="manager-project-progress" role="cell"><i><b style="width: {{ $summary['progress'] }}%"></b></i><small>{{ $summary['progress'] }}%</small></span>
