@@ -144,10 +144,14 @@ class ProjectController extends Controller
                 $query->where('completed', '!=', 1)
                     ->withCount([
                         'tasks as active_tasks_count' => function ($taskQuery) {
-                            $taskQuery->where('archived', '!=', 1);
+                            $taskQuery->where(function ($activeQuery) {
+                                $activeQuery->where('archived', '!=', 1)->orWhereNull('archived');
+                            });
                         },
                         'tasks as completed_tasks_count' => function ($taskQuery) {
-                            $taskQuery->where('archived', '!=', 1)->where('completed', 1);
+                            $taskQuery->where(function ($activeQuery) {
+                                $activeQuery->where('archived', '!=', 1)->orWhereNull('archived');
+                            })->where('completed', 1);
                         },
                     ])
                     ->orderBy('name', 'asc');
@@ -163,7 +167,10 @@ class ProjectController extends Controller
             });
         })->findOrFail($id);
 
-        $activeTasks = Task::where('project_id', $project->id)->where('archived', '!=', 1);
+        $activeTasks = Task::where('project_id', $project->id)
+            ->where(function ($query) {
+                $query->where('archived', '!=', 1)->orWhereNull('archived');
+            });
         $taskStats = (clone $activeTasks)
             ->selectRaw('COUNT(*) as total_tasks')
             ->selectRaw('COALESCE(SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END), 0) as completed_tasks')
@@ -186,7 +193,9 @@ class ProjectController extends Controller
         if ($childIds->isNotEmpty()) {
             $childHours = TaskActivity::join('tasks', 'tasks.id', '=', 'task_activities.task_id')
                 ->whereIn('tasks.project_id', $childIds)
-                ->where('tasks.archived', '!=', 1)
+                ->where(function ($query) {
+                    $query->where('tasks.archived', '!=', 1)->orWhereNull('tasks.archived');
+                })
                 ->groupBy('tasks.project_id')
                 ->select('tasks.project_id')
                 ->selectRaw('COALESCE(SUM(task_activities.hours), 0) as total_hours')
@@ -275,7 +284,9 @@ class ProjectController extends Controller
             ])
             ->where('tasks.project_id', $projectId)
             ->where('tasks.project_board_id', $boardId)
-            ->where('tasks.archived', '!=', 1)
+            ->where(function ($query) {
+                $query->where('tasks.archived', '!=', 1)->orWhereNull('tasks.archived');
+            })
             ->withCount(['comments', 'attachments'])
             ->selectSub(function ($query) {
                 $query->from('task_activities')
