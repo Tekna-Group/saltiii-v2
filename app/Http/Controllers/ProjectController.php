@@ -5,6 +5,8 @@ use App\Project;
 use App\User;
 use App\ProjectUser;
 use App\ProjectBoard;
+use App\Task;
+use App\TaskActivity;
 use Illuminate\Http\Request;
 
 use RealRashid\SweetAlert\Facades\Alert;
@@ -136,86 +138,172 @@ class ProjectController extends Controller
 
     public function view(Request $request,$id)
     {
-
-       $project = Project::with([
+        $project = Project::with([
             'parent',
             'children' => function ($query) {
-                $query->where('completed', '!=', 1)->orderBy('name', 'asc');
+                $query->where('completed', '!=', 1)
+                    ->withCount([
+                        'tasks as active_tasks_count' => function ($taskQuery) {
+                            $taskQuery->where('archived', '!=', 1);
+                        },
+                        'tasks as completed_tasks_count' => function ($taskQuery) {
+                            $taskQuery->where('archived', '!=', 1)->where('completed', 1);
+                        },
+                    ])
+                    ->orderBy('name', 'asc');
             },
-            'children.tasks.comments',
-            'children.tasks.attachments',
-            'children.tasks.activities',
-            'children.tasks.users',
             'children.users',
             'users',
-            // Sort statuses by position ASC when eager loading
             'statuses' => function ($query) {
                 $query->orderBy('position', 'asc');
             },
-            'tasks',
-            'tasks.comments',
-            'tasks.attachments',
-            'tasks.activities', // Prevent N+1
-            'tasks.users'       // Prevent N+1
         ])->when(auth()->user()->role !== 'Admin', function ($query) {
             $query->whereHas('users', function ($userQuery) {
                 $userQuery->where('users.id', auth()->id());
             });
         })->findOrFail($id);
+
+        $activeTasks = Task::where('project_id', $project->id)->where('archived', '!=', 1);
+        $taskStats = (clone $activeTasks)
+            ->selectRaw('COUNT(*) as total_tasks')
+            ->selectRaw('COALESCE(SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END), 0) as completed_tasks')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN (completed IS NULL OR completed != 1) AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END), 0) as overdue_tasks',
+                [date('Y-m-d')]
+            )
+            ->first();
+        $projectTaskCount = (int) $taskStats->total_tasks;
+        $projectCompletedCount = (int) $taskStats->completed_tasks;
+        $projectOverdueCount = (int) $taskStats->overdue_tasks;
+        $projectHours = TaskActivity::whereIn('task_id', (clone $activeTasks)->select('id'))->sum('hours');
+        $projectOpenCount = max(0, $projectTaskCount - $projectCompletedCount);
+        $projectProgress = $projectTaskCount > 0
+            ? round(($projectCompletedCount / $projectTaskCount) * 100)
+            : 0;
+
+        $childIds = $project->children->pluck('id');
+        $childHours = collect();
+        if ($childIds->isNotEmpty()) {
+            $childHours = TaskActivity::join('tasks', 'tasks.id', '=', 'task_activities.task_id')
+                ->whereIn('tasks.project_id', $childIds)
+                ->where('tasks.archived', '!=', 1)
+                ->groupBy('tasks.project_id')
+                ->select('tasks.project_id')
+                ->selectRaw('COALESCE(SUM(task_activities.hours), 0) as total_hours')
+                ->pluck('total_hours', 'project_id');
+        }
+        $project->children->each(function ($child) use ($childHours) {
+            $child->setAttribute('total_hours', (float) $childHours->get($child->id, 0));
+        });
+
         $boardData = [];
-        
+        $boardTotals = (clone $activeTasks)
+            ->groupBy('project_board_id')
+            ->select('project_board_id')
+            ->selectRaw('COUNT(*) as task_count')
+            ->pluck('task_count', 'project_board_id');
+
         foreach ($project->statuses as $status) {
-            $tasks = $project->tasks->where('archived', '!=',1)
-        ->where('project_board_id', $status->id)
-        ->map(function ($task) {
-            return [
-                'id' => $task->id,
-                'name' => $task->title,
-                'description' => $task->description,
-                'due_date' => $task->due_date ? $task->due_date : null,
-                'priority' => $task->priority,
-                'comments' => $task->comments->count(),
-                'attachments' => $task->attachments->count(),
-                'hours' => $task->activities->sum('hours'),
-                'completed' => $task->completed,
-                'users' => $task->users,
-                'assignees' => $task->users->pluck('name')->toArray(),
+            $total = (int) $boardTotals->get($status->id, 0);
+            $tasks = $this->boardTaskQuery($project->id, $status->id)->limit(10)->get()->map(function ($task) {
+                return $this->formatBoardTask($task);
+            })->values();
+
+            $boardData[] = [
+                'id' => $status->id,
+                'name' => $status->board,
+                'total' => $total,
+                'loaded' => $total <= 10,
+                'tasks' => $tasks,
             ];
-        })
-        ->sortBy(function ($task) {
-            return [
-                $task['completed'],           // 0 first, then 1
-                $task['due_date'] ?? '9999-12-31', // Nulls go last
-            ];
-        })
-        ->values(); // Re-index the collection
-            
-                $boardData[] = [
-                    'id' => $status->id, // e.g. "To Do" -> "todo"
-                    'name' => $status->board,
-                    'tasks' => $tasks
-                ];
-            }
-            // Return the view with the projects data
-        
-            $users = User::assignableFor(auth()->user());
-            $projects = Project::with('parent')
-                ->when(auth()->user()->role !== 'Admin', function ($query) {
-                    $query->whereHas('users', function ($query) {
-                        $query->where('user_id', auth()->id());
-                    });
-                })
-                ->where('completed', '!=', 1)
-                ->orderBy('name', 'asc')
-                ->get();
-            return view('projects.view',
-                array(
-                    'project' => $project,
-                    'projects' => $projects,
-                    'users' => $users,
-                    'boardData' => $boardData,
-                )
-            );
+        }
+
+        $users = User::assignableFor(auth()->user());
+        $projects = Project::with('parent')
+            ->when(auth()->user()->role !== 'Admin', function ($query) {
+                $query->whereHas('users', function ($query) {
+                    $query->where('user_id', auth()->id());
+                });
+            })
+            ->where('completed', '!=', 1)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('projects.view', [
+            'project' => $project,
+            'projects' => $projects,
+            'users' => $users,
+            'boardData' => $boardData,
+            'projectTaskCount' => $projectTaskCount,
+            'projectCompletedCount' => $projectCompletedCount,
+            'projectOpenCount' => $projectOpenCount,
+            'projectOverdueCount' => $projectOverdueCount,
+            'projectHours' => $projectHours,
+            'projectProgress' => $projectProgress,
+        ]);
+    }
+
+    public function boardTasks(Request $request, $projectId, $boardId)
+    {
+        $project = Project::when(auth()->user()->role !== 'Admin', function ($query) {
+            $query->whereHas('users', function ($userQuery) {
+                $userQuery->where('users.id', auth()->id());
+            });
+        })->findOrFail($projectId);
+
+        $board = $project->statuses()->where('id', $boardId)->firstOrFail();
+        $tasks = $this->boardTaskQuery($project->id, $board->id)->get()->map(function ($task) {
+            return $this->formatBoardTask($task);
+        })->values();
+
+        return response()->json([
+            'tasks' => $tasks,
+            'total' => $tasks->count(),
+        ]);
+    }
+
+    private function boardTaskQuery($projectId, $boardId)
+    {
+        return Task::query()
+            ->select([
+                'tasks.id',
+                'tasks.title',
+                'tasks.due_date',
+                'tasks.priority',
+                'tasks.completed',
+                'tasks.project_board_id',
+            ])
+            ->where('tasks.project_id', $projectId)
+            ->where('tasks.project_board_id', $boardId)
+            ->where('tasks.archived', '!=', 1)
+            ->withCount(['comments', 'attachments'])
+            ->selectSub(function ($query) {
+                $query->from('task_activities')
+                    ->selectRaw('COALESCE(SUM(task_activities.hours), 0)')
+                    ->whereColumn('task_activities.task_id', 'tasks.id');
+            }, 'hours_total')
+            ->with(['users' => function ($query) {
+                $query->select('users.id', 'users.name');
+            }])
+            ->orderBy('tasks.completed', 'asc')
+            ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('tasks.due_date', 'asc')
+            ->orderBy('tasks.id', 'asc');
+    }
+
+    private function formatBoardTask(Task $task)
+    {
+        return [
+            'id' => $task->id,
+            'name' => $task->title,
+            'due_date' => $task->due_date ?: null,
+            'priority' => $task->priority,
+            'comments' => (int) $task->comments_count,
+            'attachments' => (int) $task->attachments_count,
+            'hours' => (float) $task->hours_total,
+            'completed' => (int) $task->completed,
+            'assignees' => $task->users->pluck('name')->values()->all(),
+        ];
     }
      public function viewPublic(Request $request,$id)
     {
@@ -247,14 +335,12 @@ class ProjectController extends Controller
             return [
                 'id' => $task->id,
                 'name' => $task->title,
-                'description' => $task->description,
                 'due_date' => $task->due_date ? $task->due_date : null,
                 'priority' => $task->priority,
                 'comments' => $task->comments->count(),
                 'attachments' => $task->attachments->count(),
                 'hours' => $task->activities->sum('hours'),
                 'completed' => $task->completed,
-                'users' => $task->users,
                 'assignees' => $task->users->pluck('name')->toArray(),
             ];
         })

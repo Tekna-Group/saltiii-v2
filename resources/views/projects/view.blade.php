@@ -143,14 +143,6 @@
 @endsection
 @section('content')
 @php
-    $projectTaskCount = $project->tasks->where('archived', '!=', 1)->count();
-    $projectCompletedCount = $project->tasks->where('archived', '!=', 1)->where('completed', 1)->count();
-    $projectOpenCount = max(0, $projectTaskCount - $projectCompletedCount);
-    $projectOverdueCount = $project->tasks->filter(function ($task) {
-        return $task->archived != 1 && !$task->completed && $task->due_date && $task->due_date < date('Y-m-d');
-    })->count();
-    $projectHours = $project->tasks->sum(function ($task) { return $task->activities->sum('hours'); });
-    $projectProgress = $projectTaskCount > 0 ? round(($projectCompletedCount / $projectTaskCount) * 100) : 0;
     $firstBoardId = optional($project->statuses->first())->id;
 @endphp
 
@@ -321,7 +313,7 @@
                           @forelse($boardData as $column)
                               <section class="kanban-column" data-id="{{ $column['id'] }}" @if(auth()->user()->role === 'Admin') draggable="true" @endif>
                                   <header class="kanban-header">
-                                      <span class="kanban-column-title" id="status-name-{{ $column['id'] }}">{{ $column['name'] }} <span class="kanban-column-count">{{ $column['tasks']->count() }}</span></span>
+                                      <span class="kanban-column-title" id="status-name-{{ $column['id'] }}">{{ $column['name'] }} <span class="kanban-column-count">{{ $column['total'] }}</span></span>
                                       @if(auth()->user()->role === 'Admin')
                                           <div>
                                               <button type="button" class="btn btn-sm btn-outline-secondary me-1" onclick="editStatus('{{ $column['id'] }}')" title="Edit status" aria-label="Edit {{ $column['name'] }} status"><i class="bi bi-pencil" aria-hidden="true"></i></button>
@@ -330,7 +322,7 @@
                                       @endif
                                   </header>
                                   <div class="kanban-items" ondragover="allowDrop(event)" ondrop="dropTask(event, '{{ $column['id'] }}')">
-                                      @foreach($column['tasks']->take(10) as $task)
+                                      @foreach($column['tasks'] as $task)
                                           @php
                                               $taskPriority = $task['priority'] ?: 'Low';
                                               $taskIsOverdue = $task['due_date'] && $task['due_date'] < date('Y-m-d') && (int) $task['completed'] === 0;
@@ -351,8 +343,8 @@
                                           </article>
                                       @endforeach
                                   </div>
-                                  @if($column['tasks']->count() > 10)
-                                      <div class="kanban-task-limit"><button type="button" onclick="toggleColumnTasks('{{ $column['id'] }}')" aria-expanded="false"><i class="ri-arrow-down-s-line" aria-hidden="true"></i> Show all {{ $column['tasks']->count() }} tasks</button><small>{{ $column['tasks']->count() - 10 }} more</small></div>
+                                  @if($column['total'] > 10)
+                                      <div class="kanban-task-limit"><button type="button" onclick="toggleColumnTasks('{{ $column['id'] }}')" aria-expanded="false"><i class="ri-arrow-down-s-line" aria-hidden="true"></i> Show all {{ $column['total'] }} tasks</button><small>{{ $column['total'] - 10 }} more</small></div>
                                   @endif
                                   <div class="kanban-add-task"><button type="button" class="btn btn-sm btn-outline-primary w-100" onclick="addTask('{{ $column['id'] }}')"><i class="ri-add-line" aria-hidden="true"></i> Add task</button></div>
                               </section>
@@ -404,13 +396,11 @@
                             <div class="row g-3" id="subProjectsGrid">
                                 @foreach($project->children as $subproject)
                                     @php
-                                        $subprojectTaskCount = $subproject->tasks->count();
-                                        $subprojectCompletedTasks = $subproject->tasks->where('completed', 1)->count();
+                                        $subprojectTaskCount = $subproject->active_tasks_count;
+                                        $subprojectCompletedTasks = $subproject->completed_tasks_count;
                                         $subprojectOpenTasks = $subprojectTaskCount - $subprojectCompletedTasks;
                                         $subprojectProgress = $subprojectTaskCount > 0 ? round(($subprojectCompletedTasks / $subprojectTaskCount) * 100) : 0;
-                                        $subprojectHours = $subproject->tasks->sum(function ($task) {
-                                            return $task->activities->sum('hours');
-                                        });
+                                        $subprojectHours = $subproject->total_hours;
                                     @endphp
                                     <div class="col-xl-4 col-md-6">
                                         <a href="{{ url('/view-project/'.$subproject->id) }}" class="text-decoration-none text-body">
@@ -566,47 +556,61 @@
 
 <script>
     const boardSearch = document.getElementById('search-task-options');
-    if (boardSearch) boardSearch.addEventListener('keyup', function() {
-    const searchValue = this.value.toLowerCase().trim();
-
-    boardData.forEach(function (column) {
-        expandedColumns[String(column.id)] = searchValue.length > 0;
+    let boardSearchTimer = null;
+    let boardSearchRequest = 0;
+    if (boardSearch) boardSearch.addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase().trim();
+        clearTimeout(boardSearchTimer);
+        boardSearchTimer = setTimeout(function () {
+            applyBoardSearch(searchValue);
+        }, 250);
     });
-    renderBoard();
 
-    // Loop through each kanban column
-    document.querySelectorAll('.kanban-items').forEach(column => {
-        const tasks = column.querySelectorAll('.task-card');
-        let hasVisibleTasks = false;
+    async function applyBoardSearch(searchValue) {
+        const requestId = ++boardSearchRequest;
 
-        tasks.forEach(task => {
-            const taskText = task.innerText.toLowerCase();
-
-            if (taskText.includes(searchValue)) {
-                task.style.display = ''; // Show matching task
-                hasVisibleTasks = true;
-            } else {
-                task.style.display = 'none'; // Hide non-matching task
+        if (searchValue) {
+            try {
+                await Promise.all(boardData.map(function (column) {
+                    return loadColumnTasks(column.id, false);
+                }));
+            } catch (error) {
+                // The loader already reports the failed request; continue with
+                // the columns that are available instead of breaking search.
             }
+        }
+
+        if (requestId !== boardSearchRequest) return;
+
+        boardData.forEach(function (column) {
+            expandedColumns[String(column.id)] = searchValue.length > 0;
         });
+        renderBoard();
 
-        // Optional: Show "No tasks found" message if all tasks are hidden
-        let noTaskMsg = column.querySelector('.no-tasks-msg');
+        document.querySelectorAll('.kanban-items').forEach(function (column) {
+            const tasks = column.querySelectorAll('.task-card');
+            let hasVisibleTasks = false;
 
-        if (!hasVisibleTasks) {
-            if (!noTaskMsg) {
-                noTaskMsg = document.createElement('div');
+            tasks.forEach(function (task) {
+                const matches = task.innerText.toLowerCase().includes(searchValue);
+                task.style.display = matches ? '' : 'none';
+                hasVisibleTasks = hasVisibleTasks || matches;
+            });
+
+            if (searchValue && !hasVisibleTasks) {
+                const noTaskMsg = document.createElement('div');
                 noTaskMsg.className = 'no-tasks-msg text-muted text-center p-2';
                 noTaskMsg.innerText = 'No matching tasks';
                 column.appendChild(noTaskMsg);
             }
-        } else if (noTaskMsg) {
-            noTaskMsg.remove();
-        }
-    });
-});
-    let boardData = @json($boardData); // Laravel data for boards and tasks
+        });
+    }
+    // Hex-escape HTML-sensitive characters so imported task content cannot
+    // terminate this script block with a literal closing script tag.
+    let boardData = {!! json_encode($boardData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
     let expandedColumns = {};
+    let columnLoadPromises = {};
+    const boardTasksBaseUrl = @json(url('/view-project/'.$project->id.'/board'));
 
     // ====== Render the whole board ======
     function renderBoard() {
@@ -622,10 +626,10 @@
 
         const fragment = document.createDocumentFragment();
         boardData.forEach(column => {
-              const isAdmin = @json(auth()->user()->role === 'Admin');
+            const isAdmin = @json(auth()->user()->role === 'Admin');
             const isExpanded = expandedColumns[String(column.id)] === true;
             const visibleTasks = isExpanded ? column.tasks : column.tasks.slice(0, 10);
-            const hiddenTaskCount = Math.max(0, column.tasks.length - 10);
+            const hiddenTaskCount = Math.max(0, Number(column.total) - 10);
             const columnDiv = document.createElement('div');
             columnDiv.className = 'kanban-column';
                  if (isAdmin) {
@@ -635,7 +639,7 @@
 
             columnDiv.innerHTML = `
                 <div class="kanban-header">
-                    <span class="kanban-column-title" id="status-name-${column.id}">${escapeHtml(column.name)} <span class="kanban-column-count">${column.tasks.length}</span></span>
+                    <span class="kanban-column-title" id="status-name-${column.id}">${escapeHtml(column.name)} <span class="kanban-column-count">${column.total}</span></span>
                     
                     <div>
                         <!-- Edit button (visible to all) -->
@@ -663,9 +667,9 @@
                     ${visibleTasks.map(task => renderTask(task)).join('')}
                 </div>
 
-                ${column.tasks.length > 10 ? `
+                ${Number(column.total) > 10 ? `
                     <div class="kanban-task-limit">
-                        <button type="button" onclick="toggleColumnTasks('${column.id}')" aria-expanded="${isExpanded ? 'true' : 'false'}"><i class="${isExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'}"></i>${isExpanded ? 'Show first 10' : `Show all ${column.tasks.length} tasks`}</button>
+                        <button type="button" onclick="toggleColumnTasks('${column.id}')" aria-expanded="${isExpanded ? 'true' : 'false'}" ${column.loading ? 'disabled' : ''}><i class="${column.loading ? 'ri-loader-4-line' : (isExpanded ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line')}"></i>${column.loading ? 'Loading tasks...' : (isExpanded ? 'Show first 10' : `Show all ${column.total} tasks`)}</button>
                         <small>${isExpanded ? `${column.tasks.length} shown` : `${hiddenTaskCount} more`}</small>
                     </div>` : ''}
 
@@ -687,8 +691,76 @@
         enableColumnDrag(); // enable dragging for columns
     }
 
-    function toggleColumnTasks(columnId) {
+    function loadColumnTasks(columnId, expandAfterLoad) {
         const key = String(columnId);
+        const column = boardData.find(function (item) {
+            return String(item.id) === key;
+        });
+
+        if (!column || column.loaded || Number(column.total) <= column.tasks.length) {
+            if (column) column.loaded = true;
+            return Promise.resolve(column);
+        }
+
+        if (columnLoadPromises[key]) return columnLoadPromises[key];
+
+        column.loading = true;
+        if (expandAfterLoad) renderBoard();
+
+        columnLoadPromises[key] = fetch(boardTasksBaseUrl + '/' + encodeURIComponent(column.id) + '/tasks', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Unable to load this status.');
+                return response.json();
+            })
+            .then(function (payload) {
+                column.tasks = Array.isArray(payload.tasks) ? payload.tasks : [];
+                column.total = Number(payload.total || column.tasks.length);
+                column.loaded = true;
+                return column;
+            })
+            .catch(function (error) {
+                console.error('Unable to load board tasks.', error);
+                if (typeof Toastify === 'function') {
+                    Toastify({
+                        text: 'Tasks could not be loaded. Please try again.',
+                        duration: 3000,
+                        gravity: 'top',
+                        position: 'right',
+                        backgroundColor: '#dc3545'
+                    }).showToast();
+                }
+                throw error;
+            })
+            .finally(function () {
+                column.loading = false;
+                delete columnLoadPromises[key];
+            });
+
+        return columnLoadPromises[key];
+    }
+
+    async function toggleColumnTasks(columnId) {
+        const key = String(columnId);
+        const column = boardData.find(function (item) {
+            return String(item.id) === key;
+        });
+        if (!column) return;
+
+        if (!column.loaded) {
+            try {
+                await loadColumnTasks(columnId, true);
+            } catch (error) {
+                renderBoard();
+                return;
+            }
+        }
+
         expandedColumns[key] = !expandedColumns[key];
         renderBoard();
     }
