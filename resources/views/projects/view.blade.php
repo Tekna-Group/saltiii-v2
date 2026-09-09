@@ -299,6 +299,10 @@
                         @if(auth()->user()->role == 'Admin')<button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#createboardModal"><i class="ri-layout-column-line" aria-hidden="true"></i> New status</button>@endif
                     </div>
                     <div class="project-board-tools">
+                        <div class="board-scroll-controls" aria-label="Scroll project board">
+                            <button type="button" class="btn btn-light btn-icon" id="boardScrollLeft" aria-label="Scroll board left" title="Scroll left"><i class="ri-arrow-left-line" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-light btn-icon" id="boardScrollRight" aria-label="Scroll board right" title="Scroll right"><i class="ri-arrow-right-line" aria-hidden="true"></i></button>
+                        </div>
                         <div class="search-box">
                             <input type="search" class="form-control search" id="search-task-options" placeholder="Search this board" aria-label="Search tasks in this project" autocomplete="off">
                             <i class="ri-search-line search-icon" aria-hidden="true"></i>
@@ -985,6 +989,29 @@
     } catch (error) {
         console.error('Unable to enhance the project board. Server-rendered board retained.', error);
     }
+
+    (function enableBoardScrolling() {
+        const scroller = document.querySelector('.kanban-board-container');
+        const leftButton = document.getElementById('boardScrollLeft');
+        const rightButton = document.getElementById('boardScrollRight');
+        if (!scroller || !leftButton || !rightButton) return;
+
+        function updateScrollButtons() {
+            const maximum = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+            leftButton.disabled = scroller.scrollLeft <= 2;
+            rightButton.disabled = scroller.scrollLeft >= maximum - 2;
+        }
+
+        leftButton.addEventListener('click', function () {
+            scroller.scrollBy({ left: -340, behavior: 'smooth' });
+        });
+        rightButton.addEventListener('click', function () {
+            scroller.scrollBy({ left: 340, behavior: 'smooth' });
+        });
+        scroller.addEventListener('scroll', updateScrollButtons, { passive: true });
+        window.addEventListener('resize', updateScrollButtons);
+        updateScrollButtons();
+    }());
 </script>
 <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
