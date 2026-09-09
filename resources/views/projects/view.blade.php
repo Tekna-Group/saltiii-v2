@@ -170,6 +170,7 @@
                 @endif
                 <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#importTasksModal"><i class="ri-file-upload-line" aria-hidden="true"></i> Import</button>
                 @if(auth()->user()->role == 'Admin')
+                    <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#publicShareModal"><i class="ri-share-line" aria-hidden="true"></i> Share</button>
                     <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#addmemberModal"><i class="ri-user-add-line" aria-hidden="true"></i> Team</button>
                     <div class="dropdown">
                         <button class="btn btn-light btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Project actions"><i class="ri-more-2-fill" aria-hidden="true"></i></button>
@@ -492,6 +493,60 @@
 </div>
 
 </div>
+@if(auth()->user()->role == 'Admin')
+<div class="modal fade" id="publicShareModal" tabindex="-1" aria-labelledby="publicShareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="projects-eyebrow">Read-only access</span>
+                    <h5 class="modal-title mt-1" id="publicShareModalLabel">Share project board</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="import-tracker-note mb-3">
+                    <i class="ri-eye-line" aria-hidden="true"></i>
+                    <div>
+                        <strong>View only</strong>
+                        <p>Anyone with this private link can view the board without signing in. They cannot create, edit, move, complete, or archive tasks.</p>
+                    </div>
+                </div>
+
+                @if($project->public_share_token && $project->public_share_enabled_at)
+                    @php
+                        $publicShareUrl = route('public.project.view', $project->public_share_token);
+                    @endphp
+                    <label for="publicShareUrl" class="form-label">Public link</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="publicShareUrl" value="{{ $publicShareUrl }}" readonly>
+                        <button type="button" class="btn btn-primary" id="copyPublicShareButton" onclick="copyPublicProjectLink()"><i class="ri-file-copy-line me-1" aria-hidden="true"></i> Copy</button>
+                    </div>
+                    <a href="{{ $publicShareUrl }}" target="_blank" rel="noopener noreferrer" class="btn btn-link px-0 mt-2"><i class="ri-external-link-line me-1" aria-hidden="true"></i> Preview public view</a>
+                @else
+                    <p class="text-muted mb-0">Create a secure link when you are ready to share this project.</p>
+                @endif
+            </div>
+            <div class="modal-footer justify-content-between">
+                @if($project->public_share_token && $project->public_share_enabled_at)
+                    <form method="POST" action="{{ route('projects.public-share.revoke', $project->id) }}" onsubmit="return confirm('Disable this public link? Anyone using it will lose access.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger"><i class="ri-link-unlink-m me-1" aria-hidden="true"></i> Disable link</button>
+                    </form>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                @else
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ route('projects.public-share.create', $project->id) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary"><i class="ri-link-m me-1" aria-hidden="true"></i> Create public link</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 <div class="modal fade" id="importTasksModal" tabindex="-1" aria-labelledby="importTasksModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -566,6 +621,9 @@
     $(document).ready(function() {
     @if($errors->has('import_file') || $errors->has('assignee_id'))
         bootstrap.Modal.getOrCreateInstance(document.getElementById('importTasksModal')).show();
+    @endif
+    @if(session('open_public_share') && auth()->user()->role == 'Admin')
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('publicShareModal')).show();
     @endif
 
     $('#importTasksForm').on('submit', function () {
@@ -1339,6 +1397,30 @@ $(document).ready(function() {
         });
     });
 });
+</script>
+<script>
+    function copyPublicProjectLink() {
+        const input = document.getElementById('publicShareUrl');
+        const button = document.getElementById('copyPublicShareButton');
+        if (!input || !button) return;
+
+        const showCopied = function () {
+            button.innerHTML = '<i class="ri-check-line me-1" aria-hidden="true"></i> Copied';
+            setTimeout(function () {
+                button.innerHTML = '<i class="ri-file-copy-line me-1" aria-hidden="true"></i> Copy';
+            }, 1800);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(input.value).then(showCopied);
+            return;
+        }
+
+        input.focus();
+        input.select();
+        document.execCommand('copy');
+        showCopied();
+    }
 </script>
 <script>
 $(document).ready(function() {

@@ -16,6 +16,7 @@ class Project extends Model
     ];
     protected $casts = [
         'completed' => 'boolean',
+        'public_share_enabled_at' => 'datetime',
     ];
     public function users()
     {

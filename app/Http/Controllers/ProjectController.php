@@ -11,6 +11,7 @@ use App\TaskUser;
 use App\Services\TaskTrackerImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -381,9 +382,9 @@ class ProjectController extends Controller
         return back();
     }
 
-    private function boardTaskQuery($projectId, $boardId)
+    private function boardTaskQuery($projectId, $boardId, $withAssignees = true)
     {
-        return Task::query()
+        $query = Task::query()
             ->select([
                 'tasks.id',
                 'tasks.title',
@@ -402,11 +403,15 @@ class ProjectController extends Controller
                 $query->from('task_activities')
                     ->selectRaw('COALESCE(SUM(task_activities.hours), 0)')
                     ->whereColumn('task_activities.task_id', 'tasks.id');
-            }, 'hours_total')
-            ->with(['users' => function ($query) {
+            }, 'hours_total');
+
+        if ($withAssignees) {
+            $query->with(['users' => function ($query) {
                 $query->select('users.id', 'users.name');
-            }])
-            ->orderBy('tasks.completed', 'asc')
+            }]);
+        }
+
+        return $query->orderBy('tasks.completed', 'asc')
             ->orderByRaw('CASE WHEN tasks.due_date IS NULL THEN 1 ELSE 0 END')
             ->orderBy('tasks.due_date', 'asc')
             ->orderBy('tasks.id', 'asc');
@@ -534,69 +539,121 @@ class ProjectController extends Controller
     {
         return strtolower(preg_replace('/[^a-z0-9]+/i', '', trim((string) $value)));
     }
-     public function viewPublic(Request $request,$id)
+    public function createPublicShare($id)
     {
+        abort_unless(auth()->user()->role === 'Admin', 403);
 
-       $project = Project::with([
-            'parent',
-            'children' => function ($query) {
-                $query->where('completed', '!=', 1)->orderBy('name', 'asc');
-            },
-            'children.tasks',
-            'children.users',
-            'users',
-            // Sort statuses by position ASC when eager loading
-            'statuses' => function ($query) {
-                $query->orderBy('position', 'asc');
-            },
-            'tasks',
-            'tasks.comments',
-            'tasks.attachments',
-            'tasks.activities', // Prevent N+1
-            'tasks.users'       // Prevent N+1
-        ])->findOrFail($id);
+        $project = Project::findOrFail($id);
+        if (!$project->public_share_token) {
+            do {
+                $project->public_share_token = Str::random(64);
+            } while (Project::where('public_share_token', $project->public_share_token)->exists());
+        }
+
+        $project->public_share_enabled_at = now();
+        $project->save();
+
+        Alert::success('Public link created', 'Anyone with the link can view the project board.')->persistent('Dismiss');
+
+        return back()->with('open_public_share', true);
+    }
+
+    public function revokePublicShare($id)
+    {
+        abort_unless(auth()->user()->role === 'Admin', 403);
+
+        $project = Project::findOrFail($id);
+        $project->public_share_token = null;
+        $project->public_share_enabled_at = null;
+        $project->save();
+
+        Alert::success('Public link disabled', 'The previous shared link can no longer be opened.')->persistent('Dismiss');
+
+        return back();
+    }
+
+    public function viewPublic(Request $request, $token)
+    {
+        $project = Project::with(['statuses' => function ($query) {
+            $query->orderBy('position', 'asc');
+        }])
+            ->where('public_share_token', $token)
+            ->whereNotNull('public_share_enabled_at')
+            ->firstOrFail();
+
+        $activeTasks = Task::where('project_id', $project->id)
+            ->where(function ($query) {
+                $query->where('archived', '!=', 1)->orWhereNull('archived');
+            });
+        $boardTotals = (clone $activeTasks)
+            ->groupBy('project_board_id')
+            ->select('project_board_id')
+            ->selectRaw('COUNT(*) as task_count')
+            ->pluck('task_count', 'project_board_id');
         $boardData = [];
-        
+
         foreach ($project->statuses as $status) {
-            $tasks = $project->tasks->where('archived', '!=',1)
-        ->where('project_board_id', $status->id)
-        ->map(function ($task) {
-            return [
-                'id' => $task->id,
-                'name' => $task->title,
-                'due_date' => $task->due_date ? $task->due_date : null,
-                'priority' => $task->priority,
-                'comments' => $task->comments->count(),
-                'attachments' => $task->attachments->count(),
-                'hours' => $task->activities->sum('hours'),
-                'completed' => $task->completed,
-                'assignees' => $task->users->pluck('name')->toArray(),
+            $total = (int) $boardTotals->get($status->id, 0);
+            $tasks = $this->boardTaskQuery($project->id, $status->id, false)
+                ->limit(10)
+                ->get()
+                ->map(function ($task) {
+                    return $this->formatPublicBoardTask($task);
+                })
+                ->values();
+
+            $boardData[] = [
+                'id' => $status->id,
+                'name' => $status->board,
+                'total' => $total,
+                'tasks' => $tasks,
             ];
-        })
-        ->sortBy(function ($task) {
-            return [
-                $task['completed'],           // 0 first, then 1
-                $task['due_date'] ?? '9999-12-31', // Nulls go last
-            ];
-        })
-        ->values(); // Re-index the collection
-            
-                $boardData[] = [
-                    'id' => $status->id, // e.g. "To Do" -> "todo"
-                    'name' => $status->board,
-                    'tasks' => $tasks
-                ];
-            }
-            // Return the view with the projects data
-        
-            $users = User::get();
-            return view('projects.view-public',
-                array(
-                    'project' => $project,
-                    'users' => $users,
-                    'boardData' => $boardData,
-                )
-            );
+        }
+
+        return response()->view('projects.view-public', [
+            'project' => $project,
+            'boardData' => $boardData,
+        ])->withHeaders([
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Referrer-Policy' => 'no-referrer',
+            'X-Robots-Tag' => 'noindex, nofollow',
+        ]);
+    }
+
+    public function publicBoardTasks($token, $boardId)
+    {
+        $project = Project::where('public_share_token', $token)
+            ->whereNotNull('public_share_enabled_at')
+            ->firstOrFail();
+        $board = $project->statuses()->where('id', $boardId)->firstOrFail();
+        $tasks = $this->boardTaskQuery($project->id, $board->id, false)
+            ->get()
+            ->map(function ($task) {
+                return $this->formatPublicBoardTask($task);
+            })
+            ->values();
+
+        return response()->json([
+            'tasks' => $tasks,
+            'total' => $tasks->count(),
+        ])->withHeaders([
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Referrer-Policy' => 'no-referrer',
+        ]);
+    }
+
+    private function formatPublicBoardTask(Task $task)
+    {
+        return [
+            'id' => $task->id,
+            'name' => $task->title,
+            'due_date' => $task->due_date ?: null,
+            'priority' => $task->priority,
+            'comments' => (int) $task->comments_count,
+            'attachments' => (int) $task->attachments_count,
+            'hours' => (float) $task->hours_total,
+            'completed' => (int) $task->completed,
+        ];
     }
     public function teamMember(Request $request,$id)
     {

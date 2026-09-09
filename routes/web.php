@@ -30,6 +30,8 @@ Route::post('new-project', 'ProjectController@store')->name('New Project');
 Route::get('/view-project/{id}','ProjectController@view')->name('View Project');
 Route::get('/view-project/{projectId}/board/{boardId}/tasks', 'ProjectController@boardTasks')->name('projects.board.tasks');
 Route::post('/view-project/{id}/import-tasks', 'ProjectController@importTasks')->name('projects.tasks.import');
+Route::post('/view-project/{id}/public-share', 'ProjectController@createPublicShare')->name('projects.public-share.create');
+Route::delete('/view-project/{id}/public-share', 'ProjectController@revokePublicShare')->name('projects.public-share.revoke');
 Route::post('project-member/{id}','ProjectController@teamMember')->name('View Project');
 Route::post('project-board/{id}','ProjectController@boardProject')->name('View Project');
 Route::post('project/edit-board', 'ProjectController@editBoard')->name('Edit Project Board');
@@ -174,4 +176,5 @@ Route::get('auth/google', 'GoogleController@redirectToGoogle');
 Route::get('auth/google/callback','GoogleController@handleGoogleCallback');
 
 
-Route::get('project/view-public/{id}','ProjectController@viewPublic')->name('public.project.view');
+Route::get('project/view-public/{token}', 'ProjectController@viewPublic')->name('public.project.view');
+Route::get('project/view-public/{token}/board/{boardId}/tasks', 'ProjectController@publicBoardTasks')->name('public.project.board.tasks');
