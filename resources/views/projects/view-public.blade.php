@@ -111,77 +111,85 @@
             }
         }
     </style>
+    <link href="{{ asset('inside_css/assets/css/saltiii-public-project.css') }}" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="container-fluid mt-4">
+<main class="container-fluid public-project-page">
 
     <!-- Project Header -->
-    <div class="card mb-4">
+    <div class="card public-project-header">
         <div class="card-body d-flex align-items-center project-header-content">
             <img src="{{ asset($project->icon) }}"
                  onerror="this.src='{{ url('images/Favicon.png') }}'"
-                 class="rounded-circle me-3"
-                 width="50">
+                 class="public-project-icon"
+                 width="50" alt="">
 
-            <div>
-                <h4 class="mb-1">{{ $project->name }}</h4>
-                <small class="text-muted">
-                    Created {{ date('d M Y', strtotime($project->created_at)) }} ·
-                    Updated {{ date('d M Y', strtotime($project->updated_at)) }}
-                </small>
+            <div class="public-project-copy">
+                <span class="public-eyebrow">Shared project board</span>
+                <h1>{{ $project->name }}</h1>
+                @if($project->description)<p>{{ $project->description }}</p>@endif
+                <div class="public-project-dates">
+                    <span><i class="bi bi-calendar3"></i> Created {{ date('M j, Y', strtotime($project->created_at)) }}</span>
+                    <span><i class="bi bi-arrow-repeat"></i> Updated {{ $project->updated_at->diffForHumans() }}</span>
+                </div>
             </div>
             <span class="read-only-badge"><i class="bi bi-eye"></i> Read-only shared view</span>
         </div>
     </div>
     <p class="public-notice"><i class="bi bi-shield-check me-1"></i>This page is for viewing only. Changes require an authorized SALTIII account.</p>
 
+    <section class="public-project-summary" aria-label="Project summary">
+        <div><span><i class="bi bi-list-check"></i></span><p><small>Total tasks</small><strong>{{ $publicTaskCount }}</strong></p></div>
+        <div><span><i class="bi bi-hourglass-split"></i></span><p><small>Open</small><strong>{{ $publicOpenCount }}</strong></p></div>
+        <div><span><i class="bi bi-check2-circle"></i></span><p><small>Completed</small><strong>{{ $publicCompletedCount }}</strong></p></div>
+        <div class="{{ $publicOverdueCount ? 'has-attention' : '' }}"><span><i class="bi bi-graph-up-arrow"></i></span><p><small>Progress</small><strong>{{ $publicProgress }}%</strong><em>{{ $publicOverdueCount }} overdue</em></p></div>
+    </section>
+
+    <section class="public-board-toolbar" aria-labelledby="public-board-title">
+        <div>
+            <span class="public-eyebrow">Workflow</span>
+            <h2 id="public-board-title">Tasks by status <span id="publicVisibleTaskCount">{{ $publicTaskCount }}</span></h2>
+        </div>
+        <div class="public-board-tools">
+            <div class="public-scroll-controls" aria-label="Scroll board">
+                <button type="button" id="publicScrollLeft" aria-label="Scroll board left" title="Scroll left"><i class="bi bi-arrow-left"></i></button>
+                <button type="button" id="publicScrollRight" aria-label="Scroll board right" title="Scroll right"><i class="bi bi-arrow-right"></i></button>
+            </div>
+            <label class="public-search" for="publicTaskSearch">
+                <i class="bi bi-search"></i>
+                <input type="search" id="publicTaskSearch" placeholder="Search tasks" autocomplete="off">
+                <span class="visually-hidden">Search tasks</span>
+            </label>
+        </div>
+    </section>
+
     <!-- Kanban Board -->
-    <div class="kanban-board-container">
+    <div class="kanban-board-container" id="publicBoard">
         <div class="kanban-board-wrapper">
 
-            @foreach($boardData as $board)
-                <div class="kanban-column">
+            @forelse($boardData as $board)
+                <section class="kanban-column" data-public-column="{{ $board['id'] }}">
 
-                    <div class="kanban-header">
-                        {{ $board['name'] }}
-                        <span class="badge bg-secondary float-end">
-                            {{ $board['total'] }}
-                        </span>
-                    </div>
+                    <div class="kanban-header"><span class="public-status-title"><i></i>{{ $board['name'] }}</span><span class="public-status-count">{{ $board['total'] }}</span></div>
 
                     <div class="kanban-items" id="public-board-items-{{ $board['id'] }}">
 
                         @forelse($board['tasks'] as $task)
-                            <div class="kanban-card">
+                            <article class="kanban-card public-task-card" data-search="{{ strtolower($task['name']) }}">
 
-                                <h6>
-                                    {{ \Illuminate\Support\Str::limit($task['name'], 40) }}
-                                </h6>
+                                <div class="public-task-heading"><h3>@if((int) $task['completed'] === 1)<i class="bi bi-check-circle-fill text-success me-1"></i>@endif{{ $task['name'] }}</h3><span>#{{ $task['id'] }}</span></div>
 
-                                <div class="task-meta mb-1">
-                                    <i class="bi bi-hash"></i> {{ $task['id'] }}
+                                <div class="public-task-meta">
+                                    <span><i class="bi bi-calendar-event"></i>{{ $task['due_date'] ?: 'No due date' }}</span>
+                                    <span class="public-priority public-priority-{{ strtolower($task['priority'] ?: 'low') }}">{{ $task['priority'] ?: 'Low' }}</span>
                                 </div>
 
-                                <div class="task-meta">
-                                    <i class="bi bi-calendar-event"></i>
-                                    {{ $task['due_date'] ?? 'No due date' }}
-                                </div>
-
-                                <div class="task-meta mt-2 d-flex justify-content-between">
-                                    <span>
-                                        <i class="bi bi-clock"></i> {{ number_format($task['hours'], 2) }}h
-                                    </span>
-                                    <span>
-                                        <i class="bi bi-chat"></i> {{ $task['comments'] }}
-                                        <i class="bi bi-paperclip ms-2"></i> {{ $task['attachments'] }}
-                                    </span>
-                                </div>
-
-                            </div>
+                                <footer class="public-task-footer"><span><i class="bi bi-chat"></i>{{ $task['comments'] }}</span><span><i class="bi bi-paperclip"></i>{{ $task['attachments'] }}</span><span><i class="bi bi-clock"></i>{{ number_format($task['hours'], 1) }}h</span></footer>
+                            </article>
                         @empty
-                            <p class="text-muted text-center mt-3">No tasks</p>
+                            <div class="public-column-empty">No tasks in this status</div>
                         @endforelse
 
                     </div>
@@ -192,13 +200,15 @@
                             </button>
                         </div>
                     @endif
-                </div>
-            @endforeach
+                </section>
+            @empty
+                <div class="public-board-empty"><i class="bi bi-kanban"></i><strong>No statuses yet</strong><span>This shared project does not have a board to display.</span></div>
+            @endforelse
 
         </div>
     </div>
 
-</div>
+</main>
 
 <script>
     async function loadPublicBoard(button, boardId) {
@@ -213,22 +223,26 @@
             const container = document.getElementById('public-board-items-' + boardId);
             container.innerHTML = data.tasks.length
                 ? data.tasks.map(renderPublicTask).join('')
-                : '<p class="text-muted text-center mt-3">No tasks</p>';
+                : '<div class="public-column-empty">No tasks in this status</div>';
             document.getElementById('public-board-loader-' + boardId).remove();
+            filterPublicTasks(document.getElementById('publicTaskSearch').value.trim().toLowerCase());
+            return true;
         } catch (error) {
             button.disabled = false;
             button.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Try loading tasks again';
+            return false;
         }
     }
 
     function renderPublicTask(task) {
-        return '<div class="kanban-card">' +
-            '<h6>' + (Number(task.completed) === 1 ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '') + escapePublicHtml(task.name) + '</h6>' +
-            '<div class="task-meta mb-1"><i class="bi bi-hash"></i> ' + Number(task.id) + '</div>' +
-            '<div class="task-meta"><i class="bi bi-calendar-event"></i> ' + escapePublicHtml(task.due_date || 'No due date') + '</div>' +
-            '<div class="task-meta mt-2 d-flex justify-content-between"><span><i class="bi bi-clock"></i> ' + Number(task.hours).toFixed(2) + 'h</span>' +
-            '<span><i class="bi bi-chat"></i> ' + Number(task.comments) + ' <i class="bi bi-paperclip ms-2"></i> ' + Number(task.attachments) + '</span></div>' +
-            '</div>';
+        const priority = task.priority || 'Low';
+        const priorityClass = priority.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        const completedIcon = Number(task.completed) === 1 ? '<i class="bi bi-check-circle-fill text-success me-1"></i>' : '';
+        return '<article class="kanban-card public-task-card" data-search="' + escapePublicHtml(String(task.name).toLowerCase()) + '">' +
+            '<div class="public-task-heading"><h3>' + completedIcon + escapePublicHtml(task.name) + '</h3><span>#' + Number(task.id) + '</span></div>' +
+            '<div class="public-task-meta"><span><i class="bi bi-calendar-event"></i>' + escapePublicHtml(task.due_date || 'No due date') + '</span><span class="public-priority public-priority-' + priorityClass + '">' + escapePublicHtml(priority) + '</span></div>' +
+            '<footer class="public-task-footer"><span><i class="bi bi-chat"></i>' + Number(task.comments) + '</span><span><i class="bi bi-paperclip"></i>' + Number(task.attachments) + '</span><span><i class="bi bi-clock"></i>' + Number(task.hours).toFixed(1) + 'h</span></footer>' +
+            '</article>';
     }
 
     function escapePublicHtml(value) {
@@ -239,6 +253,70 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
     }
+
+    function filterPublicTasks(query) {
+        let visible = 0;
+        document.querySelectorAll('[data-public-column]').forEach(function (column) {
+            let columnVisible = 0;
+            column.querySelectorAll('.public-column-empty:not(.public-search-empty)').forEach(function (emptyState) {
+                emptyState.hidden = Boolean(query);
+            });
+            column.querySelectorAll('.public-task-card').forEach(function (card) {
+                const matches = !query || card.dataset.search.indexOf(query) !== -1;
+                card.hidden = !matches;
+                if (matches) {
+                    visible++;
+                    columnVisible++;
+                }
+            });
+
+            let empty = column.querySelector('.public-search-empty');
+            if (query && columnVisible === 0) {
+                if (!empty) {
+                    empty = document.createElement('div');
+                    empty.className = 'public-column-empty public-search-empty';
+                    empty.textContent = 'No matching tasks';
+                    column.querySelector('.kanban-items').appendChild(empty);
+                }
+                empty.hidden = false;
+            } else if (empty) {
+                empty.hidden = true;
+            }
+        });
+
+        document.getElementById('publicVisibleTaskCount').textContent = query ? visible : {{ $publicTaskCount }};
+    }
+
+    const publicSearch = document.getElementById('publicTaskSearch');
+    let publicSearchTimer = null;
+    publicSearch.addEventListener('input', function () {
+        clearTimeout(publicSearchTimer);
+        publicSearchTimer = setTimeout(async function () {
+            const query = publicSearch.value.trim().toLowerCase();
+            if (query) {
+                const loaders = Array.from(document.querySelectorAll('.load-all-tasks button'));
+                await Promise.all(loaders.map(function (button) {
+                    const boardId = button.closest('[data-public-column]').dataset.publicColumn;
+                    return loadPublicBoard(button, boardId);
+                }));
+            }
+            filterPublicTasks(query);
+        }, 250);
+    });
+
+    const publicBoard = document.getElementById('publicBoard');
+    const scrollLeftButton = document.getElementById('publicScrollLeft');
+    const scrollRightButton = document.getElementById('publicScrollRight');
+    function updatePublicScrollButtons() {
+        const maximum = Math.max(0, publicBoard.scrollWidth - publicBoard.clientWidth);
+        scrollLeftButton.disabled = publicBoard.scrollLeft <= 2;
+        scrollRightButton.disabled = publicBoard.scrollLeft >= maximum - 2;
+    }
+    scrollLeftButton.addEventListener('click', function () { publicBoard.scrollBy({left: -420, behavior: 'smooth'}); });
+    scrollRightButton.addEventListener('click', function () { publicBoard.scrollBy({left: 420, behavior: 'smooth'}); });
+    publicBoard.addEventListener('scroll', updatePublicScrollButtons, {passive: true});
+    window.addEventListener('resize', updatePublicScrollButtons);
+    updatePublicScrollButtons();
 </script>
 </body>
 </html>

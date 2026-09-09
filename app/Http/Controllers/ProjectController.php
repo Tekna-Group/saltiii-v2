@@ -19,22 +19,85 @@ class ProjectController extends Controller
 {
     //
 
-    public function index()
+    public function index(Request $request)
     {
-        // Fetch all projects from the database
-        // $projects = \App\Models\Project::all();
-        $projects = Project::with(['parent', 'children.tasks', 'tasks', 'users'])
-        ->whereHas('users', function ($query) {
+        $showCompleted = $request->query('view') === 'completed';
+        $accessibleProjects = Project::query()->whereHas('users', function ($query) {
             $query->where('user_id', auth()->id());
-        })->orderBy('name','asc')->where('completed','!=',1)->get();
-        $users = User::assignableFor(auth()->user());
-        // Return the view with the projects data
-        return view('projects.index',
-            array(
-                'projects' => $projects,
-                'users' => $users,
+        });
+        $activeProjects = (clone $accessibleProjects)->where(function ($query) {
+            $query->where('completed', '!=', 1)->orWhereNull('completed');
+        });
+        $completedProjects = (clone $accessibleProjects)
+            ->where('completed', 1)
+            ->where(function ($query) {
+                $query->where('status', '!=', 'Archived')->orWhereNull('status');
+            });
+
+        $activeProjectCount = (clone $activeProjects)->count();
+        $completedProjectCount = (clone $completedProjects)->count();
+        $activeProjectIds = (clone $activeProjects)->select('projects.id');
+        $activeTaskStats = Task::whereIn('project_id', $activeProjectIds)
+            ->where(function ($query) {
+                $query->where('archived', '!=', 1)->orWhereNull('archived');
+            })
+            ->selectRaw('COUNT(*) as total_tasks')
+            ->selectRaw('COALESCE(SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END), 0) as completed_tasks')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN (completed IS NULL OR completed != 1) AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END), 0) as overdue_tasks',
+                [date('Y-m-d')]
             )
-        );
+            ->first();
+        $activeTaskCount = (int) $activeTaskStats->total_tasks;
+        $activeCompletedTaskCount = (int) $activeTaskStats->completed_tasks;
+        $activeOpenTaskCount = max(0, $activeTaskCount - $activeCompletedTaskCount);
+        $activeOverdueTaskCount = (int) $activeTaskStats->overdue_tasks;
+        $portfolioProgress = $activeTaskCount > 0
+            ? round(($activeCompletedTaskCount / $activeTaskCount) * 100)
+            : 0;
+
+        $projectQuery = $showCompleted ? $completedProjects : $activeProjects;
+        $projects = $projectQuery
+            ->with(['parent', 'children', 'users'])
+            ->withCount([
+                'tasks as active_tasks_count' => function ($query) {
+                    $query->where(function ($activeQuery) {
+                        $activeQuery->where('archived', '!=', 1)->orWhereNull('archived');
+                    });
+                },
+                'tasks as completed_tasks_count' => function ($query) {
+                    $query->where(function ($activeQuery) {
+                        $activeQuery->where('archived', '!=', 1)->orWhereNull('archived');
+                    })->where('completed', 1);
+                },
+                'tasks as overdue_tasks_count' => function ($query) {
+                    $query->where(function ($activeQuery) {
+                        $activeQuery->where('archived', '!=', 1)->orWhereNull('archived');
+                    })->where(function ($openQuery) {
+                        $openQuery->where('completed', '!=', 1)->orWhereNull('completed');
+                    })->whereNotNull('due_date')->where('due_date', '<', date('Y-m-d'));
+                },
+            ])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+        $parentProjects = (clone $activeProjects)
+            ->with('parent')
+            ->orderBy('name', 'asc')
+            ->get();
+        $users = User::assignableFor(auth()->user());
+
+        return view('projects.index', [
+            'projects' => $projects,
+            'parentProjects' => $parentProjects,
+            'users' => $users,
+            'showCompleted' => $showCompleted,
+            'activeProjectCount' => $activeProjectCount,
+            'completedProjectCount' => $completedProjectCount,
+            'activeOpenTaskCount' => $activeOpenTaskCount,
+            'activeCompletedTaskCount' => $activeCompletedTaskCount,
+            'activeOverdueTaskCount' => $activeOverdueTaskCount,
+            'portfolioProgress' => $portfolioProgress,
+        ]);
     }
     public function store(Request $request)
     {
@@ -585,6 +648,20 @@ class ProjectController extends Controller
             ->where(function ($query) {
                 $query->where('archived', '!=', 1)->orWhereNull('archived');
             });
+        $publicTaskStats = (clone $activeTasks)
+            ->selectRaw('COUNT(*) as total_tasks')
+            ->selectRaw('COALESCE(SUM(CASE WHEN completed = 1 THEN 1 ELSE 0 END), 0) as completed_tasks')
+            ->selectRaw(
+                'COALESCE(SUM(CASE WHEN (completed IS NULL OR completed != 1) AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END), 0) as overdue_tasks',
+                [date('Y-m-d')]
+            )
+            ->first();
+        $publicTaskCount = (int) $publicTaskStats->total_tasks;
+        $publicCompletedCount = (int) $publicTaskStats->completed_tasks;
+        $publicOpenCount = max(0, $publicTaskCount - $publicCompletedCount);
+        $publicProgress = $publicTaskCount > 0
+            ? round(($publicCompletedCount / $publicTaskCount) * 100)
+            : 0;
         $boardTotals = (clone $activeTasks)
             ->groupBy('project_board_id')
             ->select('project_board_id')
@@ -613,6 +690,11 @@ class ProjectController extends Controller
         return response()->view('projects.view-public', [
             'project' => $project,
             'boardData' => $boardData,
+            'publicTaskCount' => $publicTaskCount,
+            'publicCompletedCount' => $publicCompletedCount,
+            'publicOpenCount' => $publicOpenCount,
+            'publicOverdueCount' => (int) $publicTaskStats->overdue_tasks,
+            'publicProgress' => $publicProgress,
         ])->withHeaders([
             'Cache-Control' => 'private, no-store, max-age=0',
             'Referrer-Policy' => 'no-referrer',

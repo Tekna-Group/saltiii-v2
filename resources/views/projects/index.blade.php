@@ -8,15 +8,6 @@
 @section('content')
 @php
     $projectCount = $projects->count();
-    $taskCount = $projects->sum(function ($project) { return $project->tasks->count(); });
-    $completedTaskCount = $projects->sum(function ($project) { return $project->tasks->where('completed', 1)->count(); });
-    $openTaskCount = max(0, $taskCount - $completedTaskCount);
-    $portfolioProgress = $taskCount > 0 ? round(($completedTaskCount / $taskCount) * 100) : 0;
-    $overdueTaskCount = $projects->sum(function ($project) {
-        return $project->tasks->filter(function ($task) {
-            return !$task->completed && $task->due_date && $task->due_date < date('Y-m-d');
-        })->count();
-    });
 @endphp
 
 <div class="projects-page">
@@ -34,19 +25,19 @@
     <section class="projects-summary" aria-label="Project portfolio summary">
         <div class="project-summary-item">
             <span><i class="ri-folder-3-line" aria-hidden="true"></i></span>
-            <div><small>Active projects</small><strong>{{ $projectCount }}</strong><em>Assigned to you</em></div>
+            <div><small>Active projects</small><strong>{{ $activeProjectCount }}</strong><em>Assigned to you</em></div>
         </div>
         <div class="project-summary-item">
-            <span><i class="ri-list-check-2" aria-hidden="true"></i></span>
-            <div><small>Open tasks</small><strong>{{ $openTaskCount }}</strong><em>{{ $completedTaskCount }} completed</em></div>
+            <span><i class="ri-checkbox-circle-line" aria-hidden="true"></i></span>
+            <div><small>Completed projects</small><strong>{{ $completedProjectCount }}</strong><em>Marked complete</em></div>
         </div>
-        <div class="project-summary-item {{ $overdueTaskCount ? 'has-attention' : '' }}">
-            <span><i class="ri-alarm-warning-line" aria-hidden="true"></i></span>
-            <div><small>Needs attention</small><strong>{{ $overdueTaskCount }}</strong><em>Overdue {{ str_plural('task', $overdueTaskCount) }}</em></div>
+        <div class="project-summary-item {{ $activeOverdueTaskCount ? 'has-attention' : '' }}">
+            <span><i class="ri-list-check-2" aria-hidden="true"></i></span>
+            <div><small>Open tasks</small><strong>{{ $activeOpenTaskCount }}</strong><em>{{ $activeOverdueTaskCount }} overdue</em></div>
         </div>
         <div class="project-summary-item">
             <span><i class="ri-pie-chart-line" aria-hidden="true"></i></span>
-            <div><small>Overall progress</small><strong>{{ $portfolioProgress }}%</strong><em>Across active work</em></div>
+            <div><small>Overall progress</small><strong>{{ $portfolioProgress }}%</strong><em>{{ $activeCompletedTaskCount }} tasks completed</em></div>
         </div>
     </section>
 
@@ -54,21 +45,29 @@
         <header class="projects-toolbar">
             <div class="projects-toolbar-copy">
                 <span class="projects-eyebrow">Project directory</span>
-                <h2 id="directory-title">Your active projects <span id="visibleProjectCount">{{ $projectCount }}</span></h2>
+                <nav class="projects-view-tabs" aria-label="Project views">
+                    <a href="{{ url('/projects') }}" class="{{ !$showCompleted ? 'active' : '' }}" @if(!$showCompleted) aria-current="page" @endif>Active <span>{{ $activeProjectCount }}</span></a>
+                    <a href="{{ url('/projects?view=completed') }}" class="{{ $showCompleted ? 'active' : '' }}" @if($showCompleted) aria-current="page" @endif>Completed <span>{{ $completedProjectCount }}</span></a>
+                </nav>
+                <h2 id="directory-title">{{ $showCompleted ? 'Completed projects' : 'Your active projects' }} <span id="visibleProjectCount">{{ $projectCount }}</span></h2>
             </div>
             <div class="projects-toolbar-controls">
                 <label class="projects-search" for="projectSearch">
                     <i class="ri-search-line" aria-hidden="true"></i>
-                    <input type="search" id="projectSearch" placeholder="Search by project or description" autocomplete="off">
+                    <input type="search" id="projectSearch" placeholder="{{ $showCompleted ? 'Search completed projects' : 'Search by project or description' }}" autocomplete="off">
                     <span class="visually-hidden">Search projects</span>
                 </label>
                 <label class="projects-select" for="projectStatusFilter">
                     <span class="visually-hidden">Filter projects by status</span>
                     <select id="projectStatusFilter" class="form-select">
                         <option value="all">All statuses</option>
-                        <option value="in progress">In progress</option>
-                        <option value="to be started">Not started</option>
-                        <option value="on hold">On hold</option>
+                        @if($showCompleted)
+                            <option value="completed">Completed</option>
+                        @else
+                            <option value="in progress">In progress</option>
+                            <option value="to be started">Not started</option>
+                            <option value="on hold">On hold</option>
+                        @endif
                     </select>
                 </label>
                 <label class="projects-select" for="projectSort">
@@ -76,7 +75,7 @@
                     <select id="projectSort" class="form-select">
                         <option value="updated">Recently updated</option>
                         <option value="name">Name A–Z</option>
-                        <option value="progress">Highest progress</option>
+                        @if(!$showCompleted)<option value="progress">Highest progress</option>@endif
                     </select>
                 </label>
             </div>
@@ -87,14 +86,12 @@
             <div class="projects-grid" id="projectsContainer">
                 @foreach($projects as $project)
                     @php
-                        $total = $project->tasks->count();
-                        $completed = $project->tasks->where('completed', 1)->count();
+                        $total = (int) $project->active_tasks_count;
+                        $completed = (int) $project->completed_tasks_count;
                         $open = max(0, $total - $completed);
                         $percentage = $total > 0 ? round(($completed / $total) * 100) : 0;
-                        $projectOverdue = $project->tasks->filter(function ($task) {
-                            return !$task->completed && $task->due_date && $task->due_date < date('Y-m-d');
-                        })->count();
-                        $status = $project->status ?: 'In Progress';
+                        $projectOverdue = (int) $project->overdue_tasks_count;
+                        $status = $showCompleted ? 'Completed' : ($project->status ?: 'In Progress');
                         $searchText = strtolower($project->name.' '.($project->description ?: '').' '.$status);
                     @endphp
                     <article class="project-directory-card project-card"
@@ -149,10 +146,17 @@
             </div>
         @else
             <div class="projects-empty">
-                <span><i class="ri-folder-add-line" aria-hidden="true"></i></span>
-                <h2>Create your first project</h2>
-                <p>Bring tasks, teammates, progress, and time together in one workspace.</p>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-primary"><i class="ri-add-line" aria-hidden="true"></i> New project</button>
+                @if($showCompleted)
+                    <span><i class="ri-checkbox-circle-line" aria-hidden="true"></i></span>
+                    <h2>No completed projects yet</h2>
+                    <p>Projects you mark complete will be kept here.</p>
+                    <a href="{{ url('/projects') }}" class="btn btn-soft-primary"><i class="ri-arrow-left-line" aria-hidden="true"></i> Back to active projects</a>
+                @else
+                    <span><i class="ri-folder-add-line" aria-hidden="true"></i></span>
+                    <h2>Create your first project</h2>
+                    <p>Bring tasks, teammates, progress, and time together in one workspace.</p>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#projectModal" class="btn btn-primary"><i class="ri-add-line" aria-hidden="true"></i> New project</button>
+                @endif
             </div>
         @endif
     </section>
@@ -178,7 +182,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="parentProject" class="form-label">Parent project <small class="text-muted fw-normal">Optional</small></label>
-                        <select class="form-select select2" name="parent_id" id="parentProject"><option value="">No parent project</option>@foreach($projects as $parentProject)<option value="{{ $parentProject->id }}">{{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}</option>@endforeach</select>
+                        <select class="form-select select2" name="parent_id" id="parentProject"><option value="">No parent project</option>@foreach($parentProjects as $parentProject)<option value="{{ $parentProject->id }}">{{ $parentProject->parent ? $parentProject->parent->name.' > ' : '' }}{{ $parentProject->name }}</option>@endforeach</select>
                     </div>
                     <div class="mb-3">
                         <label for="projectTeamMembers" class="form-label">Team members</label>
