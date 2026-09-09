@@ -516,20 +516,24 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="import_file" class="form-label">Tracker file <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control @error('import_file') is-invalid @enderror" id="import_file" name="import_file" accept=".xlsx,.csv" required>
+                            <input type="file" class="form-control {{ $errors->has('import_file') ? 'is-invalid' : '' }}" id="import_file" name="import_file" accept=".xlsx,.csv" required>
                             <div class="form-text">Accepted: .xlsx or .csv, up to 5 MB.</div>
-                            @error('import_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            @if($errors->has('import_file'))
+                                <div class="invalid-feedback">{{ $errors->first('import_file') }}</div>
+                            @endif
                         </div>
                         <div class="col-md-6">
                             <label for="import_assignee_id" class="form-label">Person in charge <span class="text-danger">*</span></label>
-                            <select class="form-select select2 @error('assignee_id') is-invalid @enderror" id="import_assignee_id" name="assignee_id" data-placeholder="Search and tag a user" required>
+                            <select class="form-select select2 {{ $errors->has('assignee_id') ? 'is-invalid' : '' }}" id="import_assignee_id" name="assignee_id" data-placeholder="Search and tag a user" required>
                                 <option value="">Search and select a user</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ (string) old('assignee_id') === (string) $user->id ? 'selected' : '' }}>{{ $user->name }}{{ $user->email ? ' - '.$user->email : '' }}</option>
                                 @endforeach
                             </select>
                             <div class="form-text">The selected user will be tagged on every imported task.</div>
-                            @error('assignee_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                            @if($errors->has('assignee_id'))
+                                <div class="invalid-feedback d-block">{{ $errors->first('assignee_id') }}</div>
+                            @endif
                         </div>
                     </div>
 
