@@ -168,6 +168,7 @@
                 @if($firstBoardId)
                     <button type="button" class="btn btn-primary" onclick="addTask('{{ $firstBoardId }}')"><i class="ri-add-line" aria-hidden="true"></i> New task</button>
                 @endif
+                <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#importTasksModal"><i class="ri-file-upload-line" aria-hidden="true"></i> Import</button>
                 @if(auth()->user()->role == 'Admin')
                     <button type="button" class="btn btn-soft-primary" data-bs-toggle="modal" data-bs-target="#addmemberModal"><i class="ri-user-add-line" aria-hidden="true"></i> Team</button>
                     <div class="dropdown">
@@ -491,6 +492,64 @@
 </div>
 
 </div>
+<div class="modal fade" id="importTasksModal" tabindex="-1" aria-labelledby="importTasksModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form id="importTasksForm" method="POST" action="{{ route('projects.tasks.import', $project->id) }}" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header">
+                    <div>
+                        <span class="projects-eyebrow">Project tracker</span>
+                        <h5 class="modal-title mt-1" id="importTasksModalLabel">Import tasks</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="import-tracker-note mb-4">
+                        <i class="ri-file-excel-2-line" aria-hidden="true"></i>
+                        <div>
+                            <strong>Excel or CSV tracker</strong>
+                            <p>The title row above the headers is allowed. SALTIII will use the first worksheet containing all required headers.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="import_file" class="form-label">Tracker file <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control @error('import_file') is-invalid @enderror" id="import_file" name="import_file" accept=".xlsx,.csv" required>
+                            <div class="form-text">Accepted: .xlsx or .csv, up to 5 MB.</div>
+                            @error('import_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="import_assignee_id" class="form-label">Person in charge <span class="text-danger">*</span></label>
+                            <select class="form-select select2 @error('assignee_id') is-invalid @enderror" id="import_assignee_id" name="assignee_id" data-placeholder="Search and tag a user" required>
+                                <option value="">Search and select a user</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}" {{ (string) old('assignee_id') === (string) $user->id ? 'selected' : '' }}>{{ $user->name }}{{ $user->email ? ' - '.$user->email : '' }}</option>
+                                @endforeach
+                            </select>
+                            <div class="form-text">The selected user will be tagged on every imported task.</div>
+                            @error('assignee_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div class="import-tracker-headers mt-4">
+                        <div class="import-tracker-headers-title"><i class="ri-table-line" aria-hidden="true"></i> Required header row</div>
+                        <div class="import-tracker-header-list" aria-label="Required spreadsheet headers">
+                            @foreach(['Bug/CR #', 'Module', 'Screen / Feature', 'Description', 'Type', 'Priority', 'Reported By', 'Date Reported', 'Status', 'Notes / Dev Action'] as $header)
+                                <span>{{ $header }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="importTasksSubmit"><i class="ri-file-upload-line me-1" aria-hidden="true"></i> Import tasks</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @include('projects.new-board')
 @include('projects.add_member')
 @include('projects.add_task')
@@ -501,6 +560,14 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
+    @if($errors->has('import_file') || $errors->has('assignee_id'))
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('importTasksModal')).show();
+    @endif
+
+    $('#importTasksForm').on('submit', function () {
+        const $button = $('#importTasksSubmit');
+        $button.prop('disabled', true).html('<i class="ri-loader-4-line me-1 spin-animation" aria-hidden="true"></i> Importing...');
+    });
     
     // Initialize Select2 inside modals
     $('.modal').on('shown.bs.modal', function () {

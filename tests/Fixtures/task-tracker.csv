@@ -1,0 +1,4 @@
+GSO MONITORING SYSTEM - TRACKER
+Bug/CR #,Module,Screen / Feature,Description,Type,Priority,Reported By,Date Reported,Status,Notes / Dev Action
+BUG-001,Supplier Management,Supplier Registry / Suppliers Tab,Suppliers tab throws an error when accessed.,Bug,High,GSO Staff,2026-03-23,Done,Investigate the route/component.
+CR-002,Procurement,Purchase Request,Add a searchable supplier field.,Change Request,Medium,Procurement Staff,46104,In Progress,Confirm the approved workflow.

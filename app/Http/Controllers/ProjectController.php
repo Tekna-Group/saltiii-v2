@@ -7,7 +7,10 @@ use App\ProjectUser;
 use App\ProjectBoard;
 use App\Task;
 use App\TaskActivity;
+use App\TaskUser;
+use App\Services\TaskTrackerImport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use RealRashid\SweetAlert\Facades\Alert;
 
@@ -271,6 +274,113 @@ class ProjectController extends Controller
         ]);
     }
 
+    public function importTasks(Request $request, $id, TaskTrackerImport $importer)
+    {
+        $request->validate([
+            'import_file' => 'required|file|max:5120',
+            'assignee_id' => 'required|integer',
+        ]);
+
+        $project = Project::when(auth()->user()->role !== 'Admin', function ($query) {
+            $query->whereHas('users', function ($userQuery) {
+                $userQuery->where('users.id', auth()->id());
+            });
+        })->findOrFail($id);
+
+        $assignableUsers = User::assignableFor(auth()->user());
+        $assignee = $assignableUsers->firstWhere('id', (int) $request->input('assignee_id'));
+        if (!$assignee) {
+            return back()->withErrors([
+                'assignee_id' => 'Select a person in charge from your team.',
+            ])->withInput();
+        }
+
+        $file = $request->file('import_file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (!in_array($extension, ['xlsx', 'csv'], true)) {
+            return back()->withErrors([
+                'import_file' => 'Use an .xlsx or .csv tracker file.',
+            ])->withInput();
+        }
+
+        try {
+            $rows = $importer->read($file->getRealPath(), $extension);
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors([
+                'import_file' => $exception->getMessage(),
+            ])->withInput();
+        }
+
+        $boards = $project->statuses()->orderBy('position', 'asc')->get();
+        if ($boards->isEmpty()) {
+            return back()->withErrors([
+                'import_file' => 'Create at least one project status before importing tasks.',
+            ])->withInput();
+        }
+
+        $defaultBoard = $boards->first(function ($board) {
+            return in_array($this->normalizeImportValue($board->board), ['todo', 'tobedone', 'open'], true);
+        }) ?: $boards->first();
+
+        $existingTitles = Task::where('project_id', $project->id)
+            ->pluck('title')
+            ->mapWithKeys(function ($title) {
+                return [$this->normalizeImportTitle($title) => true];
+            })
+            ->all();
+
+        $created = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use (
+            $rows,
+            $project,
+            $boards,
+            $defaultBoard,
+            $assignee,
+            &$existingTitles,
+            &$created,
+            &$skipped
+        ) {
+            foreach ($rows as $row) {
+                $title = $this->buildImportTitle($row);
+                $titleKey = $this->normalizeImportTitle($title);
+
+                if (isset($existingTitles[$titleKey])) {
+                    $skipped++;
+                    continue;
+                }
+
+                $board = $this->resolveImportBoard($row['status'], $boards, $defaultBoard);
+                $task = new Task();
+                $task->project_id = $project->id;
+                $task->project_board_id = $board->id;
+                $task->title = $title;
+                $task->description = $this->buildImportDescription($row);
+                $task->priority = $this->normalizeImportPriority($row['priority']);
+                $task->completed = $this->isCompletedImportStatus($row['status'], $board->board) ? 1 : 0;
+                $task->archived = 0;
+                $task->user_id = auth()->id();
+                $task->save();
+
+                $taskUser = new TaskUser();
+                $taskUser->task_id = $task->id;
+                $taskUser->user_id = $assignee->id;
+                $taskUser->save();
+
+                $existingTitles[$titleKey] = true;
+                $created++;
+            }
+        });
+
+        Alert::success(
+            'Tracker imported',
+            $created.' tasks assigned to '.$assignee->name.'. '.$skipped.' duplicates skipped.'
+        )->persistent('Dismiss');
+
+        return back();
+    }
+
     private function boardTaskQuery($projectId, $boardId)
     {
         return Task::query()
@@ -315,6 +425,114 @@ class ProjectController extends Controller
             'completed' => (int) $task->completed,
             'assignees' => $task->users->pluck('name')->values()->all(),
         ];
+    }
+
+    private function buildImportTitle(array $row)
+    {
+        $parts = array_values(array_filter([
+            $row['module'],
+            $row['screen_feature'],
+        ], function ($value) {
+            return trim((string) $value) !== '';
+        }));
+
+        $subject = $parts ? implode(' - ', $parts) : $row['description'];
+        $subject = trim((string) $subject) !== '' ? $subject : 'Imported tracker task';
+        $prefix = $row['bug_cr'] !== '' ? '['.$row['bug_cr'].'] ' : '';
+
+        $title = trim($prefix.$subject);
+
+        return function_exists('mb_substr') ? mb_substr($title, 0, 255, 'UTF-8') : substr($title, 0, 255);
+    }
+
+    private function buildImportDescription(array $row)
+    {
+        $details = [
+            'Type' => $row['type'],
+            'Reported by' => $row['reported_by'],
+            'Date reported' => $row['date_reported'],
+            'Source status' => $row['status'],
+        ];
+
+        $html = '<p>'.nl2br(e($row['description'])).'</p>';
+        $html .= '<p><strong>Tracker details</strong><br>';
+        foreach ($details as $label => $value) {
+            if ($value !== '') {
+                $html .= '<strong>'.e($label).':</strong> '.e($value).'<br>';
+            }
+        }
+        $html .= '</p>';
+
+        if ($row['notes_dev_action'] !== '') {
+            $html .= '<p><strong>Notes / Dev Action</strong><br>'.nl2br(e($row['notes_dev_action'])).'</p>';
+        }
+
+        return $html;
+    }
+
+    private function normalizeImportPriority($priority)
+    {
+        $value = $this->normalizeImportValue($priority);
+        if ($value === 'high' || $value === 'urgent' || $value === 'critical') {
+            return 'High';
+        }
+        if ($value === 'low') {
+            return 'Low';
+        }
+
+        return 'Medium';
+    }
+
+    private function resolveImportBoard($status, $boards, ProjectBoard $defaultBoard)
+    {
+        $value = $this->normalizeImportValue($status);
+        $aliases = [
+            'done' => ['completed', 'complete', 'done'],
+            'closed' => ['completed', 'complete', 'done'],
+            'complete' => ['completed', 'complete', 'done'],
+            'completed' => ['completed', 'complete', 'done'],
+            'new' => ['todo', 'tobedone', 'open'],
+            'pending' => ['todo', 'tobedone', 'open'],
+            'open' => ['todo', 'tobedone', 'open'],
+            'todo' => ['todo', 'tobedone', 'open'],
+            'inprogress' => ['ongoing', 'inprogress', 'doing', 'working'],
+            'ongoing' => ['ongoing', 'inprogress', 'doing', 'working'],
+            'review' => ['forreview', 'review', 'qa'],
+            'forreview' => ['forreview', 'review', 'qa'],
+            'hold' => ['onhold', 'hold', 'blocked'],
+            'onhold' => ['onhold', 'hold', 'blocked'],
+            'cancelled' => ['cancelled', 'canceled'],
+            'canceled' => ['cancelled', 'canceled'],
+            'recurring' => ['recurring', 'recurringtask'],
+            'recurringtask' => ['recurring', 'recurringtask'],
+        ];
+        $targets = isset($aliases[$value]) ? $aliases[$value] : [$value];
+
+        $match = $boards->first(function ($board) use ($targets) {
+            return in_array($this->normalizeImportValue($board->board), $targets, true);
+        });
+
+        return $match ?: $defaultBoard;
+    }
+
+    private function normalizeImportTitle($title)
+    {
+        return function_exists('mb_strtolower')
+            ? mb_strtolower(trim((string) $title), 'UTF-8')
+            : strtolower(trim((string) $title));
+    }
+
+    private function isCompletedImportStatus($sourceStatus, $boardName)
+    {
+        $completedValues = ['done', 'closed', 'complete', 'completed'];
+
+        return in_array($this->normalizeImportValue($sourceStatus), $completedValues, true)
+            || in_array($this->normalizeImportValue($boardName), $completedValues, true);
+    }
+
+    private function normalizeImportValue($value)
+    {
+        return strtolower(preg_replace('/[^a-z0-9]+/i', '', trim((string) $value)));
     }
      public function viewPublic(Request $request,$id)
     {
