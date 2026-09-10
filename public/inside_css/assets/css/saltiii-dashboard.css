@@ -1,4 +1,4 @@
-.workday-dashboard{
+:root{
   --dash-navy:#0c3442;
   --dash-blue:#15ade4;
   --dash-blue-dark:#087ea4;
@@ -7,6 +7,9 @@
   --dash-red:#cf5143;
   --dash-muted:#637a83;
   --dash-line:#dce7e7;
+}
+
+.workday-dashboard{
   display:grid;
   gap:20px;
   margin-bottom:26px;
